@@ -1,0 +1,515 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from '../../utils/axios';
+import useGlobalStore from '../../stores/useGlobalStore';
+import useAuth from '../../hooks/useAuth';
+import { Edit, Delete, Visibility } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
+
+const cuadrante = (p, i) => {
+  p = Number(p); i = Number(i);
+  if (p > 5 && i > 5) return 'QI';
+  if (p > 5 && i <= 5) return 'QII';
+  if (p <= 5 && i <= 5) return 'QIII';
+  return 'QIV';
+};
+
+const ESTADOS = ['Borrador', 'En revisión', 'Devuelto con observaciones', 'Validado'];
+
+export default function RiesgosPage() {
+  const [riesgos, setRiesgos] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [areaId, setAreaId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editRiesgo, setEditRiesgo] = useState(null);
+  const [editorProyectoId, setEditorProyectoId] = useState('');
+  const [editorAreaId, setEditorAreaId] = useState('');
+  const [fichaRapidaOpen, setFichaRapidaOpen] = useState(false);
+  const [selectedRiesgo, setSelectedRiesgo] = useState(null);
+  const [actividades, setActividades] = useState([]);
+  const [formData, setFormData] = useState({});
+  const navigate = useNavigate();
+  const ejercicio = useGlobalStore((s) => s.ejercicio);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    axios.get('/unidades-responsables').then(res => {
+      const data = res.data.data || res.data;
+      setAreas(data);
+      if (data.length > 0) {
+        const firstId = String(data[0].unidad_responsable_gasto_id || data[0].id_unidad || data[0].id);
+        setAreaId(firstId);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    fetchRiesgos();
+    fetchActividades();
+  }, [areaId, ejercicio]);
+
+  const fetchRiesgos = async () => {
+    setLoading(true);
+    try {
+      // Fetch all if areaId is empty ("Todas las áreas asignadas")
+      const url = areaId ? `/riesgos?ejercicio_id=${ejercicio}&area_id=${areaId}` : `/riesgos?ejercicio_id=${ejercicio}`;
+      const res = await axios.get(url);
+      setRiesgos(res.data.data || res.data || []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchActividades = async () => {
+    try {
+      const url = areaId ? `/actividades-sustantivas?area_id=${areaId}` : `/actividades-sustantivas`;
+      const res = await axios.get(url);
+      setActividades(res.data.data || res.data || []);
+    } catch { setActividades([]); }
+  };
+
+  const openEditor = (r = null) => {
+    setEditRiesgo(r);
+    setFormData(r ? {
+      local_id: r.local_id,
+      objetivo: r.objetivo || '',
+      riesgo: r.riesgo,
+      factores: r.factores || '',
+      control: (r.controles || [])[0]?.texto || '',
+      ev_tipo: (r.controles || [])[0]?.evidencia_tipo || '',
+      ev_ref: (r.controles || [])[0]?.evidencia_referencia || '',
+      ev_periodo: (r.controles || [])[0]?.evidencia_periodicidad || '',
+      ev_resp: (r.controles || [])[0]?.evidencia_responsable || '',
+      indicador: (r.indicadores || [])[0]?.nombre || '',
+      probabilidad: r.probabilidad || 2,
+      impacto: r.impacto || 8,
+      actividades: (r.actividades || []).map(a => String(a.id)),
+    } : {
+      local_id: '',
+      objetivo: '', riesgo: '', factores: '',
+      control: '', ev_tipo: '', ev_ref: '', ev_periodo: '', ev_resp: '',
+      indicador: '', probabilidad: 2, impacto: 8, actividades: [],
+    });
+    setEditorAreaId(r ? r.area_id : areaId);
+    setEditorProyectoId('');
+    setEditorOpen(true);
+  };
+
+  const handleProyectoSelect = (proyectoId) => {
+    setEditorProyectoId(proyectoId);
+    if (!editRiesgo && proyectoId) {
+      // Calculate how many risks belong to this project
+      const projectActivitiesIds = actividades.filter(a => String(a.proyecto_id) === proyectoId).map(a => String(a.id));
+      let count = 0;
+      riesgos.forEach(r => {
+        const rActIds = (r.actividades || []).map(a => String(a.id || a));
+        if (rActIds.some(id => projectActivitiesIds.includes(id))) {
+          count++;
+        }
+      });
+      setFormData(prev => ({ ...prev, local_id: `R${count + 1}` }));
+    } else if (!editRiesgo) {
+      setFormData(prev => ({ ...prev, local_id: '' }));
+    }
+  };
+
+  const handleField = (key, val) => setFormData(prev => ({ ...prev, [key]: val }));
+
+  const handleActividadToggle = (id) => {
+    const idStr = String(id);
+    setFormData(prev => ({
+      ...prev,
+      actividades: prev.actividades.includes(idStr)
+        ? prev.actividades.filter(a => a !== idStr)
+        : [...prev.actividades, idStr],
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!editorProyectoId) {
+      alert('Debe seleccionar un proyecto.');
+      return;
+    }
+    if (!formData.actividades || formData.actividades.length === 0) {
+      alert('Debe seleccionar al menos una actividad vinculada.');
+      return;
+    }
+    const payload = {
+      area_id: editorAreaId || areaId,
+      ejercicio_id: ejercicio,
+      local_id: formData.local_id,
+      objetivo: formData.objetivo,
+      riesgo: formData.riesgo,
+      factores: formData.factores,
+      probabilidad: Number(formData.probabilidad),
+      impacto: Number(formData.impacto),
+      status: editRiesgo?.status || 'Borrador',
+      controles: formData.control ? [{
+        texto: formData.control,
+        evidencia_tipo: formData.ev_tipo,
+        evidencia_referencia: formData.ev_ref,
+        evidencia_periodicidad: formData.ev_periodo,
+        evidencia_responsable: formData.ev_resp,
+      }] : [],
+      indicadores: formData.indicador ? [{ nombre: formData.indicador, tipo: 'Riesgo', periodicidad: 'Trimestral' }] : [],
+      actividades: formData.actividades,
+    };
+    try {
+      if (editRiesgo) {
+        await axios.put(`/riesgos/${editRiesgo.id}`, payload);
+      } else {
+        await axios.post('/riesgos', payload);
+      }
+      setEditorOpen(false);
+      fetchRiesgos();
+    } catch (err) {
+      alert('Error al guardar: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleTransicion = async (riesgo, accion) => {
+    const statusMap = {
+      submit: 'En revisión',
+      validate: 'Validado',
+      reopen: 'Borrador',
+    };
+    let obs = '';
+    if (accion === 'return') {
+      obs = prompt('Observación para devolución:');
+      if (!obs) return;
+    }
+    try {
+      await axios.put(`/riesgos/${riesgo.id}`, {
+        ...riesgo,
+        status: accion === 'return' ? 'Devuelto con observaciones' : statusMap[accion],
+        last_observation: obs || riesgo.last_observation,
+      });
+      fetchRiesgos();
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Dar de baja este riesgo?')) return;
+    await axios.delete(`/riesgos/${id}`);
+    fetchRiesgos();
+  };
+
+  const filtrados = riesgos.filter(r =>
+    (!search || (r.riesgo + ' ' + (r.objetivo || '') + ' ' + (r.local_id || '')).toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const canCapture = true; // simplify: all users can capture
+  const canValidate = user?.role === 'Administrador';
+  const canAdmin = user?.role === 'Administrador';
+
+  return (
+    <>
+      <div className="page-head">
+        <div>
+          <h1>Riesgos / MAR</h1>
+          <p>Consulta y administración de riesgos por Unidad Responsable / Área.</p>
+        </div>
+        <div className="head-actions">
+          {canCapture && (
+            <button className="btn primary" onClick={() => openEditor()}>+ Agregar riesgo</button>
+          )}
+        </div>
+      </div>
+
+      <section className="panel" style={{ padding: '20px', marginBottom: '20px' }}>
+        <div className="form-grid" style={{ gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Área / Unidad Responsable</label>
+            <select className="input" style={{ width: '100%' }} value={areaId} onChange={e => setAreaId(e.target.value)}>
+              <option value="">Todas las áreas asignadas</option>
+              {areas.map((a, i) => (
+                <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
+                  {a.nombre || a.denominacion}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Buscar</label>
+            <input className="input" style={{ width: '100%' }} placeholder="Clave, objetivo o riesgo..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+        </div>
+      </section>
+
+      <div style={{ borderLeft: '4px solid #1F4E79', paddingLeft: '15px', color: '#555', marginBottom: '20px', backgroundColor: '#f9f9f9', padding: '10px 15px' }}>
+        Selecciona un área para visualizar únicamente sus riesgos. La selección no modifica los datos ni la trazabilidad.
+      </div>
+
+      <section className="panel">
+        <div className="panel-head" style={{ marginBottom: '15px' }}>
+          <h2 style={{ fontSize: '1rem', color: '#333' }}>
+            {areaId ? (areas.find(a => String(a.id_unidad || a.id) === areaId)?.nombre || areas.find(a => String(a.id_unidad || a.id) === areaId)?.denominacion) : 'Todas las áreas asignadas'} 
+            <span style={{ fontWeight: 'normal', color: '#666', marginLeft: '8px' }}>{filtrados.length} riesgo(s)</span>
+          </h2>
+        </div>
+
+        {loading ? (
+          <p>Cargando…</p>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
+                <th style={{ color: '#fff' }}>Área</th>
+                <th style={{ color: '#fff' }}>Clave</th>
+                <th style={{ color: '#fff' }}>Riesgo</th>
+                <th style={{ color: '#fff' }}>P/I</th>
+                <th style={{ color: '#fff' }}>Estado</th>
+                <th style={{ color: '#fff' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtrados.map(r => (
+                <tr key={r.id}>
+                  <td>{r.area?.nombre || r.area?.denominacion || areas.find(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id) === String(r.area_id))?.nombre || areas.find(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id) === String(r.area_id))?.denominacion || '—'}</td>
+                  <td><b>{r.local_id}</b></td>
+                  <td style={{ maxWidth: '400px' }}>
+                    {r.riesgo}
+                  </td>
+                  <td>{r.probabilidad}/{r.impacto}</td>
+                  <td>{r.status}</td>
+                  <td style={{ width: '120px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                      <Tooltip title="Editar">
+                        <IconButton size="small" color="primary" onClick={() => openEditor(r)}>
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Trazabilidad">
+                        <IconButton size="small" color="info" onClick={() => { setSelectedRiesgo(r); setFichaRapidaOpen(true); }}>
+                          <Visibility fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton size="small" color="error" onClick={() => handleDelete(r.id)}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtrados.length === 0 && (
+                <tr><td colSpan="6" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
+                  Sin riesgos encontrados.
+                </td></tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      {/* Premium Modal Editor */}
+      {editorOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', width: '70%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit fontSize="medium" color="primary" /> {editRiesgo ? `Editar ${editRiesgo.local_id}` : 'Nuevo riesgo'}
+              </h2>
+              <button type="button" onClick={() => setEditorOpen(false)} style={{ background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b', lineHeight: 1, padding: '4px' }}>&times;</button>
+            </div>
+            
+            <form id="riesgo-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }} className="form-grid">
+            
+            {actividades.length > 0 && (() => {
+              const uniqueProyectosMap = new Map();
+              actividades.filter(a => !editorAreaId || String(a.area_id) === String(editorAreaId)).forEach(a => {
+                if (!uniqueProyectosMap.has(a.proyecto_id)) {
+                  uniqueProyectosMap.set(a.proyecto_id, {
+                    id: a.proyecto_id,
+                    nombre: a.proyecto_nombre,
+                    clave: [a.urg_num, a.ro_num, a.pg_num, a.sp_num, a.py_num].filter(Boolean).join('-')
+                  });
+                }
+              });
+              const uniqueProyectos = Array.from(uniqueProyectosMap.values());
+
+              return (
+                <div className="wide" style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', gap: '16px', alignItems: 'end', marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontWeight: 'bold' }}>
+                      ID local
+                      <input 
+                        className="input" 
+                        style={{ width: '100%', marginTop: 5, backgroundColor: '#f1f5f9', color: '#64748b', fontWeight: 'bold' }} 
+                        value={formData.local_id} 
+                        disabled 
+                      />
+                    </label>
+                    <label style={{ display: 'block', fontWeight: 'bold' }}>
+                      UR
+                      <select 
+                        className="input" 
+                        style={{ width: '100%', marginTop: 5, fontWeight: 'normal', backgroundColor: (areaId || editRiesgo) ? '#f1f5f9' : '#fff' }}
+                        value={editorAreaId} 
+                        onChange={e => setEditorAreaId(e.target.value)}
+                        disabled={!!areaId || !!editRiesgo}
+                      >
+                        <option value="">Seleccione UR...</option>
+                        {areas.map((a, i) => (
+                          <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
+                            {a.nombre || a.denominacion}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label style={{ display: 'block', fontWeight: 'bold' }}>
+                      Proyectos
+                      <select 
+                        className="input" 
+                        style={{ width: '100%', marginTop: 5, fontWeight: 'normal' }}
+                        value={editorProyectoId} 
+                        onChange={e => handleProyectoSelect(e.target.value)}
+                      >
+                        <option value="">Seleccione un proyecto...</option>
+                        {uniqueProyectos.map(p => (
+                          <option key={p.id} value={String(p.id)}>
+                            {p.clave} {p.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  
+                  <fieldset style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
+                    <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas</legend>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '180px', overflowY: 'auto', paddingRight: '8px' }}>
+                      {actividades.filter(a => !editorProyectoId || String(a.proyecto_id) === editorProyectoId).map(a => (
+                        <label className="check" key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', backgroundColor: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s', margin: 0, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                          <input type="checkbox"
+                            style={{ marginTop: '2px', accentColor: '#0f172a', width: '16px', height: '16px', cursor: 'pointer' }}
+                            checked={formData.actividades?.includes(String(a.id))}
+                            onChange={() => handleActividadToggle(a.id)} />
+                          <span style={{ lineHeight: 1.3, color: '#334155', flex: 1 }}>{a.descripcion || a.denominacion || 'Actividad sin nombre'}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
+              );
+            })()}
+            <label>Riesgo *
+              <textarea className="input" required value={formData.riesgo} onChange={e => handleField('riesgo', e.target.value)} />
+            </label>
+            <label>Objetivo
+              <textarea className="input" value={formData.objetivo} onChange={e => handleField('objetivo', e.target.value)} />
+            </label>
+            <label>Factores de riesgo
+              <textarea className="input" value={formData.factores} onChange={e => handleField('factores', e.target.value)} />
+            </label>
+            <label>Control
+              <textarea className="input" value={formData.control} onChange={e => handleField('control', e.target.value)} />
+            </label>
+
+            <div className="wide optional-box">
+              <b>Evidencia del control (opcional)</b>
+              <div className="form-grid compact" style={{ marginTop: 8, gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
+                <label>Tipo<input className="input" value={formData.ev_tipo} onChange={e => handleField('ev_tipo', e.target.value)} /></label>
+                <label>Referencia<input className="input" value={formData.ev_ref} onChange={e => handleField('ev_ref', e.target.value)} /></label>
+                <label>Periodicidad<input className="input" value={formData.ev_periodo} onChange={e => handleField('ev_periodo', e.target.value)} /></label>
+                <label>Responsable<input className="input" value={formData.ev_resp} onChange={e => handleField('ev_resp', e.target.value)} /></label>
+              </div>
+            </div>
+
+            <label className="wide">Indicador
+              <textarea className="input" value={formData.indicador} onChange={e => handleField('indicador', e.target.value)} />
+            </label>
+            <label>Probabilidad (0–10)
+              <input type="number" min={0} max={10} step={1} className="input" value={formData.probabilidad} onChange={e => handleField('probabilidad', e.target.value)} />
+            </label>
+            <label>Impacto (0–10)
+              <input type="number" min={0} max={10} step={1} className="input" value={formData.impacto} onChange={e => handleField('impacto', e.target.value)} />
+            </label>
+
+
+
+              </div>
+            
+              <div style={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0', backgroundColor: '#f8fafc', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button className="btn" type="button" onClick={() => setEditorOpen(false)}>Cancelar</button>
+                <button className="btn primary" type="submit">Guardar riesgo</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Ficha Rápida Modal */}
+      {fichaRapidaOpen && selectedRiesgo && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '8px', width: '800px', maxWidth: '90%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid #eee' }}>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', color: '#1F4E79' }}>Ficha rápida · {selectedRiesgo.local_id}</h2>
+            </div>
+            
+            <div style={{ padding: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Área</div>
+                  <div>{selectedRiesgo.area?.nombre || selectedRiesgo.area?.denominacion || areas.find(a => String(a.id_unidad || a.id) === String(selectedRiesgo.area_id))?.nombre || areas.find(a => String(a.id_unidad || a.id) === String(selectedRiesgo.area_id))?.denominacion || '—'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
+                  <div>{selectedRiesgo.status}</div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Objetivo</div>
+                <div>{selectedRiesgo.objetivo || '—'}</div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Riesgo</div>
+                <div style={{ fontWeight: 'bold' }}>{selectedRiesgo.riesgo}</div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Probabilidad / Impacto</div>
+                  <div>{selectedRiesgo.probabilidad} / {selectedRiesgo.impacto}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Responsable</div>
+                  <div>—</div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Factores</div>
+                <div>{selectedRiesgo.factores || '—'}</div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Controles</div>
+                <div>{selectedRiesgo.controles?.map(c => c.texto).join('; ') || '—'}</div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Acciones sustantivas POA vinculadas</div>
+                <div>
+                  {selectedRiesgo.actividades?.length > 0 
+                    ? selectedRiesgo.actividades.map(a => `${a.numero || ''} ${a.descripcion || a.denominacion || a.texto}`).join(' - ')
+                    : '—'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: '15px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '15px', backgroundColor: '#f9f9f9', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px' }}>
+              <button className="btn" onClick={() => setFichaRapidaOpen(false)}>Cerrar</button>
+              <button className="btn primary" onClick={() => { setFichaRapidaOpen(false); openEditor(selectedRiesgo); }}>Abrir ficha completa</button>
+            </div>
+          </div>
+        </div>
+      )}

@@ -1,0 +1,14 @@
+<?php
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use Illuminate\Support\Facades\DB;
+
+try {
+    $dbs = DB::connection('poa_prod')->select("SHOW DATABASES LIKE '%poa%'");
+    print_r($dbs);
+} catch (Exception $e) {
+    echo "Exception: " . $e->getMessage() . "\n";
+}

@@ -1,0 +1,75 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from '../../utils/axios';
+import useGlobalStore from '../../stores/useGlobalStore';
+
+export default function ReportMAR() {
+  const { areaId } = useParams();
+  const navigate = useNavigate();
+  const [riesgos, setRiesgos] = useState([]);
+  const [area, setArea] = useState(null);
+  const ejercicio = useGlobalStore((state) => state.ejercicio);
+
+  useEffect(() => {
+    fetchData();
+  }, [areaId, ejercicio]);
+
+  const fetchData = async () => {
+    try {
+      const [resRiesgos, resAreas] = await Promise.all([
+        axios.get(`/riesgos?ejercicio_id=${ejercicio}&area_id=${areaId}`),
+        axios.get('/unidades-responsables')
+      ]);
+      setRiesgos(resRiesgos.data.data || resRiesgos.data);
+      const areasList = resAreas.data.data || resAreas.data;
+      setArea(areasList.find(a => (a.id || a.id_unidad) == areaId));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return (
+    <>
+      <div className="page-head no-print">
+        <h1>MAR imprimible</h1>
+        <div>
+          <button className="btn" onClick={() => navigate('/reportes')}>Volver</button>{' '}
+          <button className="btn primary" onClick={() => window.print()}>Imprimir / PDF</button>
+        </div>
+      </div>
+      <section className="report-sheet landscape">
+        <div className="report-head">
+          <div>
+            <b>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
+            <span>{area?.nombre || area?.denominacion}</span>
+            <strong>MATRIZ DE ADMINISTRACIÓN DE RIESGOS {ejercicio}</strong>
+          </div>
+        </div>
+        <table className="mar-table">
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>OBJETIVO</th>
+              <th>RIESGO</th>
+              <th>FACTORES DE RIESGO</th>
+              <th>CONTROLES</th>
+              <th>INDICADORES</th>
+            </tr>
+          </thead>
+          <tbody>
+            {riesgos.map(r => (
+              <tr key={r.id}>
+                <td>{r.local_id || r.id}</td>
+                <td>{r.objetivo}</td>
+                <td>{r.riesgo}</td>
+                <td>{r.factores}</td>
+                <td>{(r.riesgo_controles || []).map(c => c.control).join('; ')}</td>
+                <td>{(r.riesgo_indicadores || []).map(i => i.indicador).join('; ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </>
+  );
+}
