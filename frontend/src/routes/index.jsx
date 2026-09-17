@@ -33,6 +33,9 @@ import POAPage from '../pages/poa/POAPage';
 import ReportsPage from '../pages/reports/ReportsPage';
 import ReportMap from '../pages/reports/ReportMap';
 import ReportMAR from '../pages/reports/ReportMAR';
+import ReportAnnexA from '../pages/reports/ReportAnnexA';
+import ReportAnnexB from '../pages/reports/ReportAnnexB';
+import ReportAnnexC from '../pages/reports/ReportAnnexC';
 import ControlesPage from '../pages/controles/ControlesPage';
 import IndicadoresPage from '../pages/indicadores/IndicadoresPage';
 import MARSeguimientoPage from '../pages/seguimiento/SeguimientoPage';
@@ -95,6 +98,9 @@ export default function AppRoutes() {
         <Route path="reportes" element={<ReportsPage />} />
         <Route path="reportes/mapa/:areaId" element={<ReportMap />} />
         <Route path="reportes/mar/:areaId" element={<ReportMAR />} />
+        <Route path="reportes/anexo-a/:areaId" element={<ReportAnnexA />} />
+        <Route path="reportes/anexo-b/:areaId" element={<ReportAnnexB />} />
+        <Route path="reportes/anexo-c/:areaId" element={<ReportAnnexC />} />
         <Route path="controles" element={<ControlesPage />} />
         <Route path="indicadores" element={<IndicadoresPage />} />
         <Route path="seguimiento" element={<MARSeguimientoPage />} />

@@ -39,13 +39,17 @@ class RiesgoController extends Controller
             'area_id' => 'required',
             'ejercicio_id' => 'required|integer',
             'objetivo' => 'nullable|string',
+            'efectos_consecuencias' => 'nullable|string',
             'riesgo' => 'required|string',
             'factores' => 'nullable|string',
+            'factores_internos' => 'nullable|string',
+            'factores_externos' => 'nullable|string',
             'probabilidad' => 'nullable|integer',
             'impacto' => 'nullable|integer',
             'probabilidad_inicial' => 'nullable|integer',
             'impacto_inicial' => 'nullable|integer',
             'status' => 'nullable|string',
+            'actividades' => 'required|array|min:1',
         ]);
 
         if ($validator->fails()) {
@@ -55,8 +59,18 @@ class RiesgoController extends Controller
         DB::beginTransaction();
         try {
             \Log::info("Starting store...");
-            $riesgo = Riesgo::create($request->all());
-            \Log::info("Riesgo created. ID: " . $riesgo->id);
+
+            // Generar local_id consecutivo por proyecto (area_id)
+            $conteoExistente = Riesgo::where('area_id', $request->area_id)
+                ->where('ejercicio_id', $request->ejercicio_id)
+                ->count();
+            $localId = 'R' . ($conteoExistente + 1);
+
+            $datos = $request->all();
+            $datos['local_id'] = $localId;
+
+            $riesgo = Riesgo::create($datos);
+            \Log::info("Riesgo created. ID: " . $riesgo->id . " local_id: " . $localId);
 
             if ($request->has('controles') && is_array($request->controles)) {
                 foreach ($request->controles as $controlData) {
@@ -150,5 +164,24 @@ class RiesgoController extends Controller
         $riesgo = Riesgo::findOrFail($id);
         $riesgo->delete();
         return response()->json(null, 204);
+    }
+
+    public function validarControl(Request $request, $riesgoId, $controlId)
+    {
+        $request->validate([
+            'estado_validacion' => 'required|string|in:Propuesto – pendiente de validación,Validado por el área'
+        ]);
+
+        $riesgo = Riesgo::findOrFail($riesgoId);
+        $control = $riesgo->controles()->findOrFail($controlId);
+
+        if ($request->estado_validacion === 'Validado por el área' && empty($control->evidencia_tipo) && empty($control->evidencia_referencia)) {
+            return response()->json(['message' => 'Para validar el control registra primero evidencia o referencia verificable.'], 400);
+        }
+
+        $control->estado_validacion = $request->estado_validacion;
+        $control->save();
+
+        return response()->json(['message' => 'Control actualizado correctamente', 'control' => $control]);
     }
 }

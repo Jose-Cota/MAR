@@ -79,9 +79,12 @@ export default function ReportesPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>Reportes</h1>
-          <p>Genera el PDF del Mapa de Riesgos o la MAR imprimible por área.</p>
+          <h1>Reportes y respaldos</h1>
+          <p>Formatos oficiales y anexos auxiliares de la Guía v2.</p>
         </div>
+      </div>
+      <div className="notice" style={{ backgroundColor: '#eef4f8', padding: '16px', borderRadius: '8px', marginBottom: '24px', color: '#142b45', borderLeft: '4px solid #0b3a63' }}>
+        <strong>Jerarquía documental:</strong> los Anexos A, B y C son instrumentos auxiliares y no sustituyen el Formato 1 – Mapa de Riesgos ni el Formato 2 – MAR.
       </div>
       <div className="grid-2">
         <section className="panel">
@@ -97,13 +100,26 @@ export default function ReportesPage() {
           </label>
           <div className="actions" style={{ marginTop: 14 }}>
             <button className="btn primary" onClick={() => navigate(`/reportes/mapa/${areaId}`)}>
-              Mapa de Riesgos / PDF
+              Formato 1 – Mapa / PDF
             </button>
             <button className="btn" onClick={() => navigate(`/reportes/mar/${areaId}`)}>
-              MAR imprimible
+              Formato 2 – MAR
             </button>
             <button className="btn" onClick={handleExportExcel}>
               Excel
+            </button>
+          </div>
+          
+          <h2 style={{ marginTop: '24px' }}>Anexos auxiliares Guía v2</h2>
+          <div className="actions" style={{ marginTop: 14 }}>
+            <button className="btn" onClick={() => navigate(`/reportes/anexo-a/${areaId}`)}>
+              Anexo A
+            </button>
+            <button className="btn" onClick={() => navigate(`/reportes/anexo-b/${areaId}`)}>
+              Anexo B
+            </button>
+            <button className="btn" onClick={() => navigate(`/reportes/anexo-c/${areaId}`)}>
+              Anexo C
             </button>
           </div>
         </section>

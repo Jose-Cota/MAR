@@ -75,9 +75,13 @@ export default function RiesgosPage() {
     setFormData(r ? {
       local_id: r.local_id,
       objetivo: r.objetivo || '',
+      efectos_consecuencias: r.efectos_consecuencias || '',
       riesgo: r.riesgo,
       factores: r.factores || '',
+      factores_internos: r.factores_internos || '',
+      factores_externos: r.factores_externos || '',
       control: (r.controles || [])[0]?.texto || '',
+      control_estado: (r.controles || [])[0]?.estado_validacion || 'Propuesto',
       ev_tipo: (r.controles || [])[0]?.evidencia_tipo || '',
       ev_ref: (r.controles || [])[0]?.evidencia_referencia || '',
       ev_periodo: (r.controles || [])[0]?.evidencia_periodicidad || '',
@@ -88,8 +92,10 @@ export default function RiesgosPage() {
       actividades: (r.actividades || []).map(a => String(a.id)),
     } : {
       local_id: '',
-      objetivo: '', riesgo: '', factores: '',
-      control: '', ev_tipo: '', ev_ref: '', ev_periodo: '', ev_resp: '',
+      objetivo: '', efectos_consecuencias: '', riesgo: '',
+      factores: '', factores_internos: '', factores_externos: '',
+      control: '', control_estado: 'Propuesto',
+      ev_tipo: '', ev_ref: '', ev_periodo: '', ev_resp: '',
       indicador: '', probabilidad: 2, impacto: 8, actividades: [],
     });
     setEditorAreaId(r ? r.area_id : areaId);
@@ -142,13 +148,17 @@ export default function RiesgosPage() {
       ejercicio_id: ejercicio,
       local_id: formData.local_id,
       objetivo: formData.objetivo,
+      efectos_consecuencias: formData.efectos_consecuencias,
       riesgo: formData.riesgo,
       factores: formData.factores,
+      factores_internos: formData.factores_internos,
+      factores_externos: formData.factores_externos,
       probabilidad: Number(formData.probabilidad),
       impacto: Number(formData.impacto),
       status: editRiesgo?.status || 'Borrador',
       controles: formData.control ? [{
         texto: formData.control,
+        estado_validacion: formData.control_estado || 'Propuesto',
         evidencia_tipo: formData.ev_tipo,
         evidencia_referencia: formData.ev_ref,
         evidencia_periodicidad: formData.ev_periodo,
@@ -399,28 +409,49 @@ export default function RiesgosPage() {
                 </div>
               );
             })()}
-            <label>Riesgo *
+            <label className="wide">Riesgo *
               <textarea className="input" required value={formData.riesgo} onChange={e => handleField('riesgo', e.target.value)} />
             </label>
             <label>Objetivo
               <textarea className="input" value={formData.objetivo} onChange={e => handleField('objetivo', e.target.value)} />
             </label>
-            <label>Factores de riesgo
-              <textarea className="input" value={formData.factores} onChange={e => handleField('factores', e.target.value)} />
-            </label>
-            <label>Control
-              <textarea className="input" value={formData.control} onChange={e => handleField('control', e.target.value)} />
+            <label>Efectos / consecuencias
+              <textarea className="input" value={formData.efectos_consecuencias} onChange={e => handleField('efectos_consecuencias', e.target.value)} />
             </label>
 
-            <div className="wide optional-box">
-              <b>Evidencia del control (opcional)</b>
-              <div className="form-grid compact" style={{ marginTop: 8, gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
-                <label>Tipo<input className="input" value={formData.ev_tipo} onChange={e => handleField('ev_tipo', e.target.value)} /></label>
-                <label>Referencia<input className="input" value={formData.ev_ref} onChange={e => handleField('ev_ref', e.target.value)} /></label>
-                <label>Periodicidad<input className="input" value={formData.ev_periodo} onChange={e => handleField('ev_periodo', e.target.value)} /></label>
-                <label>Responsable<input className="input" value={formData.ev_resp} onChange={e => handleField('ev_resp', e.target.value)} /></label>
+            {/* Sección Factores de Riesgo */}
+            <fieldset className="wide" style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
+              <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Factores de Riesgo</legend>
+              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <label>Factores internos
+                  <textarea className="input" value={formData.factores_internos} onChange={e => handleField('factores_internos', e.target.value)} />
+                </label>
+                <label>Factores externos
+                  <textarea className="input" value={formData.factores_externos} onChange={e => handleField('factores_externos', e.target.value)} />
+                </label>
               </div>
-            </div>
+            </fieldset>
+
+            {/* Sección Controles */}
+            <fieldset className="wide" style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
+              <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Controles</legend>
+              <div className="form-grid" style={{ gridTemplateColumns: '1fr', gap: '12px' }}>
+                <label>Control
+                  <textarea className="input" value={formData.control} onChange={e => handleField('control', e.target.value)} />
+                </label>
+                <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <label>Estado
+                    <select className="input" value={formData.control_estado} onChange={e => handleField('control_estado', e.target.value)}>
+                      <option value="Propuesto">Propuesto</option>
+                      <option value="Validado">Validado</option>
+                    </select>
+                  </label>
+                  <label>Evidencia
+                    <input className="input" placeholder="Enlace o referencia" value={formData.ev_ref} onChange={e => handleField('ev_ref', e.target.value)} />
+                  </label>
+                </div>
+              </div>
+            </fieldset>
 
             <label className="wide">Indicador
               <textarea className="input" value={formData.indicador} onChange={e => handleField('indicador', e.target.value)} />
@@ -471,6 +502,11 @@ export default function RiesgosPage() {
               </div>
 
               <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Efectos / consecuencias</div>
+                <div>{selectedRiesgo.efectos_consecuencias || '—'}</div>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Riesgo</div>
                 <div style={{ fontWeight: 'bold' }}>{selectedRiesgo.riesgo}</div>
               </div>
@@ -486,9 +522,15 @@ export default function RiesgosPage() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Factores</div>
-                <div>{selectedRiesgo.factores || '—'}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Factores internos</div>
+                  <div>{selectedRiesgo.factores_internos || '—'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#777', textTransform: 'uppercase', marginBottom: '4px' }}>Factores externos</div>
+                  <div>{selectedRiesgo.factores_externos || '—'}</div>
+                </div>
               </div>
 
               <div style={{ marginBottom: '20px' }}>
@@ -513,3 +555,6 @@ export default function RiesgosPage() {
           </div>
         </div>
       )}
+    </>
+  );
+}
