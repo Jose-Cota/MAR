@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import { Alert, Box, Button, Card, Container, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material';
 import Logo from '../../components/Logo';
@@ -30,6 +30,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -101,7 +107,7 @@ export default function Login() {
                 {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
               </Button>
               <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: 'text.secondary' }}>
-                Versión 1.0 (MAR 2027) | {new Date().toLocaleDateString()}
+                Versión 3.6 (MAR 2027) | {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}
               </Typography>
             </Stack>
           </Box>
