@@ -29,6 +29,8 @@ import DocumentosPage from '../pages/DocumentosPage';
 
 import RiesgosPage from '../pages/riesgos/RiesgosPage';
 import RiesgoEditorPage from '../pages/riesgos/RiesgoEditorPage';
+import FactoresPage from '../pages/riesgos/FactoresPage';
+import MapMarPage from '../pages/riesgos/MapMarPage';
 import POAPage from '../pages/poa/POAPage';
 import ReportsPage from '../pages/reports/ReportsPage';
 import ReportMap from '../pages/reports/ReportMap';
@@ -92,6 +94,8 @@ export default function AppRoutes() {
         <Route path="riesgos" element={<RiesgosPage />} />
         <Route path="riesgos/nuevo" element={<RiesgoEditorPage />} />
         <Route path="riesgos/:id" element={<RiesgoEditorPage />} />
+        <Route path="factores" element={<FactoresPage />} />
+        <Route path="mapmar" element={<MapMarPage />} />
         
         <Route path="poa" element={<POAPage />} />
         

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
 import useGlobalStore from '../../../stores/useGlobalStore';
+import AccountPopover from './AccountPopover';
 
 export default function DashboardHeader() {
   const { user } = useAuth();
@@ -31,9 +32,12 @@ export default function DashboardHeader() {
             <option value={2027}>2027</option>
           </select>
         </label>
-        <div className="userbox">
-          <b>{user?.name || 'Usuario'}</b>
-          <span>{roleLabel}</span>
+        <div className="userbox" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right' }}>
+            <b>{user?.name || 'Usuario'}</b>
+            <span>{roleLabel}</span>
+          </div>
+          <AccountPopover />
         </div>
       </div>
     </div>

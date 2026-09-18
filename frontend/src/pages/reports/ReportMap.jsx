@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
 
@@ -14,6 +14,7 @@ const quadrantFor = (p, i) => {
 export default function ReportMap() {
   const { areaId } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [riesgos, setRiesgos] = useState([]);
   const [area, setArea] = useState(null);
   const ejercicio = useGlobalStore((state) => state.ejercicio);
@@ -86,7 +87,11 @@ export default function ReportMap() {
           <p>{area?.nombre || area?.denominacion} · {ejercicio}</p>
         </div>
         <div>
-          <button className="btn" onClick={() => navigate('/reportes')}>Volver</button>{' '}
+          {state?.fromMapMAR ? (
+            <button className="btn" onClick={() => navigate('/mapmar', { state: { areaId: state.areaId } })}>Volver a MAPA y MAR</button>
+          ) : (
+            <button className="btn" onClick={() => navigate('/reportes')}>Volver</button>
+          )}{' '}
           <button className="btn primary" onClick={() => window.print()}>Imprimir / PDF</button>
         </div>
       </div>

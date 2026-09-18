@@ -105,7 +105,11 @@ class RiesgoController extends Controller
 
             DB::commit();
             \Log::info("Committed.");
-            return response()->json($riesgo->load(['controles', 'indicadores', 'actividades']), 201);
+            
+            $riesgoLoaded = $riesgo->load(['controles', 'indicadores', 'actividades']);
+            $this->syncPonencias($riesgoLoaded, $request);
+            
+            return response()->json($riesgoLoaded, 201);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error("Error in store: " . $e->getMessage());
@@ -152,7 +156,11 @@ class RiesgoController extends Controller
             }
 
             DB::commit();
-            return response()->json($riesgo->load(['controles', 'indicadores', 'actividades']));
+            
+            $riesgoLoaded = $riesgo->load(['controles', 'indicadores', 'actividades']);
+            $this->syncPonencias($riesgoLoaded, $request);
+            
+            return response()->json($riesgoLoaded);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
@@ -183,5 +191,91 @@ class RiesgoController extends Controller
         $control->save();
 
         return response()->json(['message' => 'Control actualizado correctamente', 'control' => $control]);
+    }
+
+    public function batchValidate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'area_id' => 'required',
+            'ejercicio_id' => 'required|integer',
+            'risk_ids' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            Riesgo::whereIn('id', $request->risk_ids)
+                ->where('area_id', $request->area_id)
+                ->where('ejercicio_id', $request->ejercicio_id)
+                ->update(['status' => 'Validado']);
+            
+            DB::commit();
+            return response()->json(['message' => 'Riesgos validados correctamente']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    private function syncPonencias(Riesgo $riesgo, Request $request)
+    {
+        $ponencias = ['PAAH', 'PJHR', 'POVR', 'PKSL', 'PLPJC'];
+        
+        if (!in_array($riesgo->area_id, $ponencias)) {
+            return;
+        }
+
+        // Extract the R part from local_id, e.g. PAAH-2026-R1 -> R1
+        $parts = explode('-', $riesgo->local_id);
+        $suffix = end($parts);
+        if (empty($suffix) || $suffix[0] !== 'R') {
+            return;
+        }
+
+        foreach ($ponencias as $ponenciaArea) {
+            if ($ponenciaArea === $riesgo->area_id) continue;
+
+            $expectedLocalId = $ponenciaArea . '-' . $riesgo->ejercicio_id . '-' . $suffix;
+            $peer = Riesgo::where('local_id', $expectedLocalId)
+                          ->where('ejercicio_id', $riesgo->ejercicio_id)
+                          ->first();
+
+            if ($peer) {
+                // Copy fields
+                $peer->update([
+                    'objetivo' => $riesgo->objetivo,
+                    'riesgo' => $riesgo->riesgo,
+                    'probabilidad' => $riesgo->probabilidad,
+                    'impacto' => $riesgo->impacto,
+                    'factores_internos' => $riesgo->factores_internos,
+                    'factores_externos' => $riesgo->factores_externos,
+                ]);
+
+                // Sync controls
+                if ($request->has('controles') && is_array($request->controles)) {
+                    $peer->controles()->delete();
+                    foreach ($request->controles as $c) {
+                        $newC = $c;
+                        unset($newC['id']); // Let DB auto-increment
+                        unset($newC['riesgo_id']);
+                        $peer->controles()->create($newC);
+                    }
+                }
+
+                // Sync indicators
+                if ($request->has('indicadores') && is_array($request->indicadores)) {
+                    $peer->indicadores()->delete();
+                    foreach ($request->indicadores as $i) {
+                        $newI = $i;
+                        unset($newI['id']);
+                        unset($newI['riesgo_id']);
+                        $peer->indicadores()->create($newI);
+                    }
+                }
+            }
+        }
     }
 }

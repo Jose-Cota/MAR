@@ -152,6 +152,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('unidades-medida', UnidadMedidaController::class);
     Route::apiResource('unidades-responsables', UnidadResponsableController::class);
     Route::apiResource('actividades-sustantivas', ActividadSustantivaController::class);
+    Route::post('riesgos/batch-validate', [RiesgoController::class, 'batchValidate']);
     Route::apiResource('riesgos', RiesgoController::class);
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
     Route::apiResource('indicadores', IndicadorController::class);

@@ -4,7 +4,7 @@ import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
 import useAuth from '../../hooks/useAuth';
 import { Edit, Delete, Visibility } from '@mui/icons-material';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, Popover } from '@mui/material';
 
 const cuadrante = (p, i) => {
   p = Number(p); i = Number(i);
@@ -30,6 +30,17 @@ export default function RiesgosPage() {
   const [selectedRiesgo, setSelectedRiesgo] = useState(null);
   const [actividades, setActividades] = useState([]);
   const [formData, setFormData] = useState({});
+  const [hoverAnchor, setHoverAnchor] = useState(null);
+  const [hoverRisk, setHoverRisk] = useState(null);
+  
+  const handlePopoverOpen = (event, r) => {
+    setHoverAnchor(event.currentTarget);
+    setHoverRisk(r);
+  };
+  const handlePopoverClose = () => {
+    setHoverAnchor(null);
+    setHoverRisk(null);
+  };
   const navigate = useNavigate();
   const ejercicio = useGlobalStore((s) => s.ejercicio);
   const { user } = useAuth();
@@ -279,7 +290,12 @@ export default function RiesgosPage() {
             </thead>
             <tbody>
               {filtrados.map(r => (
-                <tr key={r.id}>
+                <tr 
+                  key={r.id}
+                  onMouseEnter={(e) => handlePopoverOpen(e, r)}
+                  onMouseLeave={handlePopoverClose}
+                  style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f1f5f9' } }}
+                >
                   <td>{r.area?.nombre || r.area?.denominacion || areas.find(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id) === String(r.area_id))?.nombre || areas.find(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id) === String(r.area_id))?.denominacion || '—'}</td>
                   <td><b>{r.local_id}</b></td>
                   <td style={{ maxWidth: '400px' }}>
@@ -317,6 +333,62 @@ export default function RiesgosPage() {
           </table>
         )}
       </section>
+
+      <Popover
+        id="mouse-over-popover"
+        sx={{
+          pointerEvents: 'none',
+        }}
+        open={Boolean(hoverAnchor)}
+        anchorEl={hoverAnchor}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
+        disableScrollLock
+        PaperProps={{
+          elevation: 4,
+          sx: { borderRadius: '12px', mt: 1, p: 2, maxWidth: 500, minWidth: 350, border: '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }
+        }}
+      >
+        {hoverRisk && (
+          <div>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.1rem', color: '#1F4E79' }}>Ficha rápida · {hoverRisk.local_id}</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '8px' }}>
+              <div>
+                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Estado</span>
+                <div style={{ fontSize: '0.9rem' }}>{hoverRisk.status}</div>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>P / I</span>
+                <div style={{ fontSize: '0.9rem' }}>{hoverRisk.probabilidad} / {hoverRisk.impacto}</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Objetivo</span>
+              <div style={{ fontSize: '0.9rem' }}>{hoverRisk.objetivo || '—'}</div>
+            </div>
+
+            <div style={{ marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Riesgo</span>
+              <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#0f172a' }}>{hoverRisk.riesgo || '—'}</div>
+            </div>
+
+            <div>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Factores</span>
+              <div style={{ fontSize: '0.9rem' }}>{[hoverRisk.factores, hoverRisk.factores_internos, hoverRisk.factores_externos].filter(Boolean).join('; ') || '—'}</div>
+            </div>
+          </div>
+        )}
+      </Popover>
 
       {/* Premium Modal Editor */}
       {editorOpen && (

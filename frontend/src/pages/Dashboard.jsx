@@ -120,7 +120,7 @@ export default function Dashboard() {
             <div className="q2">QII <b>{s.q.QII}</b></div>
             <div className="q1">QI <b>{s.q.QI}</b></div>
             <div className="q3">QIII <b>{s.q.QIII}</b></div>
-            <div class="q4">QIV <b>{s.q.QIV}</b></div>
+            <div className="q4">QIV <b>{s.q.QIV}</b></div>
           </div>
           <p className="muted">La ubicación se recalcula automáticamente cuando cambian probabilidad o impacto.</p>
         </section>
