@@ -107,7 +107,7 @@ export default function Login() {
                 {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
               </Button>
               <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: 'text.secondary' }}>
-                Versión 3.6 (MAR 2027) | {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}
+                Versión 1.0  12 sept 2026  1033 hrs
               </Typography>
             </Stack>
           </Box>
