@@ -16,6 +16,11 @@ class RiesgoIndicador extends Model
         'nombre',
         'tipo',
         'periodicidad',
+        'formula',
+        'unidad',
+        'sentido',
+        'numerador',
+        'denominador',
     ];
 
     public function riesgo()

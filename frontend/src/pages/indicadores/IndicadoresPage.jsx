@@ -36,7 +36,7 @@ export default function IndicadoresPage() {
   };
 
   const getAreaName = (areaId) => {
-    const a = areas.find(x => String(x.id_unidad || x.id) === String(areaId));
+    const a = areas.find(x => String(x.unidad_responsable_gasto_id || x.id_unidad || x.id) === String(areaId));
     return a?.nombre || a?.denominacion || areaId;
   };
 
@@ -71,9 +71,9 @@ export default function IndicadoresPage() {
               {indicadores.map(({ r, i }, idx) => (
                 <tr key={idx}>
                   <td>{getAreaName(r.area_id)}</td>
-                  <td><b>{r.local_id}</b></td>
+                  <td>{r.local_id}</td>
                   <td>{i.nombre}</td>
-                  <td>{i.tipo || '—'}</td>
+                  <td>{i.tipo || 'Riesgo'}</td>
                   <td>{i.periodicidad || '—'}</td>
                 </tr>
               ))}

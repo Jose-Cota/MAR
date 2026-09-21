@@ -41,6 +41,8 @@ import ReportAnnexC from '../pages/reports/ReportAnnexC';
 import ControlesPage from '../pages/controles/ControlesPage';
 import IndicadoresPage from '../pages/indicadores/IndicadoresPage';
 import MARSeguimientoPage from '../pages/seguimiento/SeguimientoPage';
+import ConsolidacionPage from '../pages/admin/ConsolidacionPage';
+import MapaInstitucionalPage from '../pages/admin/MapaInstitucionalPage';
 
 const MODULE_ROUTES = [
   { path: '/planeacion/metas', title: 'Metas e indicadores' },
@@ -87,7 +89,7 @@ export default function AppRoutes() {
         <Route path="configuracion/mailing" element={<RoleGuard requiredPermission="Administrador"><MailingConfigPage /></RoleGuard>} />
 
         <Route path="admin/catalogos/modos" element={<RoleGuard requiredPermission="Etapas"><ModosPage /></RoleGuard>} />
-        <Route path="admin/usuarios" element={<RoleGuard requiredPermission="Usuarios y accesos"><UsuariosPage /></RoleGuard>} />
+        <Route path="admin/usuarios" element={<UsuariosPage />} />
         <Route path="admin/roles" element={<RoleGuard requiredPermission="Roles y permisos"><RolesPage /></RoleGuard>} />
 
         {/* MAR Routes */}
@@ -108,6 +110,8 @@ export default function AppRoutes() {
         <Route path="controles" element={<ControlesPage />} />
         <Route path="indicadores" element={<IndicadoresPage />} />
         <Route path="seguimiento" element={<MARSeguimientoPage />} />
+        <Route path="consolidacion" element={<ConsolidacionPage />} />
+        <Route path="mapa-institucional" element={<MapaInstitucionalPage />} />
 
         {MODULE_ROUTES.map((route) => (
           <Route key={route.path} path={route.path} element={<PlaceholderPage title={route.title} />} />

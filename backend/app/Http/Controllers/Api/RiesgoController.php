@@ -13,7 +13,7 @@ class RiesgoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Riesgo::with(['controles', 'indicadores', 'actividades']);
+        $query = Riesgo::with(['controles', 'indicadores', 'actividades', 'seguimientos_mensuales', 'evaluaciones_trimestrales']);
 
         if ($request->has('area_id')) {
             $query->where('area_id', $request->area_id);
@@ -29,7 +29,7 @@ class RiesgoController extends Controller
 
     public function show($id)
     {
-        $riesgo = Riesgo::with(['controles', 'indicadores', 'actividades'])->findOrFail($id);
+        $riesgo = Riesgo::with(['controles', 'indicadores', 'actividades', 'seguimientos_mensuales', 'evaluaciones_trimestrales'])->findOrFail($id);
         return response()->json($riesgo);
     }
 

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
 import useAuth from '../../hooks/useAuth';
 import { Edit, Delete, Visibility } from '@mui/icons-material';
-import { IconButton, Tooltip, Popover } from '@mui/material';
+import { IconButton, Tooltip, Popover, Snackbar, Alert } from '@mui/material';
 
 const cuadrante = (p, i) => {
   p = Number(p); i = Number(i);
@@ -32,6 +33,16 @@ export default function RiesgosPage() {
   const [formData, setFormData] = useState({});
   const [hoverAnchor, setHoverAnchor] = useState(null);
   const [hoverRisk, setHoverRisk] = useState(null);
+  const [expandedURs, setExpandedURs] = useState({});
+  const [errorMsg, setErrorMsg] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [riskToDelete, setRiskToDelete] = useState(null);
+
+  const showError = (msg) => {
+    setErrorMsg(msg);
+    setSnackbarOpen(true);
+  };
   
   const handlePopoverOpen = (event, r) => {
     setHoverAnchor(event.currentTarget);
@@ -147,11 +158,23 @@ export default function RiesgosPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!editorProyectoId) {
-      alert('Debe seleccionar un proyecto.');
+      showError('Debe seleccionar un proyecto.');
       return;
     }
     if (!formData.actividades || formData.actividades.length === 0) {
-      alert('Debe seleccionar al menos una actividad vinculada.');
+      showError('Debe seleccionar al menos una actividad vinculada (acción sustantiva).');
+      return;
+    }
+    if (!formData.objetivo || formData.objetivo.trim() === '') {
+      showError('Debe ingresar un objetivo.');
+      return;
+    }
+    if (formData.probabilidad === '' || formData.probabilidad === null || formData.probabilidad === undefined) {
+      showError('Debe ingresar una probabilidad.');
+      return;
+    }
+    if (formData.impacto === '' || formData.impacto === null || formData.impacto === undefined) {
+      showError('Debe ingresar un impacto.');
       return;
     }
     const payload = {
@@ -187,7 +210,7 @@ export default function RiesgosPage() {
       setEditorOpen(false);
       fetchRiesgos();
     } catch (err) {
-      alert('Error al guardar: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
+      showError('Error al guardar: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
     }
   };
 
@@ -210,14 +233,24 @@ export default function RiesgosPage() {
       });
       fetchRiesgos();
     } catch (err) {
-      alert('Error: ' + (err.response?.data?.message || err.message));
+      showError('Error: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Dar de baja este riesgo?')) return;
-    await axios.delete(`/riesgos/${id}`);
-    fetchRiesgos();
+  const confirmDelete = (id) => {
+    setRiskToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDelete = async () => {
+    setDeleteConfirmOpen(false);
+    if (!riskToDelete) return;
+    try {
+      await axios.delete(`/riesgos/${riskToDelete}`);
+      fetchRiesgos();
+    } catch (err) {
+      showError('Error al eliminar: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const filtrados = riesgos.filter(r =>
@@ -232,8 +265,8 @@ export default function RiesgosPage() {
     <>
       <div className="page-head">
         <div>
-          <h1>Riesgos / MAR</h1>
-          <p>Consulta y administración de riesgos por Unidad Responsable / Área.</p>
+          <h1>Objetivos y Riesgos</h1>
+          <p>Edición directa de objetivo, riesgo y valoración.</p>
         </div>
         <div className="head-actions">
           {canCapture && (
@@ -247,7 +280,6 @@ export default function RiesgosPage() {
           <div>
             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Área / Unidad Responsable</label>
             <select className="input" style={{ width: '100%' }} value={areaId} onChange={e => setAreaId(e.target.value)}>
-              <option value="">Todas las áreas asignadas</option>
               {areas.map((a, i) => (
                 <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
                   {a.nombre || a.denominacion}
@@ -262,77 +294,115 @@ export default function RiesgosPage() {
         </div>
       </section>
 
-      <div style={{ borderLeft: '4px solid #1F4E79', paddingLeft: '15px', color: '#555', marginBottom: '20px', backgroundColor: '#f9f9f9', padding: '10px 15px' }}>
-        Selecciona un área para visualizar únicamente sus riesgos. La selección no modifica los datos ni la trazabilidad.
-      </div>
 
-      <section className="panel">
-        <div className="panel-head" style={{ marginBottom: '15px' }}>
-          <h2 style={{ fontSize: '1rem', color: '#333' }}>
-            {areaId ? (areas.find(a => String(a.id_unidad || a.id) === areaId)?.nombre || areas.find(a => String(a.id_unidad || a.id) === areaId)?.denominacion) : 'Todas las áreas asignadas'} 
-            <span style={{ fontWeight: 'normal', color: '#666', marginLeft: '8px' }}>{filtrados.length} riesgo(s)</span>
-          </h2>
-        </div>
 
-        {loading ? (
-          <p>Cargando…</p>
-        ) : (
-          <table className="data-table">
-            <thead>
-              <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
-                <th style={{ color: '#fff' }}>Área</th>
-                <th style={{ color: '#fff' }}>Clave</th>
-                <th style={{ color: '#fff' }}>Riesgo</th>
-                <th style={{ color: '#fff' }}>P/I</th>
-                <th style={{ color: '#fff' }}>Estado</th>
-                <th style={{ color: '#fff' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map(r => (
-                <tr 
-                  key={r.id}
-                  onMouseEnter={(e) => handlePopoverOpen(e, r)}
-                  onMouseLeave={handlePopoverClose}
-                  style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f1f5f9' } }}
+      {loading ? (
+        <p>Cargando…</p>
+      ) : (
+        areas.map((area, i) => {
+          const urgId = String(area.unidad_responsable_gasto_id || area.id_unidad || area.id);
+          
+          if (areaId && areaId !== urgId) return null;
+
+          const areaName = area.nombre || area.denominacion || 'Área desconocida';
+          const title = `${areaName}`;
+          
+          // Filtrar los riesgos correspondientes a esta UR
+          const riesgosUR = filtrados.filter(r => String(r.area_id) === urgId);
+
+          const isExpanded = expandedURs[urgId] !== false;
+          const toggleExpanded = () => setExpandedURs(prev => ({ ...prev, [urgId]: isExpanded ? false : true }));
+
+          return (
+            <section className="panel" key={urgId || i} style={{ marginBottom: '24px' }}>
+              <div className="panel-head" style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                  {title}
+                  <span style={{ fontWeight: 'normal', color: '#666', marginLeft: '8px', fontSize: '1rem' }}>
+                    {riesgosUR.length} riesgo(s)
+                  </span>
+                </h2>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  style={{ 
+                    padding: '6px', 
+                    fontSize: '1.2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer'
+                  }} 
+                  onClick={toggleExpanded}
+                  title={isExpanded ? 'Comprimir' : 'Expandir'}
                 >
-                  <td>{r.area?.nombre || r.area?.denominacion || areas.find(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id) === String(r.area_id))?.nombre || areas.find(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id) === String(r.area_id))?.denominacion || '—'}</td>
-                  <td><b>{r.local_id}</b></td>
-                  <td style={{ maxWidth: '400px' }}>
-                    {r.riesgo}
-                  </td>
-                  <td>{r.probabilidad}/{r.impacto}</td>
-                  <td>{r.status}</td>
-                  <td style={{ width: '120px', verticalAlign: 'middle', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
-                      <Tooltip title="Editar">
-                        <IconButton size="small" color="primary" onClick={() => openEditor(r)}>
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Trazabilidad">
-                        <IconButton size="small" color="info" onClick={() => { setSelectedRiesgo(r); setFichaRapidaOpen(true); }}>
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Eliminar">
-                        <IconButton size="small" color="error" onClick={() => handleDelete(r.id)}>
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filtrados.length === 0 && (
-                <tr><td colSpan="6" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
-                  Sin riesgos encontrados.
-                </td></tr>
+                  {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+                </button>
+              </div>
+
+              {isExpanded && (
+                <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '16px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
+                      <th style={{ color: '#fff' }}>ID</th>
+                      <th style={{ color: '#fff' }}>Objetivo</th>
+                      <th style={{ color: '#fff' }}>Riesgo</th>
+                      <th style={{ color: '#fff' }}>P</th>
+                      <th style={{ color: '#fff' }}>I</th>
+                      <th style={{ color: '#fff' }}>Cuadrante</th>
+                      <th style={{ color: '#fff' }}>Estatus</th>
+                      <th style={{ color: '#fff' }}>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {riesgosUR.length > 0 ? (
+                      riesgosUR.map(r => (
+                        <tr 
+                          key={r.id}
+                          onMouseEnter={(e) => handlePopoverOpen(e, r)}
+                          onMouseLeave={handlePopoverClose}
+                          style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f1f5f9' } }}
+                        >
+                          <td><b>{r.local_id}</b></td>
+                          <td style={{ maxWidth: '300px' }}>{r.objetivo || '—'}</td>
+                          <td style={{ maxWidth: '300px' }}>{r.riesgo}</td>
+                          <td>{r.probabilidad}</td>
+                          <td>{r.impacto}</td>
+                          <td>{cuadrante(r.probabilidad, r.impacto)}</td>
+                          <td>{r.status}</td>
+                          <td style={{ width: '120px', verticalAlign: 'middle', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                              <Tooltip title="Editar">
+                                <IconButton size="small" color="primary" onClick={() => openEditor(r)}>
+                                  <Edit fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
+                              <Tooltip title="Eliminar">
+                                <IconButton size="small" color="error" onClick={() => confirmDelete(r.id)}>
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
+                          Sin riesgos encontrados en esta unidad.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               )}
-            </tbody>
-          </table>
-        )}
-      </section>
+            </section>
+          );
+        })
+      )}
 
       <Popover
         id="mouse-over-popover"
@@ -447,7 +517,7 @@ export default function RiesgosPage() {
                       </select>
                     </label>
                     <label style={{ display: 'block', fontWeight: 'bold' }}>
-                      Proyectos
+                      Proyectos *
                       <select 
                         className="input" 
                         style={{ width: '100%', marginTop: 5, fontWeight: 'normal' }}
@@ -465,7 +535,7 @@ export default function RiesgosPage() {
                   </div>
                   
                   <fieldset style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
-                    <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas</legend>
+                    <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas *</legend>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '180px', overflowY: 'auto', paddingRight: '8px' }}>
                       {actividades.filter(a => !editorProyectoId || String(a.proyecto_id) === editorProyectoId).map(a => (
                         <label className="check" key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', backgroundColor: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s', margin: 0, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
@@ -484,56 +554,26 @@ export default function RiesgosPage() {
             <label className="wide">Riesgo *
               <textarea className="input" required value={formData.riesgo} onChange={e => handleField('riesgo', e.target.value)} />
             </label>
-            <label>Objetivo
-              <textarea className="input" value={formData.objetivo} onChange={e => handleField('objetivo', e.target.value)} />
+            <label>Objetivo *
+              <textarea className="input" required value={formData.objetivo} onChange={e => handleField('objetivo', e.target.value)} />
             </label>
-            <label>Efectos / consecuencias
-              <textarea className="input" value={formData.efectos_consecuencias} onChange={e => handleField('efectos_consecuencias', e.target.value)} />
-            </label>
-
-            {/* Sección Factores de Riesgo */}
-            <fieldset className="wide" style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
-              <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Factores de Riesgo</legend>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <label>Factores internos
-                  <textarea className="input" value={formData.factores_internos} onChange={e => handleField('factores_internos', e.target.value)} />
-                </label>
-                <label>Factores externos
-                  <textarea className="input" value={formData.factores_externos} onChange={e => handleField('factores_externos', e.target.value)} />
-                </label>
-              </div>
-            </fieldset>
-
-            {/* Sección Controles */}
-            <fieldset className="wide" style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
-              <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Controles</legend>
-              <div className="form-grid" style={{ gridTemplateColumns: '1fr', gap: '12px' }}>
-                <label>Control
-                  <textarea className="input" value={formData.control} onChange={e => handleField('control', e.target.value)} />
-                </label>
-                <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <label>Estado
-                    <select className="input" value={formData.control_estado} onChange={e => handleField('control_estado', e.target.value)}>
-                      <option value="Propuesto">Propuesto</option>
-                      <option value="Validado">Validado</option>
-                    </select>
-                  </label>
-                  <label>Evidencia
-                    <input className="input" placeholder="Enlace o referencia" value={formData.ev_ref} onChange={e => handleField('ev_ref', e.target.value)} />
-                  </label>
-                </div>
-              </div>
-            </fieldset>
-
-            <label className="wide">Indicador
-              <textarea className="input" value={formData.indicador} onChange={e => handleField('indicador', e.target.value)} />
-            </label>
-            <label>Probabilidad (0–10)
-              <input type="number" min={0} max={10} step={1} className="input" value={formData.probabilidad} onChange={e => handleField('probabilidad', e.target.value)} />
-            </label>
-            <label>Impacto (0–10)
-              <input type="number" min={0} max={10} step={1} className="input" value={formData.impacto} onChange={e => handleField('impacto', e.target.value)} />
-            </label>
+            <div className="form-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '12px' }}>
+              <label>Probabilidad (0–10) *
+                <input type="number" min={0} max={10} step={1} className="input" required value={formData.probabilidad} onChange={e => handleField('probabilidad', e.target.value)} />
+              </label>
+              <label>Impacto (0–10) *
+                <input type="number" min={0} max={10} step={1} className="input" required value={formData.impacto} onChange={e => handleField('impacto', e.target.value)} />
+              </label>
+              <label>Cuadrante
+                <input 
+                  type="text" 
+                  className="input" 
+                  value={cuadrante(formData.probabilidad || 0, formData.impacto || 0)} 
+                  disabled 
+                  style={{ backgroundColor: '#f1f5f9', color: '#64748b', fontWeight: 'bold' }}
+                />
+              </label>
+            </div>
 
 
 
@@ -623,6 +663,42 @@ export default function RiesgosPage() {
             <div style={{ padding: '15px 20px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'center', gap: '15px', backgroundColor: '#f9f9f9', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px' }}>
               <button className="btn" onClick={() => setFichaRapidaOpen(false)}>Cerrar</button>
               <button className="btn primary" onClick={() => { setFichaRapidaOpen(false); openEditor(selectedRiesgo); }}>Abrir ficha completa</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Error Estilizado */}
+      {snackbarOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', width: '400px', maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', color: '#d32f2f' }}>
+              <Iconify icon="ph:x-circle-fill" sx={{ width: 32, height: 32, marginRight: '12px' }} />
+              <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Error</h3>
+            </div>
+            <p style={{ margin: '0 0 24px 0', color: '#475569', fontSize: '1rem', lineHeight: 1.5 }}>
+              {errorMsg}
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn primary" onClick={() => setSnackbarOpen(false)}>Aceptar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {deleteConfirmOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', width: '400px', maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <h3 style={{ margin: '0 0 16px', color: '#0f172a', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Delete color="error" /> Confirmar baja
+            </h3>
+            <p style={{ margin: '0 0 24px', color: '#475569', fontSize: '1rem' }}>
+              ¿Estás seguro de que deseas dar de baja este riesgo?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button className="btn" onClick={() => setDeleteConfirmOpen(false)}>Cancelar</button>
+              <button className="btn" style={{ backgroundColor: '#ef4444', borderColor: '#ef4444', color: '#fff' }} onClick={handleDelete}>Sí, dar de baja</button>
             </div>
           </div>
         </div>

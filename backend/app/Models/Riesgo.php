@@ -43,4 +43,14 @@ class Riesgo extends Model
     {
         return $this->belongsToMany(ActividadSustantiva::class, 'actividad_riesgo', 'riesgo_id', 'actividad_sustantiva_id')->withTimestamps();
     }
+
+    public function seguimientos_mensuales()
+    {
+        return $this->hasMany(RiesgoSeguimientoMensual::class, 'riesgo_id');
+    }
+
+    public function evaluaciones_trimestrales()
+    {
+        return $this->hasMany(RiesgoEvaluacionTrimestral::class, 'riesgo_id');
+    }
 }

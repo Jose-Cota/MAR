@@ -86,11 +86,12 @@ export default function ReportesPage() {
       <div className="notice" style={{ backgroundColor: '#eef4f8', padding: '16px', borderRadius: '8px', marginBottom: '24px', color: '#142b45', borderLeft: '4px solid #0b3a63' }}>
         <strong>Jerarquía documental:</strong> los Anexos A, B y C son instrumentos auxiliares y no sustituyen el Formato 1 – Mapa de Riesgos ni el Formato 2 – MAR.
       </div>
-      <div className="grid-2">
-        <section className="panel">
-          <h2>Reportes por área</h2>
-          <label style={{ fontWeight: 600 }}>Área
-            <select className="input" style={{ width: '100%' }} value={areaId} onChange={e => setAreaId(e.target.value)}>
+      <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px' }}>
+        <section className="panel" style={{ padding: '24px' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Formatos oficiales por área</h2>
+          <label style={{ display: 'block', marginBottom: '20px' }}>
+            <b style={{ display: 'block', marginBottom: '8px', color: '#5b6773', fontSize: '0.9rem' }}>Área</b>
+            <select className="input" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d8e0e8' }} value={areaId} onChange={e => setAreaId(e.target.value)}>
               {areas.map((a, i) => (
                 <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
                   {a.nombre || a.denominacion}
@@ -98,7 +99,7 @@ export default function ReportesPage() {
               ))}
             </select>
           </label>
-          <div className="actions" style={{ marginTop: 14 }}>
+          <div className="actions" style={{ display: 'flex', gap: '12px', marginBottom: '15px', flexWrap: 'wrap' }}>
             <button className="btn primary" onClick={() => navigate(`/reportes/mapa/${areaId}`)}>
               Formato 1 – Mapa / PDF
             </button>
@@ -110,8 +111,8 @@ export default function ReportesPage() {
             </button>
           </div>
           
-          <h2 style={{ marginTop: '24px' }}>Anexos auxiliares Guía v2</h2>
-          <div className="actions" style={{ marginTop: 14 }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d', marginTop: '30px' }}>Anexos auxiliares Guía v2</h2>
+          <div className="actions" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button className="btn" onClick={() => navigate(`/reportes/anexo-a/${areaId}`)}>
               Anexo A
             </button>

@@ -24,12 +24,16 @@ class POAFichasController extends Controller
         $ejercicio_db_id = $ejercicioRow ? $ejercicioRow->ejercicio_id : $ejercicio_id;
 
         // Fetch projects (proyectos)
-        $proyectos = DB::table('proyectos')
+        $query = DB::table('proyectos')
             ->join('responsables_operativos', 'proyectos.responsable_operativo_id', '=', 'responsables_operativos.responsable_operativo_id')
             ->where('proyectos.ejercicio_id', $ejercicio_db_id)
-            ->where('responsables_operativos.unidad_responsable_gasto_id', $area_id)
-            ->select('proyectos.*', 'proyectos.proyecto_id as id') // Ensure id is accessible
-            ->get();
+            ->select('proyectos.*', 'proyectos.proyecto_id as id', 'responsables_operativos.unidad_responsable_gasto_id as urg_id');
+
+        if ($area_id !== 'todas') {
+            $query->where('responsables_operativos.unidad_responsable_gasto_id', $area_id);
+        }
+
+        $proyectos = $query->get();
 
         foreach ($proyectos as $p) {
             // Fetch goals (metas)
@@ -42,8 +46,8 @@ class POAFichasController extends Controller
                 ->where('proyecto_id', $p->id)
                 ->get();
 
-            // Fetch actions — la tabla POA usa acciones_sustantivas (no actividades_sustantivas)
-            $p->acciones = DB::table('acciones_sustantivas')
+            // Fetch actions — la tabla POA debe usar actividades_sustantivas de la UR
+            $p->acciones = DB::table('actividades_sustantivas')
                 ->where('proyecto_id', $p->id)
                 ->get();
 
@@ -51,7 +55,7 @@ class POAFichasController extends Controller
             foreach ($p->acciones as $accion) {
                 $accion->riesgos_vinculados = DB::table('actividad_riesgo')
                     ->join('riesgos', 'actividad_riesgo.riesgo_id', '=', 'riesgos.id')
-                    ->where('actividad_riesgo.actividad_sustantiva_id', $accion->accion_sustantiva_id)
+                    ->where('actividad_riesgo.actividad_sustantiva_id', $accion->id)
                     ->select('riesgos.id', 'riesgos.local_id', 'riesgos.riesgo')
                     ->get();
             }

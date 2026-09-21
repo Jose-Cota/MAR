@@ -115,11 +115,12 @@ export default function MapMarPage() {
         </div>
       </div>
 
-      <section className="panel" style={{ padding: '20px', marginBottom: '20px' }}>
-        <div className="toolbar" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <label style={{ minWidth: '360px', flex: 1 }}>
-            <b style={{ display: 'block', marginBottom: '5px' }}>Área / Unidad Responsable</b>
-            <select className="input" value={areaId} onChange={e => setAreaId(e.target.value)}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+        <section className="panel" style={{ padding: '24px' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz de Administración de Riesgos</h2>
+          <label style={{ display: 'block', marginBottom: '20px' }}>
+            <b style={{ display: 'block', marginBottom: '8px', color: '#5b6773', fontSize: '0.9rem' }}>Área / Unidad Responsable</b>
+            <select className="input" value={areaId} onChange={e => setAreaId(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d8e0e8' }}>
               {areas.length === 0 && <option value="">Sin áreas asignadas</option>}
               {areas.map((a, i) => (
                 <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
@@ -128,69 +129,25 @@ export default function MapMarPage() {
               ))}
             </select>
           </label>
-          <button className="btn" onClick={handleVerMapa}>Ver Mapa de Riesgos</button>
-          <button className="btn" onClick={() => navigate(`/reportes/mar/${areaId}`, { state: { fromMapMAR: true, areaId } })}>Ver Reporte Institucional</button>
-          <button className="btn primary" onClick={handleBatchValidate}>Validar datos del área</button>
-        </div>
-
-        {areaId && !loading && (
-          <div className={`notice ${allValidated ? 'success' : ''}`} style={{ marginTop: '15px', backgroundColor: allValidated ? '#e6f4ea' : '#edf5fb', borderLeftColor: allValidated ? '#34a853' : '#2d75b8' }}>
-            {allValidated ? 'Todos los riesgos del área están validados.' : 'La validación integral requiere que todos los riesgos del área queden validados.'}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '15px' }}>
+            <button className="btn primary" onClick={handleVerMapa}>Mapa / PDF</button>
+            <button className="btn" onClick={() => navigate(`/reportes/mar/${areaId}`, { state: { fromMapMAR: true, areaId } })}>MAR imprimible</button>
           </div>
-        )}
-      </section>
+          <p style={{ color: '#8898a9', fontSize: '0.9rem', margin: 0 }}>Estas vistas utilizan el mismo formato disponible en Reportes.</p>
+        </section>
 
-      <section className="panel">
-        {loading ? (
-          <p>Cargando información del área...</p>
-        ) : !areaId ? (
-          <div className="empty">Seleccione un área para visualizar.</div>
-        ) : (
-          <table className="data-table" style={{ fontSize: '0.9rem' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
-                <th style={{ color: '#fff' }}>ID</th>
-                <th style={{ color: '#fff' }}>Objetivo</th>
-                <th style={{ color: '#fff', width: '20%' }}>Riesgo</th>
-                <th style={{ color: '#fff', width: '20%' }}>Factores</th>
-                <th style={{ color: '#fff' }}>Controles</th>
-                <th style={{ color: '#fff' }}>Indicadores</th>
-                <th style={{ color: '#fff' }}>P</th>
-                <th style={{ color: '#fff' }}>I</th>
-                <th style={{ color: '#fff' }}>Cuadrante</th>
-                <th style={{ color: '#fff' }}>Estatus</th>
-              </tr>
-            </thead>
-            <tbody>
-              {riesgos.map(r => {
-                const ctrls = (r.controles || []).map(c => c.texto).filter(Boolean).join('; ') || '—';
-                const inds = (r.indicadores || []).map(i => i.nombre).filter(Boolean).join('; ') || '—';
-                const qd = cuadrante(r.probabilidad || 0, r.impacto || 0);
-
-                return (
-                  <tr key={r.id} style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f1f5f9' } }}>
-                    <td><b>{r.local_id}</b></td>
-                    <td>{r.objetivo || '—'}</td>
-                    <td>{r.riesgo}</td>
-                    <td>{getFactorsText(r)}</td>
-                    <td>{ctrls}</td>
-                    <td>{inds}</td>
-                    <td>{r.probabilidad}</td>
-                    <td>{r.impacto}</td>
-                    <td><span className={`badge ${qd.toLowerCase()}`}>{qd}</span></td>
-                    <td><span className="status">{r.status}</span></td>
-                  </tr>
-                );
-              })}
-              {riesgos.length === 0 && (
-                <tr><td colSpan="10" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
-                  No hay riesgos para mostrar.
-                </td></tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </section>
+        <section className="panel" style={{ padding: '24px' }}>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Validación del área</h2>
+          
+          <div className={`notice ${allValidated ? 'success' : ''}`} style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', backgroundColor: allValidated ? '#e6f4ea' : '#edf5fb', borderLeft: `4px solid ${allValidated ? '#34a853' : '#2d75b8'}` }}>
+            <p style={{ margin: 0, color: allValidated ? '#137333' : '#17324d' }}>
+              {allValidated ? 'Todos los riesgos del área están validados.' : 'Para validar integralmente, todos los riesgos deben encontrarse En revisión.'}
+            </p>
+          </div>
+          
+          <button className="btn primary" onClick={handleBatchValidate}>Validar datos del área</button>
+        </section>
+      </div>
     </>
   );
 }

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
 import useAuth from '../../hooks/useAuth';
+import { Edit, Save, Close } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
 
 export default function FactoresPage() {
   const [riesgos, setRiesgos] = useState([]);
@@ -10,14 +12,15 @@ export default function FactoresPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   
+  const [editingId, setEditingId] = useState(null);
+  const [editFactorText, setEditFactorText] = useState('');
+  
   const ejercicio = useGlobalStore((s) => s.ejercicio);
   const { hasRole } = useAuth();
   
   const isSuperAdmin = hasRole('Super Administrador') || hasRole('superadmin') || hasRole('Admin');
 
   useEffect(() => {
-    // Si no es super admin, las areas serian solo las asignadas (el backend ya deberia filtrar si es necesario, 
-    // pero aqui asumiremos que /unidades-responsables retorna las correctas para el usuario)
     axios.get('/unidades-responsables').then(res => {
       const data = res.data.data || res.data;
       setAreas(data);
@@ -43,21 +46,19 @@ export default function FactoresPage() {
     }
   };
 
-  const getFactors = (r) => {
-    const arr = [];
-    if (r.factores) arr.push(...r.factores.split(';').map(s => s.trim()).filter(Boolean));
-    if (r.factores_internos) arr.push(...r.factores_internos.split(';').map(s => s.trim()).filter(Boolean));
-    if (r.factores_externos) arr.push(...r.factores_externos.split(';').map(s => s.trim()).filter(Boolean));
-    // deduplicate
-    return [...new Set(arr)];
+  const handleSave = async (id) => {
+    try {
+      await axios.put(`/riesgos/${id}`, { factores_internos: editFactorText });
+      setEditingId(null);
+      fetchRiesgos();
+    } catch (err) {
+      alert('Error al guardar: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  const filtrados = riesgos.map(r => ({
-    ...r, 
-    factorList: getFactors(r)
-  })).filter(r => 
+  const filtrados = riesgos.filter(r => 
     !search || 
-    (r.local_id + ' ' + r.riesgo + ' ' + r.factorList.join(' ')).toLowerCase().includes(search.toLowerCase())
+    (r.local_id + ' ' + r.riesgo + ' ' + (r.factores_internos || '')).toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -91,7 +92,7 @@ export default function FactoresPage() {
 
       <section className="panel">
         {loading ? (
-          <p>Cargando factores...</p>
+          <p style={{ padding: '20px' }}>Cargando factores...</p>
         ) : (
           <table className="data-table">
             <thead>
@@ -99,30 +100,32 @@ export default function FactoresPage() {
                 <th style={{ color: '#fff', width: '80px' }}>ID</th>
                 <th style={{ color: '#fff', width: '40%' }}>Riesgo</th>
                 <th style={{ color: '#fff' }}>Factores de riesgo</th>
+                <th style={{ color: '#fff', width: '100px', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filtrados.map(r => (
-                <tr key={r.id} style={{ transition: 'background-color 0.2s' }}>
-                  <td><b>{r.local_id}</b></td>
-                  <td>{r.riesgo}</td>
-                  <td>
-                    {r.factorList.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {r.factorList.map((f, i) => (
-                          <div key={i} style={{ backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}>
-                            <b>{i + 1}.</b> {f}
-                          </div>
-                        ))}
+                  <tr key={r.id} style={{ transition: 'background-color 0.2s', verticalAlign: 'top' }}>
+                    <td style={{ paddingTop: '15px' }}><b>{r.local_id}</b></td>
+                    <td style={{ paddingTop: '15px' }}>{r.riesgo}</td>
+                    <td style={{ paddingTop: '15px' }}>
+                      <div style={{ whiteSpace: 'pre-wrap', color: r.factores_internos ? 'inherit' : '#64748b', backgroundColor: r.factores_internos ? 'transparent' : '#f8fafc', padding: r.factores_internos ? '0' : '8px', borderRadius: '4px' }}>
+                        {r.factores_internos || 'Sin factores registrados'}
                       </div>
-                    ) : (
-                      <span className="muted">—</span>
-                    )}
-                  </td>
-                </tr>
+                    </td>
+                    <td style={{ paddingTop: '15px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <Tooltip title="Editar">
+                          <IconButton size="small" color="primary" onClick={() => { setEditingId(r.id); setEditFactorText(r.factores_internos || ''); }}>
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
+                    </td>
+                  </tr>
               ))}
               {filtrados.length === 0 && (
-                <tr><td colSpan="3" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
+                <tr><td colSpan="4" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
                   No hay factores para mostrar.
                 </td></tr>
               )}
@@ -130,6 +133,29 @@ export default function FactoresPage() {
           </table>
         )}
       </section>
+
+      {/* Modal de edición */}
+      {editingId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', width: '600px', maxWidth: '90%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <h3 style={{ margin: '0 0 16px', color: '#0f172a', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Edit color="primary" /> Editar factor de riesgo
+            </h3>
+            <div style={{ marginBottom: '24px' }}>
+              <textarea
+                className="input"
+                style={{ width: '100%', minHeight: '120px', resize: 'vertical' }}
+                value={editFactorText}
+                onChange={(e) => setEditFactorText(e.target.value)}
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button className="btn" onClick={() => setEditingId(null)}>Cancelar</button>
+              <button className="btn primary" onClick={() => handleSave(editingId)}>Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

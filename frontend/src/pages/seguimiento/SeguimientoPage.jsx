@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
+import useAuth from '../../hooks/useAuth';
+import EvaluacionTrimestralModal from './EvaluacionTrimestralModal';
 
 const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
@@ -12,19 +14,25 @@ const cuadrante = (p, i) => {
   return 'QIV';
 };
 
-const trimestreLabel = (q) => {
-  const ranges = { 1: 'Ene–Mar', 2: 'Abr–Jun', 3: 'Jul–Sep', 4: 'Oct–Dic' };
-  return ranges[q] || `T${q}`;
+const trimestreLabel = (q, y) => {
+  if (y === 2026 && q <= 3) return 'Integración inicial 2026';
+  return 'Seguimiento ordinario';
 };
 
 export default function SeguimientoPage() {
   const [areas, setAreas] = useState([]);
   const [areaId, setAreaId] = useState('');
   const [riesgos, setRiesgos] = useState([]);
-  const [seguimiento, setSeguimiento] = useState({}); // { riesgoId_mes: valor }
-  const [evaluaciones, setEvaluaciones] = useState({}); // { riesgoId_trimestre: { probabilidad, impacto, obs } }
+  const [seguimientos, setSeguimientos] = useState({}); // { riesgoId_mes: { numerador, denominador, valor } }
+  const [evaluaciones, setEvaluaciones] = useState({}); // { riesgoId_trimestre: { ...data } }
   const [loading, setLoading] = useState(false);
+  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeRiesgo, setActiveRiesgo] = useState(null);
+  const [activeQuarter, setActiveQuarter] = useState(null);
+
   const ejercicio = useGlobalStore((s) => s.ejercicio);
+  const user = useAuth().user;
 
   useEffect(() => {
     axios.get('/unidades-responsables').then(res => {
@@ -35,82 +43,109 @@ export default function SeguimientoPage() {
   }, []);
 
   useEffect(() => {
-    if (!areaId) return;
+    if (!areaId || !ejercicio) return;
     setLoading(true);
     axios.get(`/riesgos?ejercicio_id=${ejercicio}&area_id=${areaId}`)
       .then(res => {
         const data = res.data.data || res.data;
         setRiesgos(data);
-        // Pre-populate seguimiento from existing data
         const seg = {};
         const eval_ = {};
         data.forEach(r => {
-          (r.seguimiento_mensual || []).forEach(sm => {
-            seg[`${r.id}_${sm.mes}`] = sm.valor ?? '';
+          (r.seguimientos_mensuales || []).forEach(sm => {
+            seg[`${r.id}_${sm.mes}`] = {
+              numerador: sm.numerador ?? '',
+              denominador: sm.denominador ?? '',
+              valor: sm.valor ?? ''
+            };
           });
-          (r.seguimiento_trimestral || []).forEach(st => {
-            eval_[`${r.id}_${st.trimestre}`] = { probabilidad: st.probabilidad, impacto: st.impacto, obs: st.observacion || '' };
+          (r.evaluaciones_trimestrales || []).forEach(st => {
+            eval_[`${r.id}_${st.trimestre}`] = st;
           });
         });
-        setSeguimiento(seg);
+        setSeguimientos(seg);
         setEvaluaciones(eval_);
       })
       .catch(() => setRiesgos([]))
       .finally(() => setLoading(false));
   }, [areaId, ejercicio]);
 
-  const handleMesChange = async (riesgoId, mes, valor) => {
+  const handleNDChange = async (riesgoId, mes, field, rawValue) => {
     const key = `${riesgoId}_${mes}`;
-    setSeguimiento(prev => ({ ...prev, [key]: valor }));
-    try {
-      await axios.post('/riesgos/seguimiento-mensual', {
+    const value = rawValue === '' ? '' : Number(rawValue);
+
+    setSeguimientos(prev => {
+      const current = prev[key] || { numerador: '', denominador: '', valor: '' };
+      const updated = { ...current, [field]: value };
+      
+      let finalValor = '';
+      if (updated.numerador !== '' && updated.denominador !== '' && Number(updated.denominador) > 0) {
+        finalValor = (Number(updated.numerador) / Number(updated.denominador)) * 100;
+      }
+      updated.valor = finalValor;
+
+      // Make API call inside state updater logic or use a timeout to avoid blocking.
+      // We do it asynchronously here:
+      axios.post('/riesgos/seguimiento-mensual', {
         riesgo_id: riesgoId,
         ejercicio_id: ejercicio,
         mes,
-        valor: valor === '' ? null : Number(valor),
-      });
-    } catch { /* ignore */ }
+        numerador: updated.numerador === '' ? null : updated.numerador,
+        denominador: updated.denominador === '' ? null : updated.denominador,
+        valor: updated.valor === '' ? null : updated.valor,
+      }).catch(err => console.error(err));
+
+      return { ...prev, [key]: updated };
+    });
   };
 
-  const handleRegistrarEvaluacion = async (r, q) => {
-    const currentEval = evaluaciones[`${r.id}_${q}`];
-    const pVal = prompt(`T${q} — Probabilidad de seguimiento (0-10):`, currentEval?.probabilidad ?? r.probabilidad);
-    if (pVal === null) return;
-    const iVal = prompt(`T${q} — Impacto de seguimiento (0-10):`, currentEval?.impacto ?? r.impacto);
-    if (iVal === null) return;
-    const obs = prompt('Observaciones del trimestre (opcional):', currentEval?.obs || '') || '';
+  const openEvaluacionModal = (r, q) => {
+    setActiveRiesgo(r);
+    setActiveQuarter(q);
+    setModalOpen(true);
+  };
 
-    const evalData = { probabilidad: Number(pVal), impacto: Number(iVal), obs };
-    setEvaluaciones(prev => ({ ...prev, [`${r.id}_${q}`]: evalData }));
+  const handleSaveEvaluacion = async (data) => {
+    const { trimestre } = data;
+    const key = `${activeRiesgo.id}_${trimestre}`;
+    
+    // Add missing defaults
+    if (!data.responsable) data.responsable = user?.name || '';
+    if (!data.etiqueta) data.etiqueta = trimestreLabel(trimestre, Number(ejercicio));
+
+    setEvaluaciones(prev => ({ ...prev, [key]: data }));
+    setModalOpen(false);
 
     try {
-      await axios.post('/riesgos/seguimiento-trimestral', {
-        riesgo_id: r.id,
+      await axios.post('/riesgos/evaluacion-trimestral', {
+        riesgo_id: activeRiesgo.id,
         ejercicio_id: ejercicio,
-        trimestre: q,
-        probabilidad: Number(pVal),
-        impacto: Number(iVal),
-        observacion: obs,
+        ...data,
       });
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.error(e);
+      alert('Error guardando la evaluación trimestral.');
+    }
   };
 
   const getTrimestrePromedio = (riesgoId, q) => {
     const meses = [1,2,3].map(m => (q-1)*3 + m);
     const vals = meses
-      .map(m => seguimiento[`${riesgoId}_${m}`])
-      .filter(v => v !== '' && v !== undefined && !isNaN(Number(v)))
+      .map(m => seguimientos[`${riesgoId}_${m}`]?.valor)
+      .filter(v => v !== '' && v !== null && v !== undefined && !isNaN(Number(v)))
       .map(Number);
     if (!vals.length) return '—';
     return (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) + '%';
   };
+
+  const escapeHtml = (text) => text; // React escapes by default
 
   return (
     <>
       <div className="page-head">
         <div>
           <h1>Seguimiento POA–MAR</h1>
-          <p>Indicadores mensuales y evaluación trimestral del riesgo.</p>
+          <p>Capture numerador y denominador; el resultado porcentual se calcula automáticamente.</p>
         </div>
         <select className="input" style={{ maxWidth: 320 }} value={areaId} onChange={e => setAreaId(e.target.value)}>
           {areas.map((a, i) => (
@@ -121,63 +156,118 @@ export default function SeguimientoPage() {
         </select>
       </div>
 
+      {Number(ejercicio) === 2026 && (
+        <div style={{
+          padding: '16px 20px', 
+          backgroundColor: '#f0f5fa', 
+          borderLeft: '4px solid #0b3a63', 
+          borderRadius: '4px',
+          color: '#142b45',
+          marginBottom: '20px'
+        }}>
+          <strong>Implementación 2026:</strong> T1, T2 y T3 son integración inicial retrospectiva enero–septiembre; T4 es seguimiento ordinario.
+        </div>
+      )}
+
       {loading && <div className="notice">Cargando…</div>}
 
       {!loading && riesgos.length === 0 && (
         <div className="empty">Sin riesgos registrados para esta área.</div>
       )}
 
-      {riesgos.map(r => (
-        <section className="panel follow-card" key={r.id}>
-          <div className="follow-title">
-            <div><b>{r.local_id}</b> {r.riesgo}</div>
-            <span className={`badge ${cuadrante(r.probabilidad, r.impacto).toLowerCase()}`}>
-              {cuadrante(r.probabilidad, r.impacto)}
-            </span>
-          </div>
+      {riesgos.map(r => {
+        const i = (r.indicadores || [])[0] || {};
+        const isIncidenciaOrDirect = i.unidad === 'Incidencia' || (!i.numerador && !i.denominador);
+        const formulaDisplay = isIncidenciaOrDirect 
+          ? (i.formula || i.nombre || 'Resultado') 
+          : 'Resultado = (N / D) × 100';
 
-          {/* Captura mensual */}
-          <div className="month-grid" style={{ marginTop: 12 }}>
-            {MESES.map((mes, mi) => {
-              const mesNum = mi + 1;
-              const key = `${r.id}_${mesNum}`;
-              return (
-                <label key={mes}>
-                  {mes}
-                  <input
-                    className="input month-val"
-                    type="number"
-                    step="0.01"
-                    placeholder="%"
-                    value={seguimiento[key] ?? ''}
-                    onChange={e => handleMesChange(r.id, mesNum, e.target.value)}
-                  />
-                </label>
-              );
-            })}
-          </div>
+        return (
+          <section className="panel follow-card" key={r.id}>
+            <div className="follow-title">
+              <div><b>{r.local_id}</b> {escapeHtml(r.riesgo)}</div>
+              <span className={`badge ${cuadrante(r.probabilidad, r.impacto).toLowerCase()}`}>
+                {cuadrante(r.probabilidad, r.impacto)}
+              </span>
+            </div>
 
-          {/* Evaluaciones trimestrales */}
-          <div className="quarters">
-            {[1, 2, 3, 4].map(q => {
-              const eval_ = evaluaciones[`${r.id}_${q}`];
-              const prom = getTrimestrePromedio(r.id, q);
-              return (
-                <div className="quarter" key={q}>
-                  <b>T{q}</b>
-                  <span>{trimestreLabel(q)}</span>
-                  <small>Promedio POA: {prom}</small>
-                  <div>P/I seguimiento: {eval_ ? `${eval_.probabilidad}/${eval_.impacto}` : 'sin capturar'}</div>
-                  {eval_?.obs && <small style={{ color: '#6f8294' }}>Obs: {eval_.obs}</small>}
-                  <button className="icon-btn qreview" onClick={() => handleRegistrarEvaluacion(r, q)}>
-                    Registrar evaluación
-                  </button>
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ 
+                display: 'inline-block', 
+                backgroundColor: '#f1f5f9', 
+                padding: '8px 16px', 
+                borderRadius: '8px', 
+                fontWeight: 'bold', 
+                color: '#0b3a63',
+                marginBottom: '16px',
+                border: '1px solid #e2e8f0'
+              }}>
+                {formulaDisplay}
+              </div>
+              {(i.numerador || i.denominador) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: '#142b45', fontSize: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <b style={{ color: '#0b3a63' }}>N</b>
+                      <b style={{ color: '#0b3a63' }}>=</b>
+                    </div>
+                    <span style={{ paddingTop: '2px' }}>{i.numerador || 'Numerador'}</span>
+                  </div>
+                  {i.denominador && (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <b style={{ color: '#0b3a63' }}>D</b>
+                        <b style={{ color: '#0b3a63' }}>=</b>
+                      </div>
+                      <span style={{ paddingTop: '2px' }}>{i.denominador}</span>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+              )}
+            </div>
+
+            {/* Captura mensual */}
+            <div className="month-grid">
+              {MESES.map((mes, mi) => {
+                const mesNum = mi + 1;
+                const key = `${r.id}_${mesNum}`;
+                const segData = seguimientos[key] || {};
+                
+                return (
+                  <label key={mes}>
+                    {mes}
+                    <small>N</small>
+                    <input
+                      className="input v40Numerator"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={segData.numerador ?? ''}
+                      onChange={e => handleNDChange(r.id, mesNum, 'numerador', e.target.value)}
+                    />
+                    <small>D</small>
+                    <input
+                      className="input v40Denominator"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={segData.denominador ?? ''}
+                      onChange={e => handleNDChange(r.id, mesNum, 'denominador', e.target.value)}
+                    />
+                    <output className="v40Result">
+                      {segData.valor !== '' && segData.valor !== undefined && segData.valor !== null && !isNaN(Number(segData.valor))
+                        ? Number(segData.valor).toFixed(1) + '%'
+                        : '—'}
+                    </output>
+                  </label>
+                );
+              })}
+            </div>
+
+          </section>
+        );
+      })}
+
     </>
   );
 }

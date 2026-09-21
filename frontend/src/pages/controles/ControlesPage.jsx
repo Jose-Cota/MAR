@@ -1,114 +1,130 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
+import { Edit, Delete } from '@mui/icons-material';
+import { IconButton, Tooltip } from '@mui/material';
 
 export default function ControlesPage() {
-  const [controles, setControles] = useState([]);
+  const [riesgos, setRiesgos] = useState([]);
   const [areas, setAreas] = useState([]);
+  const [areaId, setAreaId] = useState('');
   const [loading, setLoading] = useState(true);
   const ejercicio = useGlobalStore((s) => s.ejercicio);
 
   useEffect(() => {
+    axios.get('/unidades-responsables').then(res => {
+      const data = res.data.data || res.data;
+      setAreas(data);
+      if (data.length > 0) {
+        const firstId = String(data[0].unidad_responsable_gasto_id || data[0].id_unidad || data[0].id);
+        setAreaId(firstId);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     fetchData();
-  }, [ejercicio]);
+  }, [areaId, ejercicio]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [resRiesgos, resAreas] = await Promise.all([
-        axios.get(`/riesgos?ejercicio_id=${ejercicio}`),
-        axios.get('/unidades-responsables'),
-      ]);
-      const riesgos = resRiesgos.data.data || resRiesgos.data;
-      const areasData = resAreas.data.data || resAreas.data;
-      setAreas(areasData);
-
-      // Flatten: un row por control
-      const rows = riesgos.flatMap(r =>
-        (r.controles || []).map(c => ({ r, c }))
-      );
-      setControles(rows);
+      const url = areaId ? `/riesgos?ejercicio_id=${ejercicio}&area_id=${areaId}` : `/riesgos?ejercicio_id=${ejercicio}`;
+      const res = await axios.get(url);
+      setRiesgos(res.data.data || res.data || []);
     } finally {
       setLoading(false);
     }
   };
 
-  const getAreaName = (areaId) => {
-    const a = areas.find(x => String(x.id_unidad || x.id) === String(areaId));
-    return a?.nombre || a?.denominacion || areaId;
+  const getControlText = (r) => {
+    if (!r.controles || r.controles.length === 0) return '—';
+    return r.controles.map(c => c.control || c.texto).filter(Boolean).join('; ');
   };
 
-  const toggleControlValidation = async (riesgoId, controlId, currentState, evType, evRef) => {
-    const isCurrentlyValidated = currentState === 'Validado por el área';
-    if (!isCurrentlyValidated && !evType && !evRef) {
-      alert('Para validar el control registra primero evidencia o referencia verificable en la edición del riesgo.');
-      return;
-    }
-    
-    const newState = isCurrentlyValidated ? 'Propuesto – pendiente de validación' : 'Validado por el área';
-    try {
-      await axios.put(`/riesgos/${riesgoId}/controles/${controlId}/validar`, { estado_validacion: newState });
-      // Reload or optimistic update
-      setControles(prev => prev.map(item => {
-        if (item.c.id === controlId) {
-          return { ...item, c: { ...item.c, estado_validacion: newState } };
-        }
-        return item;
-      }));
-    } catch (err) {
-      alert('Error al cambiar el estado del control: ' + (err.response?.data?.message || err.message));
-    }
+  const getIndicadorText = (r) => {
+    if (!r.indicadores || r.indicadores.length === 0) return '—';
+    const ind = r.indicadores[0];
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#0f172a' }}>
+          <b>{ind.formula || ind.nombre || '—'}</b>
+        </div>
+        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+          Unidad: {ind.unidad || '—'} · Periodicidad: {ind.periodicidad || '—'} · Sentido: {ind.sentido || '—'}
+        </div>
+      </div>
+    );
+  };
+
+  const getPeriodicidadText = (r) => {
+    if (!r.indicadores || r.indicadores.length === 0) return '—';
+    return r.indicadores[0].periodicidad || '—';
   };
 
   return (
     <>
       <div className="page-head">
         <div>
-          <h1>Controles</h1>
-          <p>Consulta transversal de controles y evidencia registrada en los riesgos.</p>
+          <h1>Controles e Indicadores</h1>
+          <p>Indicadores MAR con numerador, denominador y fórmula de cálculo.</p>
         </div>
       </div>
+
+      <section className="panel" style={{ padding: '20px', marginBottom: '20px' }}>
+        <div className="form-grid" style={{ gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Área / Unidad Responsable</label>
+            <select className="input" style={{ width: '100%' }} value={areaId} onChange={e => setAreaId(e.target.value)}>
+              <option value="">Todas las áreas asignadas</option>
+              {areas.map((a, i) => (
+                <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
+                  {a.nombre || a.denominacion}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </section>
+
       <section className="panel">
         {loading ? (
-          <p>Cargando…</p>
-        ) : controles.length === 0 ? (
-          <div className="empty">No hay controles registrados para este ejercicio.</div>
+          <p style={{ padding: '20px' }}>Cargando…</p>
+        ) : riesgos.length === 0 ? (
+          <div className="empty" style={{ padding: '20px' }}>No hay riesgos registrados para esta área y ejercicio.</div>
         ) : (
-          <table>
+          <table className="data-table">
             <thead>
-              <tr>
-                <th>Área</th>
-                <th>Riesgo</th>
-                <th>Control</th>
-                <th>Estado</th>
-                <th>Evidencia</th>
-                <th>Periodicidad</th>
-                <th>Responsable</th>
-                <th>Acción</th>
+              <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
+                <th style={{ color: '#fff', width: '80px' }}>ID</th>
+                <th style={{ color: '#fff', width: '25%' }}>Riesgo</th>
+                <th style={{ color: '#fff', width: '25%' }}>Control</th>
+                <th style={{ color: '#fff' }}>Indicador / fórmula</th>
+                <th style={{ color: '#fff', width: '120px' }}>Periodicidad</th>
+                <th style={{ color: '#fff', width: '100px', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {controles.map(({ r, c }, idx) => (
-                <tr key={idx}>
-                  <td>{getAreaName(r.area_id)}</td>
-                  <td><b>{r.local_id}</b> · {r.riesgo}</td>
-                  <td>{c.control || '—'}</td>
-                  <td>
-                    <span className={`status-badge ${c.estado_validacion === 'Validado por el área' ? 'success' : 'warning'}`} style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '11px', background: c.estado_validacion === 'Validado por el área' ? '#dff0e4' : '#fff3cd', color: c.estado_validacion === 'Validado por el área' ? '#216338' : '#7a5b00', border: `1px solid ${c.estado_validacion === 'Validado por el área' ? '#a8d3b4' : '#ead38a'}` }}>
-                      {c.estado_validacion || 'Propuesto – pendiente de validación'}
-                    </span>
-                  </td>
-                  <td>{[c.evidencia_tipo, c.evidencia_referencia].filter(Boolean).join(' ') || '—'}</td>
-                  <td>{c.evidencia_periodicidad || '—'}</td>
-                  <td>{c.evidencia_responsable || '—'}</td>
-                  <td>
-                    <button 
-                      className="icon-btn" 
-                      style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #cbd9e5', background: '#fff', cursor: 'pointer' }}
-                      onClick={() => toggleControlValidation(r.id, c.id, c.estado_validacion, c.evidencia_tipo, c.evidencia_referencia)}
-                    >
-                      {c.estado_validacion === 'Validado por el área' ? 'Marcar propuesto' : 'Validar control'}
-                    </button>
+              {riesgos.map((r, idx) => (
+                <tr key={idx} style={{ verticalAlign: 'top' }}>
+                  <td style={{ paddingTop: '15px' }}><b>{r.local_id}</b></td>
+                  <td style={{ paddingTop: '15px' }}>{r.riesgo}</td>
+                  <td style={{ paddingTop: '15px' }}>{getControlText(r)}</td>
+                  <td style={{ paddingTop: '15px' }}>{getIndicadorText(r)}</td>
+                  <td style={{ paddingTop: '15px' }}>{getPeriodicidadText(r)}</td>
+                  <td style={{ paddingTop: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                      <Tooltip title="Editar">
+                        <IconButton size="small" color="primary">
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton size="small" color="error">
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))}

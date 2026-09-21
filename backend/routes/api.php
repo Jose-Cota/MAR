@@ -152,9 +152,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('unidades-medida', UnidadMedidaController::class);
     Route::apiResource('unidades-responsables', UnidadResponsableController::class);
     Route::apiResource('actividades-sustantivas', ActividadSustantivaController::class);
+    Route::post('riesgos/seguimiento-mensual', [\App\Http\Controllers\Api\SeguimientoRiesgoController::class, 'seguimientoMensual']);
+    Route::post('riesgos/evaluacion-trimestral', [\App\Http\Controllers\Api\SeguimientoRiesgoController::class, 'evaluacionTrimestral']);
     Route::post('riesgos/batch-validate', [RiesgoController::class, 'batchValidate']);
     Route::apiResource('riesgos', RiesgoController::class);
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
+    Route::apiResource('riesgos-institucionales', \App\Http\Controllers\Api\RiesgoInstitucionalController::class);
     Route::apiResource('indicadores', IndicadorController::class);
     Route::get('dimensiones', function () {
         return response()->json(DB::connection('poa_prod')->table('dimensiones')->get());

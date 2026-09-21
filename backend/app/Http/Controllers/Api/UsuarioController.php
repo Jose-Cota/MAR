@@ -17,8 +17,8 @@ class UsuarioController extends Controller
      */
     public function index(Request $request)
     {
-        // Administrador puede ver a todos.
-        if (!$request->user()->hasRole('Administrador')) {
+        // Solo Super Administrador puede gestionar usuarios.
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
@@ -59,7 +59,7 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
-        if (!$request->user()->hasRole('Administrador')) {
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
@@ -134,7 +134,7 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (!$request->user()->hasRole('Administrador')) {
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
@@ -218,7 +218,7 @@ class UsuarioController extends Controller
      */
     public function updatePassword(Request $request, $id)
     {
-        if (!$request->user()->hasRole('Administrador')) {
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
@@ -243,7 +243,7 @@ class UsuarioController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        if (!$request->user()->hasRole('Administrador')) {
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
@@ -261,7 +261,7 @@ class UsuarioController extends Controller
      */
     public function forceDelete(Request $request, $id)
     {
-        if (!$request->user()->hasRole('Administrador')) {
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 

@@ -12,18 +12,24 @@ const cuadrante = (p, i) => {
   return 'QIV';
 };
 
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+
 export default function POAPage() {
   const [areas, setAreas] = useState([]);
   const [areaId, setAreaId] = useState('');
   const [fichas, setFichas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [expandedURs, setExpandedURs] = useState({});
   const ejercicio = useGlobalStore((s) => s.ejercicio);
 
   useEffect(() => {
     axios.get('/unidades-responsables').then(res => {
       const data = res.data.data || res.data;
       setAreas(data);
-      if (data.length > 0) setAreaId(String(data[0].unidad_responsable_gasto_id || data[0].id_unidad || data[0].id));
+      if (data.length > 0) {
+        // En lugar de seleccionar la primera UR por defecto, seleccionamos "todas"
+        setAreaId('todas');
+      }
     });
   }, []);
 
@@ -44,6 +50,7 @@ export default function POAPage() {
           <p>Fuente programática del ejercicio {ejercicio} y trazabilidad hacia los riesgos.</p>
         </div>
         <select className="input" style={{ maxWidth: 320 }} value={areaId} onChange={e => setAreaId(e.target.value)}>
+          <option value="todas">Todas las áreas (Institucional)</option>
           {areas.map((a, i) => (
             <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
               {a.nombre || a.denominacion}
@@ -58,88 +65,106 @@ export default function POAPage() {
         <div className="empty">Sin ficha POA precargada para este ejercicio y área.</div>
       )}
 
-      {fichas.map(proyecto => (
-        <section className="panel" key={proyecto.id}>
-          <div className="panel-head">
-            <h2>{proyecto.nombre}</h2>
-            <span className="chip">Ficha {proyecto.id}</span>
-          </div>
-          <p><b>Objetivo del proyecto:</b> {proyecto.objetivo || '—'}</p>
+      {!loading && fichas.length > 0 && (() => {
+        // Agrupar fichas por URG
+        const gruposUR = {};
+        fichas.forEach(proyecto => {
+          const urg = String(proyecto.urg_id || areaId);
+          if (!gruposUR[urg]) gruposUR[urg] = [];
+          gruposUR[urg].push(proyecto);
+        });
 
-          <details open>
-            <summary><b>Metas ({(proyecto.metas || []).length})</b></summary>
-            <table style={{ marginTop: 8 }}>
-              <thead>
-                <tr>
-                  <th>Tipo</th><th>Meta</th><th>Unidad</th><th>Total anual</th>
-                  <th>Programación mensual</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(proyecto.metas || []).map((m, idx) => (
-                  <tr key={idx}>
-                    <td>{m.tipo || '—'}</td>
-                    <td>{m.nombre}</td>
-                    <td>{m.unidad || '—'}</td>
-                    <td>{m.total_anual ?? '—'}</td>
-                    <td>
-                      {MESES.map((mes, mi) => (
-                        <span className="chip" key={mes}>{mes}: {m[`mes_${mi + 1}`] ?? '—'}</span>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </details>
+        return areas.map((area, i) => {
+          const urgId = String(area.unidad_responsable_gasto_id || area.id_unidad || area.id);
+          
+          // Si hay un filtro específico y esta no es el área, la ignoramos
+          if (areaId !== 'todas' && areaId !== urgId) return null;
 
-          <details style={{ marginTop: 10 }}>
-            <summary><b>Indicadores ({(proyecto.indicadores || []).length})</b></summary>
-            <table style={{ marginTop: 8 }}>
-              <thead>
-                <tr>
-                  <th>Indicador</th><th>Alineación</th><th>Objetivo</th><th>Fórmula</th><th>Unidad / dimensión / frecuencia</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(proyecto.indicadores || []).map((i, idx) => (
-                  <tr key={idx}>
-                    <td>{i.nombre || i.indicador || '—'}</td>
-                    <td>{i.alineacion || i.goalAlignment || '—'}</td>
-                    <td>{i.objetivo || '—'}</td>
-                    <td>{i.formula || '—'}</td>
-                    <td>{i.unidad || '—'} / {i.dimension || '—'} / {i.frecuencia || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </details>
+          const areaName = area.nombre || area.denominacion || 'Área desconocida';
+          const title = `POA ${ejercicio} - ${areaName}`;
+          const proyectosUR = gruposUR[urgId] || [];
 
-          <details open style={{ marginTop: 10 }}>
-            <summary><b>Acciones sustantivas ({(proyecto.acciones || proyecto.actividades || []).length})</b></summary>
-            <table style={{ marginTop: 8 }}>
-              <thead>
-                <tr>
-                  <th>#</th><th>Acción</th><th>Riesgos vinculados</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(proyecto.acciones || proyecto.actividades || []).map((a, idx) => (
-                  <tr key={idx}>
-                    <td>{a.numero || idx + 1}</td>
-                    <td>{a.descripcion || a.denominacion || a.texto}</td>
-                    <td>
-                      {(a.riesgos_vinculados || a.riesgos || []).length > 0
-                        ? (a.riesgos_vinculados || a.riesgos).map(r => <span className="chip" key={r.id}>{r.local_id}</span>)
-                        : <span className="muted">Sin riesgo</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </details>
-        </section>
-      ))}
+          // Extraer todas las actividades de todos los proyectos de esta UR
+          const allActivities = [];
+          const objetivos = new Set();
+          proyectosUR.forEach(proyecto => {
+            if (proyecto.objetivo) objetivos.add(proyecto.objetivo);
+            const acts = proyecto.acciones || proyecto.actividades || [];
+            acts.forEach(a => allActivities.push(a));
+          });
+
+          // Usar los objetivos de los proyectos como subtítulo
+          const subtitle = Array.from(objetivos).join(' ') || '—';
+
+          const isExpanded = !!expandedURs[urgId];
+          const toggleExpanded = () => setExpandedURs(prev => ({ ...prev, [urgId]: !prev[urgId] }));
+
+          return (
+            <section className="panel" key={urgId || i} style={{ marginBottom: '24px' }}>
+              <div className="panel-head" style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>{title}</h2>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  style={{ 
+                    padding: '6px', 
+                    fontSize: '1.2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer'
+                  }} 
+                  onClick={toggleExpanded}
+                  title={isExpanded ? 'Comprimir' : 'Expandir'}
+                >
+                  {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+                </button>
+              </div>
+              
+              <p style={{ color: '#666', marginBottom: '16px' }}>{subtitle}</p>
+
+              {isExpanded && (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                        <th style={{ width: '50px' }}>#</th>
+                        <th>Acción sustantiva / alineación</th>
+                        <th style={{ width: '200px' }}>Riesgos vinculados</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allActivities.length > 0 ? (
+                        allActivities.map((a, idx) => (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>{a.descripcion || a.denominacion || a.texto}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                {(a.riesgos_vinculados || a.riesgos || []).length > 0
+                                  ? (a.riesgos_vinculados || a.riesgos).map(r => (
+                                      <span className="chip" key={r.id}>{r.local_id}</span>
+                                    ))
+                                  : <span className="muted">Sin riesgo</span>}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: 'center', padding: '16px', color: '#888' }}>
+                            Sin actividades sustantivas registradas.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+              )}
+            </section>
+          );
+        });
+      })()}
     </>
   );
 }
