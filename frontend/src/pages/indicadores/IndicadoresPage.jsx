@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
+import useAuth from '../../hooks/useAuth';
 
 export default function IndicadoresPage() {
   const [indicadores, setIndicadores] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
   const ejercicio = useGlobalStore((s) => s.ejercicio);
+  const { hasRole } = useAuth();
+  const isSuperAdmin = hasRole('Super Administrador') || hasRole('superadmin') || hasRole('Admin');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,8 +28,11 @@ export default function IndicadoresPage() {
       const areasData = resAreas.data.data || resAreas.data;
       setAreas(areasData);
 
+      const allowedAreaIds = areasData.map(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id));
+      const filteredRiesgos = riesgos.filter(r => isSuperAdmin || allowedAreaIds.includes(String(r.area_id)));
+
       // Flatten: un row por indicador
-      const rows = riesgos.flatMap(r =>
+      const rows = filteredRiesgos.flatMap(r =>
         (r.indicadores || []).map(i => ({ r, i }))
       );
       setIndicadores(rows);

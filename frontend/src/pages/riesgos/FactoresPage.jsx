@@ -56,10 +56,12 @@ export default function FactoresPage() {
     }
   };
 
-  const filtrados = riesgos.filter(r => 
-    !search || 
-    (r.local_id + ' ' + r.riesgo + ' ' + (r.factores_internos || '')).toLowerCase().includes(search.toLowerCase())
-  );
+  const allowedAreaIds = areas.map(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id));
+  const filtrados = riesgos.filter(r => {
+    const matchesArea = areaId ? String(r.area_id) === String(areaId) : (isSuperAdmin || allowedAreaIds.includes(String(r.area_id)));
+    const matchesSearch = !search || (r.local_id + ' ' + r.riesgo + ' ' + (r.factores_internos || '')).toLowerCase().includes(search.toLowerCase());
+    return matchesArea && matchesSearch;
+  });
 
   return (
     <>

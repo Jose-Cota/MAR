@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
+import useAuth from '../../hooks/useAuth';
 import { Edit, Save, Close } from '@mui/icons-material';
 import { IconButton, Tooltip, Chip, Button, TextField, Alert, Snackbar } from '@mui/material';
 
@@ -20,6 +21,13 @@ export default function ControlesPage() {
   });
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+  const { hasRole } = useAuth();
+  const isSuperAdmin = hasRole('Super Administrador') || hasRole('superadmin') || hasRole('Admin');
+  const allowedAreaIds = areas.map(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id));
+  const filtrados = riesgos.filter(r => {
+    return areaId ? String(r.area_id) === String(areaId) : (isSuperAdmin || allowedAreaIds.includes(String(r.area_id)));
+  });
+  
   const ejercicio = useGlobalStore((s) => s.ejercicio);
 
   useEffect(() => {
@@ -280,7 +288,7 @@ export default function ControlesPage() {
                 </tr>
               </thead>
               <tbody>
-                {riesgos.map((r) => {
+                {filtrados.map((r) => {
                   const isEditing = editingId === r.id;
                   return (
                     <tr key={r.id} style={{ verticalAlign: 'top', backgroundColor: isEditing ? '#f8fafc' : 'transparent' }}>
