@@ -1,20 +1,12 @@
 <?php
-require __DIR__.'/vendor/autoload.php';
-$app = require_once __DIR__.'/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+$user = App\Models\User::where('usuario', 'jose.cota')->first();
+echo $user->hasRole('Super Administrador') ? 'Tiene rol' : 'No tiene rol';
+echo PHP_EOL;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-
-// We just bypass auth by instantiating the controller directly and replacing auth check or we just call the methods we need.
-$controller = $app->make(\App\Http\Controllers\Api\ProyectoController::class);
-
-$reflection = new \ReflectionClass($controller);
-$method = $reflection->getMethod('getActividades');
-$method->setAccessible(true);
-$actividades = $method->invoke($controller, 884);
-
-echo "Actividades:\n";
-echo json_encode($actividades) . "\n";
-
+$controller = new App\Http\Controllers\Api\UsuarioController();
+$request = Illuminate\Http\Request::create('/api/usuarios', 'GET');
+$request->setUserResolver(function() use ($user) { return $user; });
+$response = $controller->index($request);
+echo 'Response status: ' . $response->getStatusCode() . PHP_EOL;
+echo 'Response content length: ' . strlen($response->getContent()) . PHP_EOL;
+echo 'Response start: ' . substr($response->getContent(), 0, 200) . PHP_EOL;

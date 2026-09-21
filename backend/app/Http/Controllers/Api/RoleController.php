@@ -14,7 +14,10 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        if (!$request->user()->hasRole('Administrador')) {
+        $user = $request->user();
+        $isAdmin = $user->hasRole('Administrador') || $user->hasRole('Administrador', 'web') || $user->hasRole('Super Administrador') || $user->roles->pluck('name')->contains('Administrador') || $user->roles->pluck('name')->contains('Super Administrador');
+        
+        if (!$isAdmin) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 

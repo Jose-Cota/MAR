@@ -20,7 +20,18 @@ class RiesgoController extends Controller
         }
 
         if ($request->has('ejercicio_id')) {
-            $query->where('ejercicio_id', $request->ejercicio_id);
+            // Check if the passed value is a year (e.g. 2027) instead of an ID
+            $val = $request->ejercicio_id;
+            if ($val > 2000) {
+                $ej = DB::table('ejercicios')->where('ejercicio', $val)->first();
+                if ($ej) {
+                    $query->where('ejercicio_id', $ej->ejercicio_id);
+                } else {
+                    $query->where('ejercicio_id', $val);
+                }
+            } else {
+                $query->where('ejercicio_id', $val);
+            }
         }
 
         $riesgos = $query->get();

@@ -121,7 +121,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/unidades-medida/{id}', [UnidadMedidaController::class, 'destroy']);
 
     // Configuración
-    Route::middleware('role:Administrador')->group(function () {
+    Route::middleware(\App\Http\Middleware\CheckAdminRole::class)->group(function () {
         Route::get('/configuracion/elaboracion/{ejercicio}', [ConfiguracionController::class, 'getElaboracion']);
         Route::put('/configuracion/elaboracion/{ejercicio}', [ConfiguracionController::class, 'saveElaboracion']);
         

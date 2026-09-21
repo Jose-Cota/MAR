@@ -17,19 +17,24 @@ class UsuarioController extends Controller
      */
     public function index(Request $request)
     {
-        // Solo Super Administrador puede gestionar usuarios.
-        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
+        // Solo Super Administrador o Administrador pueden gestionar usuarios.
+        $user = $request->user();
+        $isSuperAdmin = $user->hasRole('Super Administrador') || $user->hasRole('Super Administrador', 'web') || $user->roles->pluck('name')->contains('Super Administrador');
+        $isAdmin = $user->hasRole('Administrador') || $user->hasRole('Administrador', 'web') || $user->roles->pluck('name')->contains('Administrador');
+
+        if (!$isSuperAdmin && !$isAdmin) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 
+        $urgs = DB::connection('poa_prod')->table('unidades_responsables_gastos')->get()->keyBy('unidad_responsable_gasto_id');
         $usuarios = User::with('roles', 'permissions', 'responsablesOperativos', 'unidadesResponsables')
             ->get()
-            ->map(function ($user) {
+            ->map(function ($user) use ($urgs) {
                 $userArray = $user->toArray();
                 $userArray['role'] = $user->roles->first()?->name ?? 'Usuario';
                 $userArray['roles'] = $user->roles->pluck('name');
-                $userArray['responsables_operativos'] = $user->responsablesOperativos->map(function ($ro) {
-                    $urg = DB::connection('poa_prod')->table('unidades_responsables_gastos')->where('unidad_responsable_gasto_id', $ro->unidad_responsable_gasto_id)->first();
+                $userArray['responsables_operativos'] = $user->responsablesOperativos->map(function ($ro) use ($urgs) {
+                    $urg = $urgs->get($ro->unidad_responsable_gasto_id);
                     $roArray = $ro->toArray();
                     $roArray['urg_numero'] = $urg ? $urg->numero : '';
                     return $roArray;

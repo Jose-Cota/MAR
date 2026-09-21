@@ -40,7 +40,7 @@ class UnidadResponsableController extends Controller
                 ->orderBy('urg.numero');
         }
 
-        $isAdministradorGlobal = $request->user()->hasRole('Administrador') || $request->user()->hasRole('DPyRF') || $request->user()->roles->pluck('name')->contains('Administrador') || $request->user()->roles->pluck('name')->contains('DPyRF');
+        $isAdministradorGlobal = $request->user()->hasRole('Super Administrador') || $request->user()->hasRole('Administrador') || $request->user()->hasRole('DPyRF') || $request->user()->roles->pluck('name')->contains('Administrador') || $request->user()->roles->pluck('name')->contains('DPyRF') || $request->user()->roles->pluck('name')->contains('Super Administrador');
         if (!$isAdministradorGlobal) {
             $user = $request->user();
             $userUrgNumbers = $user->unidadesResponsables->pluck('numero')->toArray();
@@ -65,7 +65,7 @@ class UnidadResponsableController extends Controller
     public function store(Request $request)
     {
         // ... (store logic remains same, but we could add an authorization check here)
-        if (!$request->user()->hasRole('Administrador')) {
+        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
             return response()->json(['message' => 'No autorizado'], 403);
         }
 

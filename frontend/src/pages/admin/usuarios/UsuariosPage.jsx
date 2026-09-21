@@ -67,16 +67,37 @@ export default function UsuariosPage() {
     }
   };
 
+  const [filterUR, setFilterUR] = useState('');
+  const [filterRol, setFilterRol] = useState('');
+  const [filterEstado, setFilterEstado] = useState('');
+
   const filteredUsuarios = usuarios.filter((u) => {
     const q = search.toLowerCase();
-    return (
+    const matchSearch = (
       (u.nombre && u.nombre.toLowerCase().includes(q)) ||
       (u.apellido_paterno && u.apellido_paterno.toLowerCase().includes(q)) ||
       (u.usuario && u.usuario.toLowerCase().includes(q)) ||
       (u.area_nombre && u.area_nombre.toLowerCase().includes(q)) ||
       (u.unidades_responsables && u.unidades_responsables.some(ur => ur.nombre?.toLowerCase().includes(q)))
     );
+
+    const matchUR = filterUR ? (u.unidades_responsables?.some(ur => ur.unidad_responsable_gasto_id === Number(filterUR)) || u.area_id === Number(filterUR)) : true;
+    const matchRol = filterRol ? (u.roles?.includes(filterRol)) : true;
+    const matchEstado = filterEstado !== '' ? (u.activo === Number(filterEstado)) : true;
+
+    return matchSearch && matchUR && matchRol && matchEstado;
   });
+
+  const allRoles = Array.from(new Set(usuarios.flatMap(u => u.roles || []))).sort();
+  const allURsMap = new Map();
+  usuarios.forEach(u => {
+    if (u.unidades_responsables) {
+      u.unidades_responsables.forEach(ur => {
+        allURsMap.set(ur.unidad_responsable_gasto_id, `${ur.numero} - ${ur.nombre}`);
+      });
+    }
+  });
+  const allURs = Array.from(allURsMap.entries()).sort((a,b) => a[1].localeCompare(b[1]));
 
   const paginated = filteredUsuarios.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const totalPages = Math.ceil(filteredUsuarios.length / rowsPerPage);
@@ -110,15 +131,51 @@ export default function UsuariosPage() {
             <strong>{filteredUsuarios.length}</strong>
             <span style={{ color: 'var(--muted)', fontSize: '13px' }}>usuarios</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--muted)', fontSize: '13px' }}>Buscar:</span>
-            <input
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' }}>
+            <select
               className="input"
-              style={{ width: '240px', padding: '7px 10px' }}
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(0); }}
-              placeholder="Nombre, usuario o área…"
-            />
+              style={{ width: '200px', padding: '7px 10px' }}
+              value={filterUR}
+              onChange={e => { setFilterUR(e.target.value); setPage(0); }}
+            >
+              <option value="">Todas las URs</option>
+              {allURs.map(([id, label]) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
+            </select>
+
+            <select
+              className="input"
+              style={{ width: '160px', padding: '7px 10px' }}
+              value={filterRol}
+              onChange={e => { setFilterRol(e.target.value); setPage(0); }}
+            >
+              <option value="">Todos los Roles</option>
+              {allRoles.map(rol => (
+                <option key={rol} value={rol}>{rol}</option>
+              ))}
+            </select>
+
+            <select
+              className="input"
+              style={{ width: '140px', padding: '7px 10px' }}
+              value={filterEstado}
+              onChange={e => { setFilterEstado(e.target.value); setPage(0); }}
+            >
+              <option value="">Todos los Estados</option>
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                className="input"
+                style={{ width: '240px', padding: '7px 10px' }}
+                value={search}
+                onChange={e => { setSearch(e.target.value); setPage(0); }}
+                placeholder="Nombre, usuario o área…"
+              />
+            </div>
           </div>
         </div>
 
@@ -155,7 +212,11 @@ export default function UsuariosPage() {
 
                   {/* Área / URG */}
                   <td style={{ fontSize: '12px' }}>
-                    {row.unidades_responsables?.length > 0 ? (
+                    {(row.roles || []).some(r => r.includes('Administrador') || r.includes('Super')) ? (
+                      <span className="chip" style={{ fontSize: '11px', background: '#dbeafe', color: '#1e40af' }}>
+                        Todas las áreas (Institucional)
+                      </span>
+                    ) : row.unidades_responsables?.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                         {row.unidades_responsables.map(ur => (
                           <span key={ur.unidad_responsable_gasto_id} className="chip" style={{ fontSize: '11px' }}>
@@ -203,7 +264,11 @@ export default function UsuariosPage() {
 
                   {/* Permisos */}
                   <td style={{ fontSize: '11px' }}>
-                    {row.unidades_responsables?.length > 0 ? (
+                    {(row.roles || []).some(r => r.includes('Administrador') || r.includes('Super')) ? (
+                      <span style={{ fontSize: '10px', background: '#edf5fb', color: '#174f7d', borderRadius: '10px', padding: '1px 6px' }}>
+                        Acceso global
+                      </span>
+                    ) : row.unidades_responsables?.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                         {row.unidades_responsables.map(ur => (
                           <div key={ur.unidad_responsable_gasto_id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

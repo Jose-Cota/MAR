@@ -14,7 +14,7 @@ class ResponsableOperativoController extends Controller
         $urgIds = $request->query('unidad_responsable_gasto_id');
         $user = $request->user();
 
-        $isAdministradorGlobal = $user && ($user->hasRole('Administrador') || $user->hasRole('Administrador', 'web') || $user->hasRole('DPyRF') || $user->roles->pluck('name')->contains('Administrador') || $user->roles->pluck('name')->contains('DPyRF'));
+        $isAdministradorGlobal = $user && ($user->hasRole('Super Administrador') || $user->hasRole('Administrador') || $user->hasRole('Administrador', 'web') || $user->hasRole('DPyRF') || $user->roles->pluck('name')->contains('Administrador') || $user->roles->pluck('name')->contains('DPyRF') || $user->roles->pluck('name')->contains('Super Administrador'));
 
         $query = DB::connection('poa_prod')
             ->table('responsables_operativos as ro')

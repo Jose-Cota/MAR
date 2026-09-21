@@ -219,10 +219,10 @@ export default function UsuarioFormModal({ open, onClose, usuario, onSuccess }) 
             <SectionLabel>Datos generales</SectionLabel>
             <Stack spacing={2}>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                <TextField size="small" fullWidth label="Nombre(s)" name="nombre"
-                  value={formData.nombre} onChange={handleChange} required />
-                <TextField size="small" fullWidth label="Apellido Paterno" name="apellido_paterno"
-                  value={formData.apellido_paterno} onChange={handleChange} required />
+                <TextField size="small" fullWidth label="Nombre(s) *" name="nombre"
+                  value={formData.nombre} onChange={handleChange} />
+                <TextField size="small" fullWidth label="Apellido Paterno *" name="apellido_paterno"
+                  value={formData.apellido_paterno} onChange={handleChange} />
                 <TextField size="small" fullWidth label="Apellido Materno" name="apellido_materno"
                   value={formData.apellido_materno} onChange={handleChange} />
               </Stack>
@@ -231,8 +231,8 @@ export default function UsuarioFormModal({ open, onClose, usuario, onSuccess }) 
                 <TextField size="small" sx={{ flex: 4 }} label="Correo electrónico" name="correo" type="email"
                   value={formData.correo} onChange={handleChange} />
                 
-                <TextField size="small" sx={{ flex: 6 }} select SelectProps={{ multiple: true }} label="Unidad Responsable (Área)"
-                  name="area_ids" value={formData.area_ids} onChange={handleChange} required>
+                <TextField size="small" sx={{ flex: 6 }} select SelectProps={{ multiple: true }} label="Unidad Responsable (Área) *"
+                  name="area_ids" value={formData.area_ids} onChange={handleChange}>
                   {unidades.map((u) => (
                     <MenuItem key={u.unidad_responsable_gasto_id} value={u.unidad_responsable_gasto_id}
                       sx={{ whiteSpace: 'normal', fontSize: '0.82rem' }}>
@@ -327,16 +327,16 @@ export default function UsuarioFormModal({ open, onClose, usuario, onSuccess }) 
           <Box>
             <SectionLabel>Credenciales de acceso</SectionLabel>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <TextField size="small" fullWidth label="Usuario (Login)" name="usuario"
-                value={formData.usuario} onChange={handleChange} required />
+              <TextField size="small" fullWidth label="Usuario (Login) *" name="usuario"
+                value={formData.usuario} onChange={handleChange} />
               <TextField size="small" fullWidth type="password" name="password"
-                label={isEdit ? "Contraseña (opcional)" : "Contraseña"}
+                label={isEdit ? "Contraseña (opcional)" : "Contraseña *"}
                 placeholder={isEdit ? "Dejar en blanco" : ""}
-                value={formData.password} onChange={handleChange} required={!isEdit} />
+                value={formData.password} onChange={handleChange} />
               <TextField size="small" fullWidth type="password" name="password_confirmation"
-                label="Confirmar contraseña"
+                label={isEdit ? "Confirmar contraseña" : "Confirmar contraseña *"}
                 placeholder={isEdit ? "Dejar en blanco" : ""}
-                value={formData.password_confirmation} onChange={handleChange} required={!isEdit || !!formData.password} />
+                value={formData.password_confirmation} onChange={handleChange} />
             </Stack>
           </Box>
 
@@ -354,7 +354,7 @@ export default function UsuarioFormModal({ open, onClose, usuario, onSuccess }) 
                 },
               }}
             >
-              <legend>Selecciona uno o más roles</legend>
+              <legend>Selecciona uno o más roles *</legend>
               <Box sx={{ display: 'flex' }}>
                 {TODOS_LOS_ROLES.map((rol, idx) => {
                   const cfg = ROLES_CONFIG[rol];
