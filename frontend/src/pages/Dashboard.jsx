@@ -62,7 +62,7 @@ export default function Dashboard() {
     };
   };
 
-  const s = getStats();
+  const s = getStats(isAdmin ? null : areas.map(a => String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)));
 
   if (loading) {
     return <div className="notice">Cargando tablero...</div>;
