@@ -1,19 +1,24 @@
 <?php
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
 use Illuminate\Support\Facades\DB;
 
-$proyecto_2026 = 884;
-$proyecto_2027 = 1438;
+$proyectos = DB::table('proyectos')
+    ->join('responsables_operativos', 'proyectos.responsable_operativo_id', '=', 'responsables_operativos.responsable_operativo_id')
+    ->where('proyectos.ejercicio_id', 17)
+    ->where('responsables_operativos.unidad_responsable_gasto_id', 2)
+    ->select('proyectos.proyecto_id')
+    ->pluck('proyecto_id');
 
-echo "=== METAS 2026 ===\n";
-echo json_encode(DB::select("SELECT * FROM metas WHERE proyecto_id = ?", [$proyecto_2026]), JSON_PRETTY_PRINT);
+echo "Proyectos for area 2: " . implode(', ', $proyectos->toArray()) . "\n";
 
-echo "\n=== INDICADORES 2026 ===\n";
-echo json_encode(DB::select("SELECT * FROM indicadores WHERE proyecto_id = ?", [$proyecto_2026]), JSON_PRETTY_PRINT);
+if ($proyectos->isNotEmpty()) {
+    $actividades = DB::table('actividades_sustantivas')->whereIn('proyecto_id', $proyectos)->count();
+    $acciones = DB::table('acciones_sustantivas')->whereIn('proyecto_id', $proyectos)->count();
 
-echo "\n=== ACTIVIDADES 2026 ===\n";
-echo json_encode(DB::select("SELECT * FROM actividades_sustantivas WHERE proyecto_id = ?", [$proyecto_2026]), JSON_PRETTY_PRINT);
-
-echo "\n=== METAS 2027 ===\n";
-echo json_encode(DB::select("SELECT * FROM metas WHERE proyecto_id = ?", [$proyecto_2027]), JSON_PRETTY_PRINT);
-
-exit;
+    echo "Count in actividades_sustantivas: $actividades\n";
+    echo "Count in acciones_sustantivas: $acciones\n";
+}

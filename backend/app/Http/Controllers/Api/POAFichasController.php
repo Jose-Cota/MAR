@@ -23,14 +23,19 @@ class POAFichasController extends Controller
         $ejercicioRow = DB::table('ejercicios')->where('ejercicio', $ejercicio_id)->first();
         $ejercicio_db_id = $ejercicioRow ? $ejercicioRow->ejercicio_id : $ejercicio_id;
 
+        // Resolver el número de la URG para el area_id recibido
+        $urg = DB::table('unidades_responsables_gasto')->where('unidad_responsable_gasto_id', $area_id)->first();
+        $urg_numero = $urg ? $urg->numero : $area_id;
+
         // Fetch projects (proyectos)
         $query = DB::table('proyectos')
             ->join('responsables_operativos', 'proyectos.responsable_operativo_id', '=', 'responsables_operativos.responsable_operativo_id')
+            ->join('unidades_responsables_gasto', 'responsables_operativos.unidad_responsable_gasto_id', '=', 'unidades_responsables_gasto.unidad_responsable_gasto_id')
             ->where('proyectos.ejercicio_id', $ejercicio_db_id)
             ->select('proyectos.*', 'proyectos.proyecto_id as id', 'responsables_operativos.unidad_responsable_gasto_id as urg_id');
 
         if ($area_id !== 'todas') {
-            $query->where('responsables_operativos.unidad_responsable_gasto_id', $area_id);
+            $query->where('unidades_responsables_gasto.numero', $urg_numero);
         }
 
         $proyectos = $query->get();
@@ -46,8 +51,8 @@ class POAFichasController extends Controller
                 ->where('proyecto_id', $p->id)
                 ->get();
 
-            // Fetch actions — la tabla POA debe usar actividades_sustantivas de la UR
-            $p->acciones = DB::table('actividades_sustantivas')
+            // Fetch actions — la tabla POA debe usar acciones_sustantivas de la UR
+            $p->acciones = DB::table('acciones_sustantivas')
                 ->where('proyecto_id', $p->id)
                 ->get();
 
@@ -55,7 +60,7 @@ class POAFichasController extends Controller
             foreach ($p->acciones as $accion) {
                 $accion->riesgos_vinculados = DB::table('actividad_riesgo')
                     ->join('riesgos', 'actividad_riesgo.riesgo_id', '=', 'riesgos.id')
-                    ->where('actividad_riesgo.actividad_sustantiva_id', $accion->id)
+                    ->where('actividad_riesgo.actividad_sustantiva_id', $accion->accion_sustantiva_id)
                     ->select('riesgos.id', 'riesgos.local_id', 'riesgos.riesgo')
                     ->get();
             }

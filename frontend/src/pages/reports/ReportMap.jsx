@@ -51,8 +51,8 @@ export default function ReportMap() {
     }
 
     const dots = riesgos.map(r => {
-      const p = r.probabilidad_ocurrencia || 0;
-      const i = r.grado_impacto || 0;
+      const p = r.probabilidad || 0;
+      const i = r.impacto || 0;
       const local = r.local_id || `R${r.id}`;
       return (
         <g className="risk-dot" key={r.id}>
@@ -119,9 +119,9 @@ export default function ReportMap() {
               <tr key={r.id}>
                 <td>{r.local_id || r.id}</td>
                 <td>{r.riesgo}</td>
-                <td>{r.probabilidad_ocurrencia || 0}</td>
-                <td>{r.grado_impacto || 0}</td>
-                <td>{quadrantFor(r.probabilidad_ocurrencia || 0, r.grado_impacto || 0)}</td>
+                <td>{r.probabilidad || 0}</td>
+                <td>{r.impacto || 0}</td>
+                <td>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
               </tr>
             ))}
           </tbody>

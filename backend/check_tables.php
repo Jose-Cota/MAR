@@ -1,21 +1,20 @@
 <?php
 require 'vendor/autoload.php';
-$app = require 'bootstrap/app.php';
-$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
-$tables = DB::select('SHOW TABLES');
-foreach ($tables as $t) {
-    $v = (array)$t;
-    $n = array_values($v)[0];
-    if (strpos($n, 'activ') !== false || strpos($n, 'accio') !== false || strpos($n, 'accion') !== false) {
-        echo $n . "\n";
-    }
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+echo "Table actividades_sustantivas exists: " . (Schema::hasTable('actividades_sustantivas') ? 'Yes' : 'No') . "\n";
+if (Schema::hasTable('actividades_sustantivas')) {
+    echo "Columns:\n";
+    print_r(Schema::getColumnListing('actividades_sustantivas'));
 }
-echo "\n--- Tables with 'poa' ---\n";
-foreach ($tables as $t) {
-    $v = (array)$t;
-    $n = array_values($v)[0];
-    if (strpos($n, 'poa') !== false) {
-        echo $n . "\n";
-    }
+
+echo "Table acciones_sustantivas exists: " . (Schema::hasTable('acciones_sustantivas') ? 'Yes' : 'No') . "\n";
+if (Schema::hasTable('acciones_sustantivas')) {
+    echo "Columns:\n";
+    print_r(Schema::getColumnListing('acciones_sustantivas'));
 }
