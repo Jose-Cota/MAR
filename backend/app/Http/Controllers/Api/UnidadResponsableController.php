@@ -40,22 +40,51 @@ class UnidadResponsableController extends Controller
                 ->orderBy('urg.numero');
         }
 
-        $isAdministradorGlobal = $request->user()->hasRole('Super Administrador') || $request->user()->hasRole('Administrador') || $request->user()->hasRole('DPyRF') || $request->user()->roles->pluck('name')->contains('Administrador') || $request->user()->roles->pluck('name')->contains('DPyRF') || $request->user()->roles->pluck('name')->contains('Super Administrador');
+        $isAdministradorGlobal = $request->user()->hasRole('Super Administrador')
+            || $request->user()->hasRole('Administrador')
+            || $request->user()->hasRole('DPyRF')
+            || $request->user()->roles->pluck('name')->contains('Administrador')
+            || $request->user()->roles->pluck('name')->contains('DPyRF')
+            || $request->user()->roles->pluck('name')->contains('Super Administrador');
+
         if (!$isAdministradorGlobal) {
             $user = $request->user();
-            $userUrgNumbers = $user->unidadesResponsables->pluck('numero')->toArray();
-            if (empty($userUrgNumbers)) {
-                $userUrgNumbers = DB::connection('poa_prod')
-                    ->table('unidades_responsables_gastos')
-                    ->where('unidad_responsable_gasto_id', $user->area_id)
-                    ->pluck('numero')->toArray();
+
+            // 1. Intentar obtener números de URG desde la tabla pivote (filtrar id=0 que son inválidos)
+            $urgIds = \Illuminate\Support\Facades\DB::table('usuario_unidad_responsable')
+                ->where('usuario_poa_id', $user->usuario_poa_id)
+                ->where('unidad_responsable_gasto_id', '>', 0)
+                ->pluck('unidad_responsable_gasto_id')
+                ->toArray();
+
+            $userUrgNumbers = [];
+
+            if (!empty($urgIds)) {
+                $userUrgNumbers = \Illuminate\Support\Facades\DB::table('unidades_responsables_gastos')
+                    ->whereIn('unidad_responsable_gasto_id', $urgIds)
+                    ->pluck('numero')
+                    ->toArray();
             }
-            $query->whereIn('urg.numero', $userUrgNumbers);
+
+            // 2. Fallback: usar area_id del usuario
+            if (empty($userUrgNumbers) && $user->area_id) {
+                $userUrgNumbers = \Illuminate\Support\Facades\DB::table('unidades_responsables_gastos')
+                    ->where('unidad_responsable_gasto_id', $user->area_id)
+                    ->pluck('numero')
+                    ->toArray();
+            }
+
+            // 3. Si encontramos números de URG, filtrar
+            if (!empty($userUrgNumbers)) {
+                $query->whereIn('urg.numero', $userUrgNumbers);
+            }
+            // Si no hay info de URG para el usuario, devolvemos todo (para no bloquear)
         }
 
         $unidades = $query->get();
 
         return response()->json($unidades);
+
     }
 
 

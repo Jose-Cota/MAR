@@ -1,11 +1,13 @@
 <?php
-$tables = ['proyectos', 'subprogramas', 'responsables_operativos'];
-foreach($tables as $t) {
-    $cols = DB::connection('poa_prod')->select("SHOW COLUMNS FROM {$t}");
-    echo "Table: {$t}\n";
-    foreach($cols as $c) {
-        if (strpos($c->Field, 'ejercicio') !== false || strpos($c->Field, 'anio') !== false || strpos($c->Field, 'year') !== false) {
-            echo "  - {$c->Field}\n";
-        }
-    }
-}
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use Illuminate\Support\Facades\DB;
+
+$cols = DB::getSchemaBuilder()->getColumnListing('usuarios_poa');
+echo "Columns: " . implode(', ', $cols) . "\n\n";
+
+$row = DB::table('usuarios_poa')->first();
+echo "First row: " . json_encode($row) . "\n";
