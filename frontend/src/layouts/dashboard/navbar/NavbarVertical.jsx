@@ -69,7 +69,7 @@ export default function NavbarVertical() {
       </nav>
       <div className="side-footer">
         MAR 2027<br />
-        <small>Versión 1.0  12 sept 2026  1033 hrs</small>
+        <small>Versión 1.0  22 sep 2026  1733 hrs</small>
       </div>
     </div>
   );

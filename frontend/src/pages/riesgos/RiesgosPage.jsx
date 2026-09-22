@@ -63,8 +63,8 @@ export default function RiesgosPage() {
   const [selectedRiesgo, setSelectedRiesgo] = useState(null);
   const [actividades, setActividades] = useState([]);
   const [formData, setFormData] = useState({});
-  const [hoverAnchor, setHoverAnchor] = useState(null);
-  const [hoverRisk, setHoverRisk] = useState(null);
+  const [fichaAnchor, setFichaAnchor] = useState(null);
+  const [fichaRisk, setFichaRisk] = useState(null);
   const [expandedURs, setExpandedURs] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -76,13 +76,13 @@ export default function RiesgosPage() {
     setSnackbarOpen(true);
   };
   
-  const handlePopoverOpen = (event, r) => {
-    setHoverAnchor(event.currentTarget);
-    setHoverRisk(r);
+  const openFicha = (event, r) => {
+    setFichaAnchor(event.currentTarget);
+    setFichaRisk(r);
   };
-  const handlePopoverClose = () => {
-    setHoverAnchor(null);
-    setHoverRisk(null);
+  const closeFicha = () => {
+    setFichaAnchor(null);
+    setFichaRisk(null);
   };
   const navigate = useNavigate();
   const ejercicio = useGlobalStore((s) => s.ejercicio);
@@ -399,9 +399,8 @@ export default function RiesgosPage() {
                       riesgosUR.map(r => (
                         <tr 
                           key={r.id}
-                          onMouseEnter={(e) => handlePopoverOpen(e, r)}
-                          onMouseLeave={handlePopoverClose}
-                          style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f1f5f9' } }}
+                          onClick={(e) => openFicha(e, r)}
+                          style={{ transition: 'background-color 0.2s', cursor: 'pointer', ':hover': { backgroundColor: '#f1f5f9' } }}
                         >
                           <td><b>{r.local_id}</b></td>
                           <td style={{ maxWidth: '300px' }}>{r.objetivo || '—'}</td>
@@ -444,12 +443,9 @@ export default function RiesgosPage() {
       )}
 
       <Popover
-        id="mouse-over-popover"
-        sx={{
-          pointerEvents: 'none',
-        }}
-        open={Boolean(hoverAnchor)}
-        anchorEl={hoverAnchor}
+        id="click-popover"
+        open={Boolean(fichaAnchor)}
+        anchorEl={fichaAnchor}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'left',
@@ -458,42 +454,41 @@ export default function RiesgosPage() {
           vertical: 'top',
           horizontal: 'left',
         }}
-        onClose={handlePopoverClose}
-        disableRestoreFocus
+        onClose={closeFicha}
         disableScrollLock
         PaperProps={{
           elevation: 4,
           sx: { borderRadius: '12px', mt: 1, p: 2, maxWidth: 500, minWidth: 350, border: '1px solid #e2e8f0', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }
         }}
       >
-        {hoverRisk && (
+        {fichaRisk && (
           <div>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.1rem', color: '#1F4E79' }}>Ficha rápida · {hoverRisk.local_id}</h3>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.1rem', color: '#1F4E79' }}>Ficha rápida · {fichaRisk.local_id}</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '8px' }}>
               <div>
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Estado</span>
-                <div style={{ fontSize: '0.9rem' }}>{hoverRisk.status}</div>
+                <div style={{ fontSize: '0.9rem' }}>{fichaRisk.status}</div>
               </div>
               <div>
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>P / I</span>
-                <div style={{ fontSize: '0.9rem' }}>{hoverRisk.probabilidad} / {hoverRisk.impacto}</div>
+                <div style={{ fontSize: '0.9rem' }}>{fichaRisk.probabilidad} / {fichaRisk.impacto}</div>
               </div>
             </div>
 
             <div style={{ marginBottom: '8px' }}>
               <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Objetivo</span>
-              <div style={{ fontSize: '0.9rem' }}>{hoverRisk.objetivo || '—'}</div>
+              <div style={{ fontSize: '0.9rem' }}>{fichaRisk.objetivo || '—'}</div>
             </div>
 
             <div style={{ marginBottom: '8px' }}>
               <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Riesgo</span>
-              <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#0f172a' }}>{hoverRisk.riesgo || '—'}</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 500, color: '#0f172a' }}>{fichaRisk.riesgo || '—'}</div>
             </div>
 
             <div>
               <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Factores</span>
-              <div style={{ fontSize: '0.9rem' }}>{[hoverRisk.factores, hoverRisk.factores_internos, hoverRisk.factores_externos].filter(Boolean).join('; ') || '—'}</div>
+              <div style={{ fontSize: '0.9rem' }}>{[fichaRisk.factores, fichaRisk.factores_internos, fichaRisk.factores_externos].filter(Boolean).join('; ') || '—'}</div>
             </div>
           </div>
         )}
