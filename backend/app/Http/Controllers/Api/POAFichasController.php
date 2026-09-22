@@ -163,8 +163,12 @@ class POAFichasController extends Controller
         }
 
         foreach ($proyectos as $p) {
-            $real_area_id = $mapa_ro_urg[$p->urg_id] ?? null;
-            $p->riesgos_area = $real_area_id ? DB::table('riesgos')->where('ejercicio_id', $ejercicio_db_id)->where('area_id', $real_area_id)->select('id', 'local_id', 'riesgo')->get() : collect();
+            // Usar directamente el area_id del request para obtener riesgos del área
+            // El mapa_ro_urg puede fallar para áreas con nombres cortos (ej. Presidencia)
+            $direct_area_id = ($area_id && $area_id !== 'todas') ? (int)$area_id : ($mapa_ro_urg[$p->urg_id] ?? null);
+            $p->riesgos_area = $direct_area_id
+                ? DB::table('riesgos')->where('ejercicio_id', $ejercicio_db_id)->where('area_id', $direct_area_id)->select('id', 'local_id', 'riesgo')->get()
+                : collect();
             $p->metas = DB::table('metas')->where('proyecto_id', $p->id)->get();
             $p->indicadores = DB::table('indicadores')->where('proyecto_id', $p->id)->get();
 

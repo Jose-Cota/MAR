@@ -17,8 +17,8 @@ const RootStyle = styled('div')(({ theme }) => ({
 
 const CardStyle = styled(Card)(({ theme }) => ({
   width: '100%',
-  maxWidth: 420,
-  padding: theme.spacing(5, 4),
+  maxWidth: 504,               // +20% respecto a 420
+  padding: theme.spacing(3, 4), // reducido de (5,4) a (3,4)
 }));
 
 // ----------------------------------------------------------------------
@@ -58,9 +58,9 @@ export default function Login() {
     <RootStyle>
       <Container maxWidth="sm">
         <CardStyle>
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Logo disabledLink sx={{ width: 110, mx: 'auto', mb: 2 }} />
-            <Typography sx={{ color: 'text.secondary', mb: 5, fontSize: '1.25rem', fontWeight: 600 }}>
+          <Box sx={{ textAlign: 'center', mb: 2 }}>
+            <Logo disabledLink sx={{ width: 90, mx: 'auto', mb: 1.5 }} />
+            <Typography sx={{ color: 'text.secondary', mb: 1, fontSize: '1.15rem', fontWeight: 600 }}>
               Matriz de Administración de Riesgos 2027
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -69,7 +69,7 @@ export default function Login() {
           </Box>
 
           <Box component="form" onSubmit={handleSubmit}>
-            <Stack spacing={2.5}>
+            <Stack spacing={1.5}>
               {error && <Alert severity="error">{error}</Alert>}
 
               <TextField
@@ -106,8 +106,9 @@ export default function Login() {
               <Button fullWidth size="large" type="submit" variant="contained" disabled={isSubmitting}>
                 {isSubmitting ? 'Ingresando…' : 'Iniciar sesión'}
               </Button>
+
               <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: 'text.secondary' }}>
-                Versión 1.0 · 21 sept 2026 · 12:43 hrs
+                Versión 1.0 · 22 sep 2026 · 20:18 hrs
               </Typography>
             </Stack>
           </Box>

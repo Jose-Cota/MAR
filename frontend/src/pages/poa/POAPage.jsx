@@ -5,7 +5,7 @@ import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 export default function POAPage() {
   const [areas, setAreas]           = useState([]);
-  const [areaId, setAreaId]         = useState('todas');
+  const [areaId, setAreaId]         = useState('');
   const [fichas, setFichas]         = useState([]);
   const [loading, setLoading]       = useState(false);
   const [expandedURs, setExpandedURs] = useState({});
@@ -16,6 +16,11 @@ export default function POAPage() {
     axios.get('/unidades-responsables').then(res => {
       const data = res.data.data || res.data;
       setAreas(data);
+      // Seleccionar la primera área por defecto
+      if (data.length > 0) {
+        const firstId = String(data[0].unidad_responsable_gasto_id || data[0].id_unidad || data[0].id);
+        setAreaId(firstId);
+      }
     });
   }, []);
 
@@ -94,7 +99,6 @@ export default function POAPage() {
           value={areaId}
           onChange={e => setAreaId(e.target.value)}
         >
-          <option value="todas">Todas las áreas (Institucional)</option>
           {areas.map((a, i) => (
             <option
               key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i}
@@ -127,7 +131,7 @@ export default function POAPage() {
                 <tr>
                   <th style={{ width: '40px' }}>#</th>
                   <th>Acción sustantiva / alineación</th>
-                  <th style={{ width: '180px', textAlign: 'center' }}>Riesgos vinculados</th>
+                  <th style={{ width: '270px', textAlign: 'center' }}>Riesgos vinculados</th>
                 </tr>
               </thead>
               <tbody>
