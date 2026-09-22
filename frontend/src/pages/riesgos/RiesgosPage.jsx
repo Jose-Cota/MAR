@@ -6,6 +6,7 @@ import useGlobalStore from '../../stores/useGlobalStore';
 import useAuth from '../../hooks/useAuth';
 import { Edit, Delete, Visibility } from '@mui/icons-material';
 import { IconButton, Tooltip, Popover, Snackbar, Alert } from '@mui/material';
+import Iconify from '../../components/Iconify';
 
 const cuadrante = (p, i) => {
   p = Number(p); i = Number(i);
@@ -17,6 +18,36 @@ const cuadrante = (p, i) => {
 
 const ESTADOS = ['Borrador', 'En revisión', 'Devuelto con observaciones', 'Validado'];
 
+const proyectosDeRiesgo = (r) => {
+  const map = new Map();
+  (r?.proyectos || []).forEach(p => {
+    if (p?.proyecto_id) map.set(String(p.proyecto_id), p);
+  });
+  (r?.actividades || []).forEach(a => {
+    const py = a?.proyecto;
+    if (py?.proyecto_id) map.set(String(py.proyecto_id), py);
+  });
+  return Array.from(map.values());
+};
+
+const proyectoLabel = (p) => {
+  const clave = [p?.urg_num, p?.ro_num, p?.pg_num, p?.sp_num, p?.py_num ?? p?.numero]
+    .filter(v => v !== null && v !== undefined && v !== '')
+    .join('-');
+  const nombre = p?.nombre || '';
+  return clave ? `${clave} ${nombre}`.trim() : (nombre || p?.clave || '');
+};
+
+const proyectosParaMostrar = (r) => {
+  const linked = proyectosDeRiesgo(r);
+  return linked.length ? linked : (r?.proyectos_area || []);
+};
+
+const actividadesParaMostrar = (r) => {
+  const linked = r?.actividades || [];
+  return linked.length ? linked : (r?.actividades_area || []);
+};
+
 export default function RiesgosPage() {
   const [riesgos, setRiesgos] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -26,6 +57,7 @@ export default function RiesgosPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editRiesgo, setEditRiesgo] = useState(null);
   const [editorProyectoId, setEditorProyectoId] = useState('');
+  const [editorProyectos, setEditorProyectos] = useState([]);
   const [editorAreaId, setEditorAreaId] = useState('');
   const [fichaRapidaOpen, setFichaRapidaOpen] = useState(false);
   const [selectedRiesgo, setSelectedRiesgo] = useState(null);
@@ -94,6 +126,14 @@ export default function RiesgosPage() {
 
   const openEditor = (r = null) => {
     setEditRiesgo(r);
+    const linkedActs = r?.actividades || [];
+    const linkedActIds = linkedActs.map(a => String(a.id ?? a.accion_sustantiva_id)).filter(Boolean);
+    const linkedProyectoId = linkedActs.find(a => a.proyecto_id)?.proyecto_id;
+    const riesgoProyectos = proyectosDeRiesgo(r).map(p => ({
+      id: p.proyecto_id,
+      nombre: p.nombre || '',
+      clave: proyectoLabel(p),
+    }));
     setFormData(r ? {
       local_id: r.local_id,
       objetivo: r.objetivo || '',
@@ -111,7 +151,7 @@ export default function RiesgosPage() {
       indicador: (r.indicadores || [])[0]?.nombre || '',
       probabilidad: r.probabilidad || 2,
       impacto: r.impacto || 8,
-      actividades: (r.actividades || []).map(a => String(a.id)),
+      actividades: linkedActIds,
     } : {
       local_id: '',
       objetivo: '', efectos_consecuencias: '', riesgo: '',
@@ -121,7 +161,8 @@ export default function RiesgosPage() {
       indicador: '', probabilidad: 2, impacto: 8, actividades: [],
     });
     setEditorAreaId(r ? r.area_id : areaId);
-    setEditorProyectoId('');
+    setEditorProyectos(riesgoProyectos);
+    setEditorProyectoId(linkedProyectoId ? String(linkedProyectoId) : (riesgoProyectos[0] ? String(riesgoProyectos[0].id) : ''));
     setEditorOpen(true);
   };
 
@@ -155,16 +196,12 @@ export default function RiesgosPage() {
     }));
   };
 
+  const handleActividadSeleccion = (id) => {
+    setFormData(prev => ({ ...prev, actividades: id ? [String(id)] : [] }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!editorProyectoId) {
-      showError('Debe seleccionar un proyecto.');
-      return;
-    }
-    if (!formData.actividades || formData.actividades.length === 0) {
-      showError('Debe seleccionar al menos una actividad vinculada (acción sustantiva).');
-      return;
-    }
     if (!formData.objetivo || formData.objetivo.trim() === '') {
       showError('Debe ingresar un objetivo.');
       return;
@@ -348,13 +385,13 @@ export default function RiesgosPage() {
                     <thead>
                       <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
                         <th style={{ color: '#fff', width: '6%', textAlign: 'center' }}>ID</th>
-                        <th style={{ color: '#fff', width: '32%' }}>Objetivo</th>
+                        <th style={{ color: '#fff', width: '30%' }}>Objetivo</th>
                         <th style={{ color: '#fff', width: '28%' }}>Riesgo</th>
                         <th style={{ color: '#fff', width: '4%', textAlign: 'center' }}>P</th>
                         <th style={{ color: '#fff', width: '4%', textAlign: 'center' }}>I</th>
                         <th style={{ color: '#fff', width: '8%', textAlign: 'center' }}>Cuadrante</th>
                         <th style={{ color: '#fff', width: '8%', textAlign: 'center' }}>Estatus</th>
-                        <th style={{ color: '#fff', width: '10%', textAlign: 'center' }}>Acciones</th>
+                        <th style={{ color: '#fff', width: '12%', textAlign: 'center' }}>Acciones</th>
                       </tr>
                     </thead>
                   <tbody>
@@ -476,22 +513,33 @@ export default function RiesgosPage() {
             <form id="riesgo-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
               <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }} className="form-grid">
             
-            {actividades.length > 0 && (() => {
+            {(() => {
               const uniqueProyectosMap = new Map();
               actividades.filter(a => !editorAreaId || String(a.area_id) === String(editorAreaId)).forEach(a => {
-                if (!uniqueProyectosMap.has(a.proyecto_id)) {
-                  uniqueProyectosMap.set(a.proyecto_id, {
+                if (a.proyecto_id !== undefined && a.proyecto_id !== null && !uniqueProyectosMap.has(String(a.proyecto_id))) {
+                  uniqueProyectosMap.set(String(a.proyecto_id), {
                     id: a.proyecto_id,
                     nombre: a.proyecto_nombre,
                     clave: [a.urg_num, a.ro_num, a.pg_num, a.sp_num, a.py_num].filter(Boolean).join('-')
                   });
                 }
               });
+              editorProyectos.forEach(p => {
+                if (p?.id !== undefined && p?.id !== null) {
+                  uniqueProyectosMap.set(String(p.id), p);
+                }
+              });
               const uniqueProyectos = Array.from(uniqueProyectosMap.values());
+
+              const actividadesDelProyecto = actividades.filter(a => !editorProyectoId || String(a.proyecto_id) === editorProyectoId);
+
+              const actividadIdSeleccionada = formData.actividades?.length
+                ? String(formData.actividades.find(id => actividadesDelProyecto.some(a => String(a.id) === String(id))) ?? '')
+                : '';
 
               return (
                 <div className="wide" style={{ marginBottom: '12px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', gap: '16px', alignItems: 'end', marginBottom: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '16px', alignItems: 'end', marginBottom: '16px' }}>
                     <label style={{ display: 'block', fontWeight: 'bold' }}>
                       ID local
                       <input 
@@ -518,8 +566,12 @@ export default function RiesgosPage() {
                         ))}
                       </select>
                     </label>
+                  </div>
+
+                  {!editRiesgo && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <label style={{ display: 'block', fontWeight: 'bold' }}>
-                      Proyectos *
+                      Proyecto
                       <select 
                         className="input" 
                         style={{ width: '100%', marginTop: 5, fontWeight: 'normal' }}
@@ -534,22 +586,44 @@ export default function RiesgosPage() {
                         ))}
                       </select>
                     </label>
-                  </div>
-                  
-                  <fieldset style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
-                    <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas *</legend>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '180px', overflowY: 'auto', paddingRight: '8px' }}>
-                      {actividades.filter(a => !editorProyectoId || String(a.proyecto_id) === editorProyectoId).map(a => (
-                        <label className="check" key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', backgroundColor: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s', margin: 0, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
-                          <input type="checkbox"
-                            style={{ marginTop: '2px', accentColor: '#0f172a', width: '16px', height: '16px', cursor: 'pointer' }}
-                            checked={formData.actividades?.includes(String(a.id))}
-                            onChange={() => handleActividadToggle(a.id)} />
-                          <span style={{ lineHeight: 1.3, color: '#334155', flex: 1 }}>{a.descripcion || a.denominacion || 'Actividad sin nombre'}</span>
-                        </label>
-                      ))}
+                    <label style={{ display: 'block', fontWeight: 'bold' }}>
+                      Actividad Sustantiva
+                      <select 
+                        className="input" 
+                        style={{ width: '100%', marginTop: 5, fontWeight: 'normal' }}
+                        value={actividadIdSeleccionada} 
+                        onChange={e => handleActividadSeleccion(e.target.value)}
+                      >
+                        <option value="">Seleccione una actividad...</option>
+                        {actividadesDelProyecto.map(a => (
+                          <option key={String(a.id)} value={String(a.id)}>
+                            {[a.numero, a.descripcion || a.denominacion || 'Actividad'].filter(Boolean).join(' · ')}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     </div>
-                  </fieldset>
+                  )}
+
+                  {!editRiesgo && (
+                    <fieldset style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
+                      <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas</legend>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '180px', overflowY: 'auto', paddingRight: '8px' }}>
+                        {actividadesDelProyecto.map(a => (
+                          <label className="check" key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', backgroundColor: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', cursor: 'pointer', transition: 'all 0.2s', margin: 0, boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}>
+                            <input type="checkbox"
+                              style={{ marginTop: '2px', accentColor: '#0f172a', width: '16px', height: '16px', cursor: 'pointer' }}
+                              checked={formData.actividades?.includes(String(a.id))}
+                              onChange={() => handleActividadToggle(a.id)} />
+                            <span style={{ lineHeight: 1.3, color: '#334155', flex: 1 }}>{a.descripcion || a.denominacion || 'Actividad sin nombre'}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                  {!editRiesgo && (
+                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>Si no selecciona alguna acción, al guardar se vincularán automáticamente las acciones sustantivas del área para el ejercicio {ejercicio}.</p>
+                  )}
                 </div>
               );
             })()}

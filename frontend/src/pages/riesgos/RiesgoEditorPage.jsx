@@ -45,7 +45,7 @@ export default function RiesgoEditorPage() {
       const res = await axios.get(`/riesgos/${id}`);
       setFormData({
         ...res.data,
-        actividades: res.data.actividades.map(a => a.id_actividad || a.id) // Map this depending on backend structure
+        actividades: res.data.actividades.map(a => a.id ?? a.accion_sustantiva_id ?? a.id_actividad)
       });
     } catch (e) {
       console.error(e);
