@@ -96,15 +96,16 @@ export default function FactoresPage() {
         {loading ? (
           <p style={{ padding: '20px' }}>Cargando factores...</p>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
-                <th style={{ color: '#fff', width: '80px' }}>ID</th>
-                <th style={{ color: '#fff', width: '40%' }}>Riesgo</th>
-                <th style={{ color: '#fff' }}>Factores de riesgo</th>
-                <th style={{ color: '#fff', width: '100px', textAlign: 'center' }}>Acciones</th>
-              </tr>
-            </thead>
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="data-table" style={{ width: '100%', tableLayout: 'fixed' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
+                  <th style={{ color: '#fff', width: '5%', textAlign: 'center' }}>ID</th>
+                  <th style={{ color: '#fff', width: '45%' }}>Riesgo</th>
+                  <th style={{ color: '#fff', width: '40%' }}>Factores de riesgo</th>
+                  <th style={{ color: '#fff', width: '10%', textAlign: 'center' }}>Acciones</th>
+                </tr>
+              </thead>
             <tbody>
               {filtrados.map(r => (
                   <tr key={r.id} style={{ transition: 'background-color 0.2s', verticalAlign: 'top' }}>
@@ -133,6 +134,7 @@ export default function FactoresPage() {
               )}
             </tbody>
           </table>
+          </div>
         )}
       </section>
 

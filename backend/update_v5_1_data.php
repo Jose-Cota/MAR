@@ -78,6 +78,12 @@ foreach ($seed['risks'] as $r) {
             $indicador->riesgo_id = $risk->id;
             $indicador->nombre = $i['name'] ?? '';
             $indicador->periodicidad = $i['periodicity'] ?? '';
+            $indicador->formula = $i['formula'] ?? null;
+            $indicador->numerador = $i['numeratorLabel'] ?? null;
+            $indicador->denominador = $i['denominatorLabel'] ?? null;
+            $indicador->tipo = $i['type'] ?? null;
+            $indicador->unidad = $i['unit'] ?? null;
+            $indicador->sentido = $i['direction'] ?? null;
             $indicador->save();
         }
     }

@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $res = Illuminate\Support\Facades\DB::table("responsables_operativos")->whereIn("responsable_operativo_id", [444, 445, 446, 459])->pluck("nombre", "responsable_operativo_id"); print_r($res);

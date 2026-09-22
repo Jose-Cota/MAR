@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $a = Illuminate\Support\Facades\DB::table("areas")->get(); foreach($a as $row) { echo $row->id." - ".$row->clave."\n"; }

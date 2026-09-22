@@ -218,13 +218,54 @@ class RiesgoController extends Controller
 
         DB::beginTransaction();
         try {
+            // Resolver año → ID interno del ejercicio
+            $ejercicioId = $request->ejercicio_id;
+            if ($ejercicioId > 2000) {
+                $ej = DB::table('ejercicios')->where('ejercicio', $ejercicioId)->first();
+                if ($ej) $ejercicioId = $ej->ejercicio_id;
+            }
+
             Riesgo::whereIn('id', $request->risk_ids)
                 ->where('area_id', $request->area_id)
-                ->where('ejercicio_id', $request->ejercicio_id)
+                ->where('ejercicio_id', $ejercicioId)
                 ->update(['status' => 'Validado']);
             
             DB::commit();
             return response()->json(['message' => 'Riesgos validados correctamente']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function batchUnvalidate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'area_id' => 'required',
+            'ejercicio_id' => 'required|integer',
+            'risk_ids' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Resolver año → ID interno del ejercicio
+            $ejercicioId = $request->ejercicio_id;
+            if ($ejercicioId > 2000) {
+                $ej = DB::table('ejercicios')->where('ejercicio', $ejercicioId)->first();
+                if ($ej) $ejercicioId = $ej->ejercicio_id;
+            }
+
+            Riesgo::whereIn('id', $request->risk_ids)
+                ->where('area_id', $request->area_id)
+                ->where('ejercicio_id', $ejercicioId)
+                ->update(['status' => 'Captura']);
+            
+            DB::commit();
+            return response()->json(['message' => 'Riesgos regresados a Captura correctamente']);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);

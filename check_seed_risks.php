@@ -1,0 +1,1 @@
+<?php $seed = json_decode(file_get_contents(__DIR__."/scratch_seed.json"), true); foreach($seed["risks"] as $r) { if(isset($r["controls"])) { echo $r["id"] . " has controls\n"; } if (isset($r["indicators"])) { echo $r["id"] . " has indicators\n"; } }

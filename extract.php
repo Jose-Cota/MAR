@@ -1,0 +1,1 @@
+<?php $c = file_get_contents("scratch_scripts_clean.js"); preg_match("/const dict = ({.*?});/s", $c, $m); if($m) { file_put_contents("indicators.json", $m[1]); echo "Extracted indicators\n"; } else echo "Not found";

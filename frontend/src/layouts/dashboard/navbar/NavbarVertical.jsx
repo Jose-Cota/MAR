@@ -13,6 +13,7 @@ export default function NavbarVertical() {
   const { hasRole } = useAuth();
 
   const isSuperAdmin = hasRole('Super Administrador') || hasRole('superadmin') || hasRole('Superadmin');
+  const isAdminOrSuperAdmin = isSuperAdmin || hasRole('Administrador') || hasRole('admin') || hasRole('Admin');
 
   return (
     <div className="sidebar">
@@ -36,21 +37,25 @@ export default function NavbarVertical() {
         <NavLink to="/mapmar" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <Iconify icon="ph:grid-four" sx={{ width: 22, height: 22 }} /> <span>MAPA y MAR</span>
         </NavLink>
-        <NavLink to="/indicadores" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <Iconify icon="ph:chart-bar" sx={{ width: 22, height: 22 }} /> <span>Indicadores</span>
-        </NavLink>
-        <NavLink to="/seguimiento" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <Iconify icon="ph:arrow-up-right" sx={{ width: 22, height: 22 }} /> <span>Seguimiento</span>
-        </NavLink>
-        <NavLink to="/reportes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <Iconify icon="ph:list" sx={{ width: 22, height: 22 }} /> <span>Reportes</span>
-        </NavLink>
-        <NavLink to="/consolidacion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <Iconify icon="ph:diamond" sx={{ width: 22, height: 22 }} /> <span>Consolidación</span>
-        </NavLink>
-        <NavLink to="/mapa-institucional" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-          <Iconify icon="ph:map-trifold" sx={{ width: 22, height: 22 }} /> <span>Mapa Institucional</span>
-        </NavLink>
+        {isAdminOrSuperAdmin && (
+          <>
+            <NavLink to="/indicadores" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:chart-bar" sx={{ width: 22, height: 22 }} /> <span>Indicadores</span>
+            </NavLink>
+            <NavLink to="/seguimiento" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:arrow-up-right" sx={{ width: 22, height: 22 }} /> <span>Seguimiento</span>
+            </NavLink>
+            <NavLink to="/reportes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:list" sx={{ width: 22, height: 22 }} /> <span>Reportes</span>
+            </NavLink>
+            <NavLink to="/consolidacion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:diamond" sx={{ width: 22, height: 22 }} /> <span>Consolidación</span>
+            </NavLink>
+            <NavLink to="/mapa-institucional" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:map-trifold" sx={{ width: 22, height: 22 }} /> <span>Mapa Institucional</span>
+            </NavLink>
+          </>
+        )}
 
         {/* Solo Super Administrador: gestión de Usuarios */}
         {isSuperAdmin && (

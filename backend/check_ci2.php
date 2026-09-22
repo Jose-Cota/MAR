@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $accs = Illuminate\Support\Facades\DB::table("acciones_sustantivas")->where("proyecto_id", 875)->get(); foreach($accs as $a) { echo $a->numero." - ".$a->descripcion."\n"; }

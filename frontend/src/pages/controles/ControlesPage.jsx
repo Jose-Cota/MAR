@@ -147,34 +147,8 @@ export default function ControlesPage() {
       return <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Sin controles registrados</span>;
     }
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {r.controles.map((c, idx) => (
-          <div key={idx} style={{ 
-            backgroundColor: '#f8fafc', 
-            border: '1px solid #e2e8f0', 
-            borderRadius: '6px', 
-            padding: '10px 12px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-          }}>
-            <div style={{ color: '#1e293b', fontSize: '0.88rem', lineHeight: '1.45', fontWeight: 500 }}>
-              {c.texto || c.control || '—'}
-            </div>
-            <div style={{ marginTop: '6px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
-              <Chip 
-                label={c.estado_validacion || 'Propuesto – pendiente de validación'} 
-                size="small" 
-                variant="outlined"
-                color={c.estado_validacion?.toLowerCase().includes('validado') ? 'success' : 'default'}
-                sx={{ fontSize: '0.72rem', height: '22px' }}
-              />
-              {c.evidencia_responsable && (
-                <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                  <b>Resp:</b> {c.evidencia_responsable}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
+      <div style={{ color: '#1e293b', fontSize: '0.9rem', lineHeight: '1.45' }}>
+        {r.controles.map(c => c.texto || c.control).filter(Boolean).join('; ')}
       </div>
     );
   };
@@ -188,53 +162,16 @@ export default function ControlesPage() {
     const formulaText = ind.formula || (ind.numerador && ind.denominador ? `Resultado = (${ind.numerador} / ${ind.denominador}) × 100` : ind.nombre || '—');
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {ind.nombre && (
-          <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '0.88rem', lineHeight: 1.4 }}>
-            {ind.nombre}
-          </div>
-        )}
-        <div style={{ 
-          padding: '10px 12px', 
-          border: '1px solid #cbd5e1', 
-          borderRadius: '6px', 
-          backgroundColor: '#f1f5f9', 
-          color: '#1e3a8a',
-          fontSize: '0.84rem',
-          fontFamily: 'monospace, monospace',
-          wordBreak: 'break-word',
-          lineHeight: 1.45
-        }}>
-          <b>{formulaText}</b>
-        </div>
-        {(ind.numerador || ind.denominador) && (
-          <div style={{ 
-            backgroundColor: '#ffffff', 
-            border: '1px solid #e2e8f0', 
-            borderRadius: '6px', 
-            padding: '8px 10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-            fontSize: '0.8rem'
-          }}>
-            {ind.numerador && (
-              <div style={{ color: '#334155', lineHeight: 1.4 }}>
-                <span style={{ fontWeight: 700, color: '#0369a1' }}>Numerador (N): </span>
-                {ind.numerador}
-              </div>
-            )}
-            {ind.denominador && (
-              <div style={{ color: '#334155', lineHeight: 1.4 }}>
-                <span style={{ fontWeight: 700, color: '#0369a1' }}>Denominador (D): </span>
-                {ind.denominador}
-              </div>
-            )}
-          </div>
-        )}
-        <div style={{ fontSize: '0.76rem', color: '#64748b' }}>
-          Unidad: <b>{ind.unidad || 'Porcentaje'}</b> · Sentido: <b>{ind.sentido || 'Ascendente'}</b>
-        </div>
+      <div style={{ 
+        padding: '12px 14px', 
+        border: '1px solid #cbd5e1', 
+        borderRadius: '6px', 
+        backgroundColor: '#ffffff', 
+        color: '#0f172a',
+        fontSize: '0.9rem',
+        lineHeight: 1.45
+      }}>
+        <b>{formulaText}</b>
       </div>
     );
   };
@@ -275,16 +212,16 @@ export default function ControlesPage() {
         ) : riesgos.length === 0 ? (
           <div className="empty" style={{ padding: '20px' }}>No hay riesgos registrados para esta área y ejercicio.</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table" style={{ width: '100%', minWidth: '1100px' }}>
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table className="data-table" style={{ width: '100%', tableLayout: 'fixed' }}>
               <thead>
                 <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
-                  <th style={{ color: '#fff', width: '70px', textAlign: 'center' }}>ID</th>
+                  <th style={{ color: '#fff', width: '6%', textAlign: 'center' }}>ID</th>
                   <th style={{ color: '#fff', width: '20%' }}>Riesgo</th>
-                  <th style={{ color: '#fff', width: '28%' }}>Control</th>
-                  <th style={{ color: '#fff', width: '32%' }}>Indicador / fórmula</th>
-                  <th style={{ color: '#fff', width: '110px', textAlign: 'center' }}>Periodicidad</th>
-                  <th style={{ color: '#fff', width: '90px', textAlign: 'center' }}>Acciones</th>
+                  <th style={{ color: '#fff', width: '26%' }}>Control</th>
+                  <th style={{ color: '#fff', width: '28%' }}>Indicador / fórmula</th>
+                  <th style={{ color: '#fff', width: '10%', textAlign: 'center' }}>Periodicidad</th>
+                  <th style={{ color: '#fff', width: '10%', textAlign: 'center' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -295,17 +232,14 @@ export default function ControlesPage() {
                       <td style={{ paddingTop: '15px', textAlign: 'center' }}>
                         <span style={{ 
                           fontWeight: 700, 
-                          color: '#1F4E79', 
-                          backgroundColor: '#e0f2fe', 
-                          padding: '3px 8px', 
-                          borderRadius: '4px',
-                          fontSize: '0.85rem'
+                          color: '#1e293b', 
+                          fontSize: '0.9rem'
                         }}>
                           {r.local_id}
                         </span>
                       </td>
                       <td style={{ paddingTop: '15px', color: '#1e293b', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                        <b>{r.riesgo}</b>
+                        {r.riesgo}
                       </td>
                       <td style={{ paddingTop: '15px' }}>
                         {isEditing ? (
@@ -393,11 +327,9 @@ export default function ControlesPage() {
                             sx={{ width: '100px' }}
                           />
                         ) : (
-                          <Chip 
-                            label={getPeriodicidadText(r)} 
-                            size="small"
-                            sx={{ backgroundColor: '#e2e8f0', color: '#1e293b', fontWeight: 600, fontSize: '0.78rem' }}
-                          />
+                          <span style={{ color: '#1e293b', fontSize: '0.9rem' }}>
+                            {getPeriodicidadText(r)}
+                          </span>
                         )}
                       </td>
                       <td style={{ paddingTop: '15px', textAlign: 'center' }}>

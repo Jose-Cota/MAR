@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $r = Illuminate\Support\Facades\DB::table("riesgos")->where("ejercicio_id", 17)->where("area_id", 7)->get(); echo "Riesgos for urg_id 7 (CI): ".count($r)."\n";

@@ -343,19 +343,20 @@ export default function RiesgosPage() {
               </div>
 
               {isExpanded && (
-                <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '16px' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
-                      <th style={{ color: '#fff' }}>ID</th>
-                      <th style={{ color: '#fff' }}>Objetivo</th>
-                      <th style={{ color: '#fff' }}>Riesgo</th>
-                      <th style={{ color: '#fff' }}>P</th>
-                      <th style={{ color: '#fff' }}>I</th>
-                      <th style={{ color: '#fff' }}>Cuadrante</th>
-                      <th style={{ color: '#fff' }}>Estatus</th>
-                      <th style={{ color: '#fff' }}>Acciones</th>
-                    </tr>
-                  </thead>
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                  <table className="data-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop: '16px' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
+                        <th style={{ color: '#fff', width: '6%', textAlign: 'center' }}>ID</th>
+                        <th style={{ color: '#fff', width: '32%' }}>Objetivo</th>
+                        <th style={{ color: '#fff', width: '28%' }}>Riesgo</th>
+                        <th style={{ color: '#fff', width: '4%', textAlign: 'center' }}>P</th>
+                        <th style={{ color: '#fff', width: '4%', textAlign: 'center' }}>I</th>
+                        <th style={{ color: '#fff', width: '8%', textAlign: 'center' }}>Cuadrante</th>
+                        <th style={{ color: '#fff', width: '8%', textAlign: 'center' }}>Estatus</th>
+                        <th style={{ color: '#fff', width: '10%', textAlign: 'center' }}>Acciones</th>
+                      </tr>
+                    </thead>
                   <tbody>
                     {riesgosUR.length > 0 ? (
                       riesgosUR.map(r => (
@@ -398,6 +399,7 @@ export default function RiesgosPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
               )}
             </section>
           );

@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); $u = Illuminate\Support\Facades\DB::table("unidades_responsables_gastos")->where("unidad_responsable_gasto_id", 7)->first(); print_r($u);

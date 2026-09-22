@@ -55,14 +55,35 @@ class POAFichasController extends Controller
                 foreach ($rosGrupo as $ro) {
                     $roNombreLower = mb_strtolower(trim($ro->nombre));
                     // Match: el nombre del RO contiene palabras significativas del área
-                    // Extraemos palabras > 5 chars del nombre del área para buscar
+                    // Normalizar acentos
+                    $roNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($ro->nombre)));
+                    $roNombreClean = preg_replace('/[éèëê]/u', 'e', $roNombreClean);
+                    $roNombreClean = preg_replace('/[íìïî]/u', 'i', $roNombreClean);
+                    $roNombreClean = preg_replace('/[óòöô]/u', 'o', $roNombreClean);
+                    $roNombreClean = preg_replace('/[úùüû]/u', 'u', $roNombreClean);
+                    
+                    // Normalizaciones manuales de cargos a áreas
+                    $roNombreClean = str_replace(['director', 'directora'], 'direccion', $roNombreClean);
+                    $roNombreClean = str_replace(['presidente', 'presidenta'], 'presidencia', $roNombreClean);
+                    $roNombreClean = str_replace(['secretario', 'secretaria'], 'secretaria', $roNombreClean);
+                    $roNombreClean = str_replace(['contralor', 'contralora'], 'contraloria', $roNombreClean);
+                    $roNombreClean = str_replace(['interno', 'interna'], 'interna', $roNombreClean);
+                    $roNombreClean = str_replace(['defensor', 'defensora'], 'defensoria', $roNombreClean);
+                    $roNombreClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $roNombreClean);
+                    
+                    $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($urgSeleccionada->nombre)));
+                    $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
+                    $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
+                    $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
+                    $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
+
                     $palabras = array_filter(
-                        explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreLower)),
+                        explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
                         fn($p) => mb_strlen($p) > 5
                     );
                     $coincidencias = 0;
                     foreach ($palabras as $palabra) {
-                        if (str_contains($roNombreLower, $palabra)) {
+                        if (str_contains($roNombreClean, $palabra)) {
                             $coincidencias++;
                         }
                     }
@@ -97,7 +118,53 @@ class POAFichasController extends Controller
 
         $proyectos = $query->get();
 
+        // Construir mapa inverso de urg_id_poa -> URG ID (1-25)
+        $mapa_ro_urg = [];
+        $todasUrgs = DB::table('unidades_responsables_gastos')->get();
+        $rosEjercicio = DB::table('responsables_operativos')->where('ejercicio_id', $ejercicio_db_id)->get()->groupBy('unidad_responsable_gasto_id');
+        
+        foreach ($todasUrgs as $u) {
+            $uClean = preg_replace('/[áàäâéèëêíìïîóòöôúùüû]/u', 'a', mb_strtolower(trim($u->nombre)));
+            $uClean = str_replace(['é','í','ó','ú'], ['e','i','o','u'], mb_strtolower(trim($u->nombre))); // Simple replace
+            
+            // just to be safe, use same manual normalizations
+            $uClean = str_replace(['director', 'directora'], 'direccion', $uClean);
+            $uClean = str_replace(['presidente', 'presidenta'], 'presidencia', $uClean);
+            $uClean = str_replace(['secretario', 'secretaria'], 'secretaria', $uClean);
+            $uClean = str_replace(['contralor', 'contralora'], 'contraloria', $uClean);
+            $uClean = str_replace(['interno', 'interna'], 'interna', $uClean);
+            $uClean = str_replace(['defensor', 'defensora'], 'defensoria', $uClean);
+            $uClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $uClean);
+            
+            $palabras = array_filter(explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $uClean)), fn($p) => mb_strlen($p) > 5);
+            
+            foreach ($rosEjercicio as $urgIdPoa => $rosGrupo) {
+                foreach ($rosGrupo as $ro) {
+                    $rClean = mb_strtolower(trim($ro->nombre));
+                    $rClean = str_replace(['á','é','í','ó','ú'], ['a','e','i','o','u'], $rClean);
+                    $rClean = str_replace(['director', 'directora'], 'direccion', $rClean);
+                    $rClean = str_replace(['presidente', 'presidenta'], 'presidencia', $rClean);
+                    $rClean = str_replace(['secretario', 'secretaria'], 'secretaria', $rClean);
+                    $rClean = str_replace(['contralor', 'contralora'], 'contraloria', $rClean);
+                    $rClean = str_replace(['interno', 'interna'], 'interna', $rClean);
+                    $rClean = str_replace(['defensor', 'defensora'], 'defensoria', $rClean);
+                    $rClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $rClean);
+
+                    $coincidencias = 0;
+                    foreach ($palabras as $palabra) {
+                        if (str_contains($rClean, $palabra)) $coincidencias++;
+                    }
+                    if ($coincidencias >= 2 || (count($palabras) === 1 && $coincidencias >= 1)) {
+                        $mapa_ro_urg[$urgIdPoa] = $u->unidad_responsable_gasto_id;
+                        break;
+                    }
+                }
+            }
+        }
+
         foreach ($proyectos as $p) {
+            $real_area_id = $mapa_ro_urg[$p->urg_id] ?? null;
+            $p->riesgos_area = $real_area_id ? DB::table('riesgos')->where('ejercicio_id', $ejercicio_db_id)->where('area_id', $real_area_id)->select('id', 'local_id', 'riesgo')->get() : collect();
             $p->metas = DB::table('metas')->where('proyecto_id', $p->id)->get();
             $p->indicadores = DB::table('indicadores')->where('proyecto_id', $p->id)->get();
 

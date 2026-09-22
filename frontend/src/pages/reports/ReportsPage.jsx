@@ -100,13 +100,13 @@ export default function ReportesPage() {
             </select>
           </label>
           <div className="actions" style={{ display: 'flex', gap: '12px', marginBottom: '15px', flexWrap: 'wrap' }}>
-            <button className="btn primary" onClick={() => navigate(`/reportes/mapa/${areaId}`)}>
+            <button className="btn primary" onClick={() => navigate(`/reportes/mapa/${areaId}`)} disabled={!areaId}>
               Formato 1 – Mapa / PDF
             </button>
-            <button className="btn" onClick={() => navigate(`/reportes/mar/${areaId}`)}>
+            <button className="btn" onClick={() => navigate(`/reportes/mar/${areaId}`)} disabled={!areaId}>
               Formato 2 – MAR
             </button>
-            <button className="btn" onClick={handleExportExcel}>
+            <button className="btn" onClick={handleExportExcel} disabled={!areaId}>
               Excel
             </button>
           </div>

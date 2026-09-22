@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $riesgos = Illuminate\Support\Facades\DB::table("actividad_riesgo")->get(); foreach($riesgos as $r) { echo "actividad_sustantiva_id: $r->actividad_sustantiva_id, riesgo_id: $r->riesgo_id\n"; }

@@ -155,6 +155,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('riesgos/seguimiento-mensual', [\App\Http\Controllers\Api\SeguimientoRiesgoController::class, 'seguimientoMensual']);
     Route::post('riesgos/evaluacion-trimestral', [\App\Http\Controllers\Api\SeguimientoRiesgoController::class, 'evaluacionTrimestral']);
     Route::post('riesgos/batch-validate', [RiesgoController::class, 'batchValidate']);
+    Route::post('riesgos/batch-unvalidate', [RiesgoController::class, 'batchUnvalidate']);
     Route::apiResource('riesgos', RiesgoController::class);
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
     Route::apiResource('riesgos-institucionales', \App\Http\Controllers\Api\RiesgoInstitucionalController::class);

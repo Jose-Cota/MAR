@@ -1,0 +1,1 @@
+<?php require __DIR__."/vendor/autoload.php"; $app = require_once __DIR__."/bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); $ej = Illuminate\Support\Facades\DB::table("ejercicios")->get(); foreach($ej as $e) { print_r($e); }
