@@ -14,7 +14,8 @@ import axios from '../../../utils/axios';
 import ChangePasswordModal from './ChangePasswordModal';
 
 export default function ProfileModal({ open, onClose }) {
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
+  const isAdmin = hasRole && (hasRole('Admin') || hasRole('Super Administrador') || hasRole('superadmin'));
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -101,14 +102,16 @@ export default function ProfileModal({ open, onClose }) {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: 'space-between', px: 3, pb: 2 }}>
-          <Button
-            variant="contained"
-            sx={{ bgcolor: '#ffc107', color: 'black', '&:hover': { bgcolor: '#e0a800' } }}
-            onClick={() => setPasswordModalOpen(true)}
-          >
-            Cambiar Contraseña
-          </Button>
+        <DialogActions sx={{ justifyContent: isAdmin ? 'space-between' : 'flex-end', px: 3, pb: 2 }}>
+          {isAdmin && (
+            <Button
+              variant="contained"
+              sx={{ bgcolor: '#ffc107', color: 'black', '&:hover': { bgcolor: '#e0a800' } }}
+              onClick={() => setPasswordModalOpen(true)}
+            >
+              Cambiar Contraseña
+            </Button>
+          )}
           <Button
             variant="contained"
             color="success"

@@ -72,10 +72,11 @@ export default function ControlesPage() {
     setEditingId(r.id);
     const controlsText = (r.controles || []).map(c => c.texto || c.control || '').filter(Boolean).join('\n');
     const ind = getIndicadorObj(r) || {};
+    const formulaText = ind.formula || (ind.numerador && ind.denominador ? `Resultado = (${ind.numerador} / ${ind.denominador}) × 100` : ind.nombre || '');
     setEditForm({
       controlsText,
       indicatorName: ind.nombre || '',
-      formula: ind.formula || '',
+      formula: formulaText,
       numerator: ind.numerador || '',
       denominator: ind.denominador || '',
       periodicidad: ind.periodicidad || 'Trimestral',

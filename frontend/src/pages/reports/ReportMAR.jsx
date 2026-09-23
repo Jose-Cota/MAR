@@ -73,14 +73,18 @@ export default function ReportMAR() {
                     : (r.factores || '')}
                 </td>
                 <td>
-                  {(r.controles || []).map((c, idx) => (
-                    <div key={idx} style={{ marginBottom: '4px' }}>• {c.texto || c.control || c.descripcion}</div>
-                  ))}
+                  {r.controles && r.controles.length > 0
+                    ? r.controles.map(c => c.texto || c.control || c.descripcion).filter(Boolean).join('; ')
+                    : ''}
                 </td>
                 <td>
-                  {(r.indicadores || []).map((i, idx) => (
-                    <div key={idx} style={{ marginBottom: '4px' }}>• {i.nombre || i.indicador || i.formula}</div>
-                  ))}
+                  {(r.indicadores || []).map((i, idx) => {
+                    const formulaText = i.formula || (i.numerador && i.denominador ? `Resultado = (${i.numerador} / ${i.denominador}) × 100` : i.nombre || '');
+                    return <div key={idx} style={{ marginBottom: '4px' }}>{formulaText}</div>;
+                  })}
+                  {(!r.indicadores || r.indicadores.length === 0) && r.indicador && (
+                    <div>{r.indicador.formula || (r.indicador.numerador && r.indicador.denominador ? `Resultado = (${r.indicador.numerador} / ${r.indicador.denominador}) × 100` : r.indicador.nombre || '')}</div>
+                  )}
                 </td>
               </tr>
             ))}
