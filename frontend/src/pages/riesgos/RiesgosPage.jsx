@@ -489,7 +489,11 @@ export default function RiesgosPage() {
 
             <div>
               <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Factores</span>
-              <div style={{ fontSize: '0.9rem' }}>{[fichaRisk.factores, fichaRisk.factores_internos, fichaRisk.factores_externos].filter(Boolean).join('; ') || '—'}</div>
+              <div style={{ fontSize: '0.9rem' }}>
+                {[fichaRisk.factores_internos, fichaRisk.factores_externos].filter(Boolean).length > 0
+                  ? [fichaRisk.factores_internos, fichaRisk.factores_externos].filter(Boolean).join('; ')
+                  : (fichaRisk.factores || '—')}
+              </div>
             </div>
           </div>
         )}

@@ -6,5 +6,5 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-$ros = DB::table('actividad_riesgo')->join('riesgos', 'riesgos.id', '=', 'actividad_riesgo.riesgo_id')->where('riesgos.ejercicio_id', 19)->count();
-print_r($ros);
+$affected = DB::table('riesgos')->where('ejercicio_id', 19)->where('area_id', 970)->update(['area_id' => 1]);
+echo "Updated $affected risks to area_id 1 (Presidencia).\n";

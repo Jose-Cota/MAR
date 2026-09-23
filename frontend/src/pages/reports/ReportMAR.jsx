@@ -67,7 +67,11 @@ export default function ReportMAR() {
                 <td>{r.local_id || r.id}</td>
                 <td>{r.objetivo}</td>
                 <td>{r.riesgo}</td>
-                <td>{[r.factores_internos, r.factores_externos, r.factores].filter(Boolean).join('; ')}</td>
+                <td>
+                  {[r.factores_internos, r.factores_externos].filter(Boolean).length > 0 
+                    ? [r.factores_internos, r.factores_externos].filter(Boolean).join('; ') 
+                    : (r.factores || '')}
+                </td>
                 <td>
                   {(r.controles || []).map((c, idx) => (
                     <div key={idx} style={{ marginBottom: '4px' }}>• {c.texto || c.control || c.descripcion}</div>

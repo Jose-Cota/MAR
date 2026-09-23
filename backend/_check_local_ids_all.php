@@ -6,5 +6,7 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-$ros = DB::table('actividad_riesgo')->join('riesgos', 'riesgos.id', '=', 'actividad_riesgo.riesgo_id')->where('riesgos.ejercicio_id', 19)->count();
-print_r($ros);
+$risks27 = DB::table('riesgos')->where('ejercicio_id', 19)->select('local_id', 'area_id')->get();
+foreach ($risks27 as $r) {
+    echo "{$r->area_id} - {$r->local_id}\n";
+}

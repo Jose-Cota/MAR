@@ -6,5 +6,5 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-$ros = DB::table('actividad_riesgo')->join('riesgos', 'riesgos.id', '=', 'actividad_riesgo.riesgo_id')->where('riesgos.ejercicio_id', 19)->count();
-print_r($ros);
+$ejercicios = DB::table('ejercicios')->get();
+print_r($ejercicios);
