@@ -3,7 +3,7 @@ import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
 import useAuth from '../../hooks/useAuth';
 import { Edit, Save, Close } from '@mui/icons-material';
-import { IconButton, Tooltip, Chip, Button, TextField, Alert, Snackbar } from '@mui/material';
+import { IconButton, Tooltip, Chip, Button, TextField, Alert, Snackbar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 export default function ControlesPage() {
   const [riesgos, setRiesgos] = useState([]);
@@ -11,6 +11,7 @@ export default function ControlesPage() {
   const [areaId, setAreaId] = useState('');
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     controlsText: '',
     indicatorName: '',
@@ -79,13 +80,17 @@ export default function ControlesPage() {
       denominator: ind.denominador || '',
       periodicidad: ind.periodicidad || 'Trimestral',
     });
+    setIsModalOpen(true);
   };
 
   const handleCancelEdit = () => {
+    setIsModalOpen(false);
     setEditingId(null);
   };
 
-  const handleSaveEdit = async (r) => {
+  const handleSaveEdit = async () => {
+    const r = riesgos.find(risk => risk.id === editingId);
+    if (!r) return;
     setSaving(true);
     try {
       const currentInd = getIndicadorObj(r) || {};
@@ -132,6 +137,7 @@ export default function ControlesPage() {
 
       await axios.put(`/riesgos/${r.id}`, payload);
       setNotification({ open: true, message: 'Control e indicador actualizados correctamente.', severity: 'success' });
+      setIsModalOpen(false);
       setEditingId(null);
       await fetchData();
     } catch (error) {
@@ -226,9 +232,8 @@ export default function ControlesPage() {
               </thead>
               <tbody>
                 {filtrados.map((r) => {
-                  const isEditing = editingId === r.id;
                   return (
-                    <tr key={r.id} style={{ verticalAlign: 'top', backgroundColor: isEditing ? '#f8fafc' : 'transparent' }}>
+                    <tr key={r.id} style={{ verticalAlign: 'top', backgroundColor: 'transparent' }}>
                       <td style={{ paddingTop: '15px', textAlign: 'center' }}>
                         <span style={{ 
                           fontWeight: 700, 
@@ -242,131 +247,24 @@ export default function ControlesPage() {
                         {r.riesgo}
                       </td>
                       <td style={{ paddingTop: '15px' }}>
-                        {isEditing ? (
-                          <div>
-                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>
-                              Texto del Control (uno por línea):
-                            </label>
-                            <TextField
-                              multiline
-                              rows={4}
-                              fullWidth
-                              size="small"
-                              value={editForm.controlsText}
-                              onChange={e => setEditForm(prev => ({ ...prev, controlsText: e.target.value }))}
-                              placeholder="Escribe el control..."
-                            />
-                          </div>
-                        ) : (
-                          renderControles(r)
-                        )}
+                        {renderControles(r)}
                       </td>
                       <td style={{ paddingTop: '15px' }}>
-                        {isEditing ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>
-                                Nombre del Indicador:
-                              </label>
-                              <TextField
-                                fullWidth
-                                size="small"
-                                value={editForm.indicatorName}
-                                onChange={e => setEditForm(prev => ({ ...prev, indicatorName: e.target.value }))}
-                              />
-                            </div>
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>
-                                Fórmula de Cálculo:
-                              </label>
-                              <TextField
-                                fullWidth
-                                size="small"
-                                value={editForm.formula}
-                                onChange={e => setEditForm(prev => ({ ...prev, formula: e.target.value }))}
-                                placeholder="Resultado = (N / D) × 100"
-                              />
-                            </div>
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.78rem', fontWeight: 600, color: '#0369a1' }}>
-                                Numerador (N):
-                              </label>
-                              <TextField
-                                multiline
-                                rows={2}
-                                fullWidth
-                                size="small"
-                                value={editForm.numerator}
-                                onChange={e => setEditForm(prev => ({ ...prev, numerator: e.target.value }))}
-                              />
-                            </div>
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.78rem', fontWeight: 600, color: '#0369a1' }}>
-                                Denominador (D):
-                              </label>
-                              <TextField
-                                multiline
-                                rows={2}
-                                fullWidth
-                                size="small"
-                                value={editForm.denominator}
-                                onChange={e => setEditForm(prev => ({ ...prev, denominator: e.target.value }))}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          renderIndicador(r)
-                        )}
+                        {renderIndicador(r)}
                       </td>
                       <td style={{ paddingTop: '15px', textAlign: 'center' }}>
-                        {isEditing ? (
-                          <TextField
-                            size="small"
-                            value={editForm.periodicidad}
-                            onChange={e => setEditForm(prev => ({ ...prev, periodicidad: e.target.value }))}
-                            sx={{ width: '100px' }}
-                          />
-                        ) : (
-                          <span style={{ color: '#1e293b', fontSize: '0.9rem' }}>
-                            {getPeriodicidadText(r)}
-                          </span>
-                        )}
+                        <span style={{ color: '#1e293b', fontSize: '0.9rem' }}>
+                          {getPeriodicidadText(r)}
+                        </span>
                       </td>
                       <td style={{ paddingTop: '15px', textAlign: 'center' }}>
-                        {isEditing ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-                            <Button 
-                              variant="contained" 
-                              size="small" 
-                              color="primary" 
-                              startIcon={<Save fontSize="small" />}
-                              onClick={() => handleSaveEdit(r)}
-                              disabled={saving}
-                              sx={{ textTransform: 'none', minWidth: '90px' }}
-                            >
-                              Guardar
-                            </Button>
-                            <Button 
-                              variant="outlined" 
-                              size="small" 
-                              color="inherit" 
-                              startIcon={<Close fontSize="small" />}
-                              onClick={handleCancelEdit}
-                              disabled={saving}
-                              sx={{ textTransform: 'none', minWidth: '90px' }}
-                            >
-                              Cancelar
-                            </Button>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
-                            <Tooltip title="Editar control e indicador">
-                              <IconButton size="small" color="primary" onClick={() => handleStartEdit(r)}>
-                                <Edit fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                          <Tooltip title="Editar control e indicador">
+                            <IconButton size="small" color="primary" onClick={() => handleStartEdit(r)}>
+                              <Edit fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -392,6 +290,84 @@ export default function ControlesPage() {
           {notification.message}
         </Alert>
       </Snackbar>
+
+      <Dialog open={isModalOpen} onClose={handleCancelEdit} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold', borderBottom: '1px solid #e2e8f0', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Edit color="primary" /> Editar Control - Indicador
+        </DialogTitle>
+        <DialogContent sx={{ mt: 1, pb: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Row 1: Control */}
+            <div>
+              <h4 style={{ color: '#0369a1', margin: '0 0 6px 0' }}>Control</h4>
+              <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>
+                Texto del Control (uno por línea):
+              </label>
+              <TextField
+                multiline
+                rows={5}
+                fullWidth
+                size="small"
+                value={editForm.controlsText}
+                onChange={e => setEditForm(prev => ({ ...prev, controlsText: e.target.value }))}
+                placeholder="Escribe el control..."
+                variant="outlined"
+              />
+            </div>
+            
+            {/* Row 2: Indicador and Periodicidad */}
+            <div>
+              <h4 style={{ color: '#0369a1', margin: '0 0 6px 0' }}>Indicador</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>
+                    Fórmula / Indicador:
+                  </label>
+                  <TextField
+                    multiline
+                    rows={3}
+                    fullWidth
+                    size="small"
+                    value={editForm.formula}
+                    onChange={e => setEditForm(prev => ({ ...prev, formula: e.target.value }))}
+                    placeholder="Escribe la fórmula o nombre del indicador..."
+                    variant="outlined"
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', marginBottom: '2px', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>
+                    Periodicidad:
+                  </label>
+                  <TextField
+                    select
+                    size="small"
+                    fullWidth
+                    value={editForm.periodicidad}
+                    onChange={e => setEditForm(prev => ({ ...prev, periodicidad: e.target.value }))}
+                    SelectProps={{ native: true }}
+                  >
+                    <option value="Mensual">Mensual</option>
+                    <option value="Bimestral">Bimestral</option>
+                    <option value="Trimestral">Trimestral</option>
+                    <option value="Cuatrimestral">Cuatrimestral</option>
+                    <option value="Semestral">Semestral</option>
+                    <option value="Anual">Anual</option>
+                  </TextField>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions sx={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0' }}>
+          <Button onClick={handleCancelEdit} variant="outlined" color="inherit" disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSaveEdit} variant="contained" color="primary" startIcon={<Save />} disabled={saving}>
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
