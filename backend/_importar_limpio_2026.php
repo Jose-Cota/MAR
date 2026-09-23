@@ -1,0 +1,148 @@
+<?php
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use Illuminate\Support\Facades\DB;
+
+$seed = json_decode(file_get_contents('C:\Cota\MAR\extracted_seed.json'), true);
+
+DB::beginTransaction();
+try {
+    $oldProjects = DB::table('proyectos')->where('ejercicio_id', 17)->pluck('proyecto_id')->toArray();
+    if (!empty($oldProjects)) {
+        $oldActions = DB::table('acciones_sustantivas')->whereIn('proyecto_id', $oldProjects)->pluck('accion_sustantiva_id')->toArray();
+        if (!empty($oldActions)) {
+            DB::table('actividad_riesgo')->whereIn('actividad_sustantiva_id', $oldActions)->delete();
+            DB::table('acciones_sustantivas')->whereIn('proyecto_id', $oldProjects)->delete();
+        }
+        DB::table('proyectos')->where('ejercicio_id', 17)->delete();
+    }
+
+    $rosEjercicio = DB::table('responsables_operativos')->where('ejercicio_id', 17)->get();
+    $roMap = [];
+    
+    foreach ($seed['areas'] as $area) {
+        $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($area['name'])));
+        $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
+        $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
+        $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
+        $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
+        
+        $palabras = array_filter(
+            explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
+            fn($p) => mb_strlen($p) > 5
+        );
+        
+        $matchedRo = null;
+        foreach ($rosEjercicio as $ro) {
+            $roNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($ro->nombre)));
+            $roNombreClean = preg_replace('/[éèëê]/u', 'e', $roNombreClean);
+            $roNombreClean = preg_replace('/[íìïî]/u', 'i', $roNombreClean);
+            $roNombreClean = preg_replace('/[óòöô]/u', 'o', $roNombreClean);
+            $roNombreClean = preg_replace('/[úùüû]/u', 'u', $roNombreClean);
+            
+            $roNombreClean = str_replace(['director', 'directora'], 'direccion', $roNombreClean);
+            $roNombreClean = str_replace(['presidente', 'presidenta'], 'presidencia', $roNombreClean);
+            $roNombreClean = str_replace(['secretario', 'secretaria'], 'secretaria', $roNombreClean);
+            $roNombreClean = str_replace(['contralor', 'contralora'], 'contraloria', $roNombreClean);
+            $roNombreClean = str_replace(['interno', 'interna'], 'interna', $roNombreClean);
+            $roNombreClean = str_replace(['defensor', 'defensora'], 'defensoria', $roNombreClean);
+            $roNombreClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $roNombreClean);
+            
+            $coincidencias = 0;
+            foreach ($palabras as $palabra) {
+                if (strpos($roNombreClean, $palabra) !== false) {
+                    $coincidencias++;
+                }
+            }
+            if ($coincidencias >= 2 || (count($palabras) === 1 && $coincidencias >= 1)) {
+                $matchedRo = $ro->responsable_operativo_id;
+                break;
+            }
+        }
+        
+        if ($matchedRo) {
+            $roMap[$area['id']] = $matchedRo;
+        } else {
+            echo "COULD NOT MATCH: {$area['name']}\n";
+        }
+    }
+
+    $jsonToDbProject = [];
+    $jsonToDbAction = [];
+    
+    $pCount = 0;
+    foreach ($seed['poaProjects'] ?? [] as $p) {
+        if ($p['exercise'] === 2026) {
+            $roId = $roMap[$p['areaId']] ?? 438; // Fallback to Ponencia 1
+            
+            $pid = DB::table('proyectos')->insertGetId([
+                'nombre' => $p['name'],
+                'ejercicio_id' => 17,
+                'subprograma_id' => 1,
+                'numero' => '01',
+                'tipo' => 'normal',
+                'fecha' => now()->toDateString(),
+                'version' => 1,
+                'objetivo' => '',
+                'justificacion' => '',
+                'descripcion' => '',
+                'nombre_responsable_operativo' => '',
+                'cargo_responsable_operativo' => '',
+                'nombre_titular' => '',
+                'responsable_ficha' => '',
+                'autorizado_por' => '',
+                'responsable_operativo_id' => $roId
+            ]);
+            $jsonToDbProject[$p['id']] = $pid;
+            $pCount++;
+        }
+    }
+    
+    $aCount = 0;
+    foreach ($seed['poaActions'] ?? [] as $a) {
+        $newPid = $jsonToDbProject[$a['projectId']] ?? null;
+        if ($newPid) {
+            $aid = DB::table('acciones_sustantivas')->insertGetId([
+                'descripcion' => $a['text'],
+                'proyecto_id' => $newPid,
+                'numero' => '01'
+            ]);
+            $jsonToDbAction[$a['id']] = $aid;
+            $aCount++;
+        }
+    }
+    
+    $lCount = 0;
+    $inserts = [];
+    foreach ($seed['risks'] ?? [] as $r) {
+        if (strpos($r['id'], '2026') !== false && !empty($r['linkedActionIds'])) {
+            $dbRisk = DB::table('riesgos')->where('local_id', $r['localId'])->where('ejercicio_id', 17)->first();
+            if ($dbRisk) {
+                foreach ($r['linkedActionIds'] as $linkedId) {
+                    $newAid = $jsonToDbAction[$linkedId] ?? null;
+                    if ($newAid) {
+                        $inserts[] = [
+                            'actividad_sustantiva_id' => $newAid,
+                            'riesgo_id' => $dbRisk->id,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ];
+                        $lCount++;
+                    }
+                }
+            }
+        }
+    }
+    if (!empty($inserts)) {
+        DB::table('actividad_riesgo')->insert($inserts);
+    }
+
+    DB::commit();
+    echo "ALL DONE SUCCESSFULLY! Mapped $pCount projects.\n";
+} catch (\Exception $e) {
+    DB::rollBack();
+    echo "ERROR: " . $e->getMessage() . "\n";
+}

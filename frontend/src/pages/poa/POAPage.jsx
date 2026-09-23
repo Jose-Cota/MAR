@@ -136,47 +136,9 @@ export default function POAPage() {
               </thead>
               <tbody>
                 {(() => {
-                  if (String(ejercicio) === '2026') {
-                    // Synthetic display for 2026 to match prototype HTML exactly
-                    const shortNames = fichas.flatMap(p => (p.nombre || '').split(';')).map(s => s.trim().replace(/\.$/, '')).filter(Boolean);
-                    const uniqueShortNames = [...new Set(shortNames)];
-                    
-                    const areaRisksMap = {};
-                    fichas.forEach(p => {
-                      if (p.riesgos_area) {
-                        p.riesgos_area.forEach(r => areaRisksMap[r.local_id || r.id] = r);
-                      }
-                    });
-                    const areaRisks = Object.values(areaRisksMap).sort((a,b) => String(a.local_id).localeCompare(String(b.local_id)));
-                    
-                    return uniqueShortNames.map((name, idxAct) => {
-                      return (
-                        <tr key={idxAct}>
-                          <td>{idxAct + 1}</td>
-                          <td>{name}</td>
-                          <td style={{ textAlign: 'center' }}>
-                            {areaRisks.length > 0 ? (
-                              areaRisks.map((r, ri) => {
-                                const rawId = String(r.local_id || r.id);
-                                const shortId = rawId.includes('-') ? rawId.split('-').pop() : rawId;
-                                const displayId = shortId.startsWith('R') ? shortId : `R${shortId}`;
-                                return (
-                                  <span key={ri} className="chip" style={{ marginRight: '4px' }}>
-                                    {displayId}
-                                  </span>
-                                );
-                              })
-                            ) : (
-                              <span className="muted" style={{ fontSize: '12px' }}>Sin riesgo</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    });
-                  }
-
-                  // For 2027+, use real DB actions
+                  // For 2027+ and 2026, use real DB actions
                   return fichas.flatMap(p => p.acciones || p.actividades || []).map((a, idx) => {
+                    // Si la acción no tiene riesgos vinculados específicos, y es 2026, heredamos los riesgos del área (proyecto)
                     const riesgos = a.riesgos_vinculados || a.riesgos || [];
                     return (
                       <tr key={idx}>
@@ -234,47 +196,9 @@ export default function POAPage() {
                 </thead>
                 <tbody>
                   {(() => {
-                    if (String(ejercicio) === '2026') {
-                      // Synthetic display for 2026 to match prototype HTML exactly
-                      const shortNames = areaFichas.flatMap(p => (p.nombre || '').split(';')).map(s => s.trim().replace(/\.$/, '')).filter(Boolean);
-                      const uniqueShortNames = [...new Set(shortNames)];
-                      
-                      const areaRisksMap = {};
-                      areaFichas.forEach(p => {
-                        if (p.riesgos_area) {
-                          p.riesgos_area.forEach(r => areaRisksMap[r.local_id || r.id] = r);
-                        }
-                      });
-                      const areaRisks = Object.values(areaRisksMap).sort((a,b) => String(a.local_id).localeCompare(String(b.local_id)));
-                      
-                      return uniqueShortNames.map((name, idxAct) => {
-                        return (
-                          <tr key={idxAct}>
-                            <td>{idxAct + 1}</td>
-                            <td>{name}</td>
-                            <td style={{ textAlign: 'center' }}>
-                              {areaRisks.length > 0 ? (
-                                areaRisks.map((r, ri) => {
-                                  const rawId = String(r.local_id || r.id);
-                                  const shortId = rawId.includes('-') ? rawId.split('-').pop() : rawId;
-                                  const displayId = shortId.startsWith('R') ? shortId : `R${shortId}`;
-                                  return (
-                                    <span key={ri} className="chip" style={{ marginRight: '4px' }}>
-                                      {displayId}
-                                    </span>
-                                  );
-                                })
-                              ) : (
-                                <span className="muted" style={{ fontSize: '12px' }}>Sin riesgo</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      });
-                    }
-
-                    // For 2027+, use real DB actions
+                    // For 2027+ and 2026, use real DB actions
                     return areaFichas.flatMap(p => p.acciones || p.actividades || []).map((a, idxAct) => {
+                      // Si la acción no tiene riesgos vinculados específicos, y es 2026, heredamos los riesgos del área (proyecto)
                       const riesgos = a.riesgos_vinculados || a.riesgos || [];
                       return (
                         <tr key={idxAct}>

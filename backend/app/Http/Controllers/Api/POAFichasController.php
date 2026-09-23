@@ -50,19 +50,29 @@ class POAFichasController extends Controller
             $urgNombreLower = mb_strtolower(trim($urgSeleccionada->nombre));
             $urgNumero      = trim($urgSeleccionada->numero);
 
-            $urgIdsPoa = [];
+            $maxCoincidencias = 0;
+            $roIdsPoa = [];
+            
+            $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($urgSeleccionada->nombre)));
+            $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
+
+            $palabras = array_filter(
+                explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
+                fn($p) => mb_strlen($p) > 5
+            );
+
             foreach ($rosEjercicio as $urgIdPoa => $rosGrupo) {
                 foreach ($rosGrupo as $ro) {
                     $roNombreLower = mb_strtolower(trim($ro->nombre));
-                    // Match: el nombre del RO contiene palabras significativas del área
-                    // Normalizar acentos
                     $roNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($ro->nombre)));
                     $roNombreClean = preg_replace('/[éèëê]/u', 'e', $roNombreClean);
                     $roNombreClean = preg_replace('/[íìïî]/u', 'i', $roNombreClean);
                     $roNombreClean = preg_replace('/[óòöô]/u', 'o', $roNombreClean);
                     $roNombreClean = preg_replace('/[úùüû]/u', 'u', $roNombreClean);
                     
-                    // Normalizaciones manuales de cargos a áreas
                     $roNombreClean = str_replace(['director', 'directora'], 'direccion', $roNombreClean);
                     $roNombreClean = str_replace(['presidente', 'presidenta'], 'presidencia', $roNombreClean);
                     $roNombreClean = str_replace(['secretario', 'secretaria'], 'secretaria', $roNombreClean);
@@ -70,31 +80,46 @@ class POAFichasController extends Controller
                     $roNombreClean = str_replace(['interno', 'interna'], 'interna', $roNombreClean);
                     $roNombreClean = str_replace(['defensor', 'defensora'], 'defensoria', $roNombreClean);
                     $roNombreClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $roNombreClean);
-                    
-                    $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($urgSeleccionada->nombre)));
-                    $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
-                    $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
-                    $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
-                    $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
+                    $roNombreClean = str_replace(['administrativo', 'administrativos'], 'administrativa', $roNombreClean);
+                    $roNombreClean = str_replace(['tecnico', 'tecnica'], 'tecnica', $roNombreClean);
 
-                    $palabras = array_filter(
-                        explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
-                        fn($p) => mb_strlen($p) > 5
-                    );
                     $coincidencias = 0;
                     foreach ($palabras as $palabra) {
                         if (str_contains($roNombreClean, $palabra)) {
                             $coincidencias++;
                         }
                     }
-                    if ($coincidencias >= 2 || (count($palabras) === 1 && $coincidencias >= 1)) {
-                        $urgIdsPoa[] = (int) $urgIdPoa;
-                        break;
+                    
+                    if (str_contains($urgNombreClean, 'secretaria administrativa') && str_contains($roNombreClean, 'controversias')) {
+                        $coincidencias = 0;
+                    }
+
+                    if ($coincidencias > 0) {
+                        if ($coincidencias > $maxCoincidencias) {
+                            $maxCoincidencias = $coincidencias;
+                            $roIdsPoa = [$ro->responsable_operativo_id];
+                        } elseif ($coincidencias == $maxCoincidencias) {
+                            $roIdsPoa[] = $ro->responsable_operativo_id;
+                        }
                     }
                 }
             }
 
-            $rgIds = array_unique($urgIdsPoa);
+            // Excepciones manuales conocidas para 2026
+            $exactMap = [
+                'secretaria administrativa' => 446,
+                'direccion de recursos humanos' => 448,
+                'direccion de recursos materiales y servicios generales' => 449,
+                'direccion de planeacion y recursos financieros' => 447,
+                'direccion general juridica' => 453,
+                'coordinacion de comunicacion social y relaciones publicas' => 468,
+                'coordinacion de archivo' => 463,
+            ];
+            if (isset($exactMap[$urgNombreClean])) {
+                $roIdsPoa = [$exactMap[$urgNombreClean]];
+            }
+
+            $rgIds = array_unique($roIdsPoa);
         }
 
         // Obtener proyectos del ejercicio, con filtro opcional de RO
@@ -113,7 +138,7 @@ class POAFichasController extends Controller
                 // No se encontró coincidencia — devolver vacío
                 return response()->json([]);
             }
-            $query->whereIn('responsables_operativos.unidad_responsable_gasto_id', $rgIds);
+            $query->whereIn('proyectos.responsable_operativo_id', $rgIds);
         }
 
         $proyectos = $query->get();
@@ -149,10 +174,16 @@ class POAFichasController extends Controller
                     $rClean = str_replace(['interno', 'interna'], 'interna', $rClean);
                     $rClean = str_replace(['defensor', 'defensora'], 'defensoria', $rClean);
                     $rClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $rClean);
+                    $rClean = str_replace(['administrativo', 'administrativos'], 'administrativa', $rClean);
+                    $rClean = str_replace(['tecnico', 'tecnica'], 'tecnica', $rClean);
 
                     $coincidencias = 0;
                     foreach ($palabras as $palabra) {
                         if (str_contains($rClean, $palabra)) $coincidencias++;
+                    }
+                    
+                    if (str_contains($uClean, 'secretaria administrativa') && str_contains($rClean, 'controversias')) {
+                        $coincidencias = 0;
                     }
                     if ($coincidencias >= 2 || (count($palabras) === 1 && $coincidencias >= 1)) {
                         $mapa_ro_urg[$urgIdPoa] = $u->unidad_responsable_gasto_id;

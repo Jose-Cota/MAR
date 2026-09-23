@@ -90,7 +90,8 @@ export default function RiesgosPage() {
 
   useEffect(() => {
     axios.get('/unidades-responsables').then(res => {
-      const data = res.data.data || res.data;
+      let data = res.data.data || res.data;
+      data = [...data].sort((a, b) => (a.nombre || a.denominacion || '').localeCompare(b.nombre || b.denominacion || ''));
       setAreas(data);
       if (data.length > 0) {
         const firstId = String(data[0].unidad_responsable_gasto_id || data[0].id_unidad || data[0].id);

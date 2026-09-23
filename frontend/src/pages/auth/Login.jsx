@@ -108,7 +108,7 @@ export default function Login() {
               </Button>
 
               <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: 'text.secondary' }}>
-                Versión 1.0 · 22 sep 2026 · 17:33 hrs
+                Versión 1.0 · 23 sep 2026 · 00:30 hrs
               </Typography>
             </Stack>
           </Box>

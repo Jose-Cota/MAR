@@ -1,0 +1,105 @@
+<?php
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use Illuminate\Support\Facades\DB;
+
+$urgs = DB::table('unidades_responsables_gastos')->where('ejercicio_id', 1)->get(); // The ones used in the dropdown
+$rosEjercicio = DB::table('responsables_operativos')->where('ejercicio_id', 17)->get()->groupBy('unidad_responsable_gasto_id');
+
+foreach ($urgs as $urgSeleccionada) {
+    $urgNombreLower = mb_strtolower(trim($urgSeleccionada->nombre));
+    $urgNumero      = trim($urgSeleccionada->numero);
+
+    $urgIdsPoa = [];
+    $bestMatchRo = null;
+    $maxCoincidencias = 0;
+    
+    foreach ($rosEjercicio as $urgIdPoa => $rosGrupo) {
+        foreach ($rosGrupo as $ro) {
+            $roNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($ro->nombre)));
+            $roNombreClean = preg_replace('/[éèëê]/u', 'e', $roNombreClean);
+            $roNombreClean = preg_replace('/[íìïî]/u', 'i', $roNombreClean);
+            $roNombreClean = preg_replace('/[óòöô]/u', 'o', $roNombreClean);
+            $roNombreClean = preg_replace('/[úùüû]/u', 'u', $roNombreClean);
+            
+            $roNombreClean = str_replace(['director', 'directora'], 'direccion', $roNombreClean);
+            $roNombreClean = str_replace(['presidente', 'presidenta'], 'presidencia', $roNombreClean);
+            $roNombreClean = str_replace(['secretario', 'secretaria'], 'secretaria', $roNombreClean);
+            $roNombreClean = str_replace(['contralor', 'contralora'], 'contraloria', $roNombreClean);
+            $roNombreClean = str_replace(['interno', 'interna'], 'interna', $roNombreClean);
+            $roNombreClean = str_replace(['defensor', 'defensora'], 'defensoria', $roNombreClean);
+            $roNombreClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $roNombreClean);
+            $roNombreClean = str_replace(['administrativo', 'administrativos'], 'administrativa', $roNombreClean);
+            $roNombreClean = str_replace(['tecnico', 'tecnica'], 'tecnica', $roNombreClean);
+            
+            $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($urgSeleccionada->nombre)));
+            $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
+
+            $palabras = array_filter(
+                explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
+                fn($p) => mb_strlen($p) > 5
+            );
+            $coincidencias = 0;
+            foreach ($palabras as $palabra) {
+                if (str_contains($roNombreClean, $palabra)) {
+                    $coincidencias++;
+                }
+            }
+            if ($coincidencias > $maxCoincidencias) {
+                $maxCoincidencias = $coincidencias;
+                $bestMatchRo = $urgIdPoa;
+            }
+        }
+    }
+    
+    // original logic
+    $origMatch = null;
+    foreach ($rosEjercicio as $urgIdPoa => $rosGrupo) {
+        foreach ($rosGrupo as $ro) {
+            $roNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($ro->nombre)));
+            $roNombreClean = preg_replace('/[éèëê]/u', 'e', $roNombreClean);
+            $roNombreClean = preg_replace('/[íìïî]/u', 'i', $roNombreClean);
+            $roNombreClean = preg_replace('/[óòöô]/u', 'o', $roNombreClean);
+            $roNombreClean = preg_replace('/[úùüû]/u', 'u', $roNombreClean);
+            $roNombreClean = str_replace(['director', 'directora'], 'direccion', $roNombreClean);
+            $roNombreClean = str_replace(['presidente', 'presidenta'], 'presidencia', $roNombreClean);
+            $roNombreClean = str_replace(['secretario', 'secretaria'], 'secretaria', $roNombreClean);
+            $roNombreClean = str_replace(['contralor', 'contralora'], 'contraloria', $roNombreClean);
+            $roNombreClean = str_replace(['interno', 'interna'], 'interna', $roNombreClean);
+            $roNombreClean = str_replace(['defensor', 'defensora'], 'defensoria', $roNombreClean);
+            $roNombreClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $roNombreClean);
+            $roNombreClean = str_replace(['administrativo', 'administrativos'], 'administrativa', $roNombreClean);
+            $roNombreClean = str_replace(['tecnico', 'tecnica'], 'tecnica', $roNombreClean);
+            
+            $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($urgSeleccionada->nombre)));
+            $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
+            $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
+
+            $palabras = array_filter(
+                explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
+                fn($p) => mb_strlen($p) > 5
+            );
+            $coincidencias = 0;
+            foreach ($palabras as $palabra) {
+                if (str_contains($roNombreClean, $palabra)) {
+                    $coincidencias++;
+                }
+            }
+            if ($coincidencias >= 2 || (count($palabras) === 1 && $coincidencias >= 1)) {
+                $origMatch = $urgIdPoa;
+                break;
+            }
+        }
+        if ($origMatch) break;
+    }
+    
+    echo "URG: {$urgSeleccionada->nombre} | Original: $origMatch | Best: $bestMatchRo (Matches: $maxCoincidencias)\n";
+}
