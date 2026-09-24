@@ -35,21 +35,7 @@ class ActividadSustantivaController extends Controller
         return response()->json($actividades);
     }
     private function getTableForProyecto($proyectoId) {
-        $proyecto = DB::connection('poa_prod')->table('proyectos as p')
-            ->join('subprogramas as sp', 'p.subprograma_id', '=', 'sp.subprograma_id')
-            ->join('programas as pg', 'sp.programa_id', '=', 'pg.programa_id')
-            ->join('ejercicios as e', 'pg.ejercicio_id', '=', 'e.ejercicio_id')
-            ->select('e.ejercicio')
-            ->where('p.proyecto_id', $proyectoId)
-            ->first();
-        return ($proyecto && (int)$proyecto->ejercicio >= 2027) ? 'actividades_sustantivas' : 'acciones_sustantivas';
-    }
-
-    private function getTableForActividad($id) {
-        if (DB::connection('poa_prod')->table('actividades_sustantivas')->where('id', $id)->exists()) {
-            return 'actividades_sustantivas';
-        }
-        return 'acciones_sustantivas';
+        return 'actividades_sustantivas';
     }
 
     public function store(Request $request)
@@ -77,7 +63,7 @@ class ActividadSustantivaController extends Controller
             'recursos_asociados' => $validated['recursos_asociados'],
         ]);
 
-        $pk = ($table === 'actividades_sustantivas') ? 'id' : 'accion_sustantiva_id';
+        $pk = 'id';
 
         return response()->json([
             'id' => $id,
@@ -98,7 +84,7 @@ class ActividadSustantivaController extends Controller
         ]);
 
         $table = $this->getTableForActividad($id);
-        $pk = ($table === 'actividades_sustantivas') ? 'id' : 'accion_sustantiva_id';
+        $pk = 'id';
 
         $actividad = DB::connection('poa_prod')->table($table)->where($pk, $id)->first();
         if (!$actividad) {
@@ -113,7 +99,7 @@ class ActividadSustantivaController extends Controller
     public function destroy($id)
     {
         $table = $this->getTableForActividad($id);
-        $pk = ($table === 'actividades_sustantivas') ? 'id' : 'accion_sustantiva_id';
+        $pk = 'id';
 
         $actividad = DB::connection('poa_prod')->table($table)->where($pk, $id)->first();
         if (!$actividad) {

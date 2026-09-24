@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import Iconify from '../../../components/Iconify';
 import useAuth from '../../../hooks/useAuth';
+import axios from '../../../utils/axios';
 
 /**
  * Roles del sistema MAR:
@@ -57,19 +58,45 @@ export default function NavbarVertical() {
           </>
         )}
 
-        {/* Solo Super Administrador: gestión de Usuarios */}
+        {/* Solo Super Administrador: gestión de Usuarios y BD */}
         {isSuperAdmin && (
           <>
             <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.15)', margin: '8px 4px' }} />
             <NavLink to="/admin/usuarios" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:users" sx={{ width: 22, height: 22 }} /> <span>Usuarios y permisos</span>
             </NavLink>
+            <button 
+              onClick={async () => {
+                try {
+                  const response = await axios.get('/export-db', { responseType: 'blob' });
+                  const blob = new Blob([response.data], { type: 'application/json' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Respaldo_MAR_TECDMX_${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  window.URL.revokeObjectURL(url);
+                } catch (error) {
+                  console.error('Error:', error);
+                  alert('Hubo un error al exportar la base de datos.');
+                }
+              }}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                fontFamily: 'inherit', fontSize: 'inherit', color: 'inherit'
+              }}
+              className="nav-link"
+            >
+              <Iconify icon="ph:database-export" sx={{ width: 22, height: 22 }} /> <span>Importar BD</span>
+            </button>
           </>
         )}
       </nav>
       <div className="side-footer">
         MAR 2027<br />
-        <small>Versión 1.1 · 23 sep 2026 · 13:08 hrs</small>
+        <small>Versión 1.1 · 24 sep 2026 · 05:24 hrs</small>
       </div>
     </div>
   );

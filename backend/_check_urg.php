@@ -1,15 +1,8 @@
 <?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use Illuminate\Support\Facades\DB;
 
-print_r(DB::table('unidades_responsables_gastos')->take(5)->get()->toArray());
-
-// Also get the mapping of actions
-// Try to find PRES-2026-A3
-$query = "SELECT * FROM acciones_sustantivas WHERE descripcion LIKE '%Seguimiento al cumplimiento de acuerdos%'";
-print_r(DB::select($query));
-
+$urg = DB::connection('poa_prod')->table('unidades_responsables_gastos')->where('nombre', 'like', '%Materiales%')->first();
+echo "URG ID: " . $urg->unidad_responsable_gasto_id . "\n";

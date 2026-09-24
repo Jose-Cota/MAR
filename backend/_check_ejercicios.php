@@ -1,10 +1,11 @@
 <?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+try {
+    $pdo = new PDO("mysql:host=192.168.22.238", "root", "myPass1326!");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("USE `0201sadpyrf_mar2026`");
 
-use Illuminate\Support\Facades\DB;
-
-$ejercicios = DB::table('ejercicios')->get();
-print_r($ejercicios);
+    $stmt = $pdo->query("SELECT * FROM ejercicios WHERE ejercicio = 2026");
+    print_r($stmt->fetchAll(PDO::FETCH_ASSOC));
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}

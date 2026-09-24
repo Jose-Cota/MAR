@@ -1,22 +1,18 @@
 <?php
-$data = json_decode(file_get_contents('C:/Cota/MAR/Respaldo_MAR_TECDMX_2026-09-23.json'), true);
+$json = file_get_contents('C:\Cota\MAR\Respaldo_MAR_TECDMX_2026-09-23.json');
+$data = json_decode($json, true);
 
-foreach ($data['risks'] as $risk) {
-    if ($risk['exercise'] == 2027) {
-        echo "2027 Risk localId: " . $risk['localId'] . "\n";
-        echo "Linked actions: " . implode(', ', $risk['linkedActionIds'] ?? []) . "\n";
-        break;
+$jsonCounts = [];
+foreach ($data['poaActions'] as $action) {
+    if (strpos($action['id'], '-2027-') !== false) {
+        $parts = explode('-', $action['id']);
+        $area = $parts[0];
+        if (!isset($jsonCounts[$area])) $jsonCounts[$area] = 0;
+        $jsonCounts[$area]++;
     }
 }
 
-// Find PRES-2027-A3 in any JSON key
-foreach (['poaActions', 'poaGoals', 'poaIndicators', 'poa2027MasterMatrixSource'] as $key) {
-    if (!isset($data[$key])) continue;
-    foreach ($data[$key] as $item) {
-        if (isset($item['id']) && strpos($item['id'], '2027-A') !== false) {
-            echo "Found 2027 action in $key:\n";
-            print_r($item);
-            break;
-        }
-    }
+echo "=== JSON COUNTS 2027 ===\n";
+foreach ($jsonCounts as $area => $count) {
+    echo "$area: $count\n";
 }

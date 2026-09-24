@@ -140,7 +140,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('usuarios', UsuarioController::class);
         Route::delete('/usuarios/{usuario}/force', [UsuarioController::class, 'forceDelete']);
         Route::put('/usuarios/{usuario}/password', [UsuarioController::class, 'updatePassword']);
-        
+        // Exportar DB
+        Route::get('/export-db', [\App\Http\Controllers\Api\ExportDbController::class, 'export']);
+
         // Modos
         Route::get('/modos', [\App\Http\Controllers\Api\ModoController::class, 'index']);
         Route::post('/modos', [\App\Http\Controllers\Api\ModoController::class, 'store']);

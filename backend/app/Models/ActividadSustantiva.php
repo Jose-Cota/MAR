@@ -10,7 +10,7 @@ class ActividadSustantiva extends Model
     use HasFactory;
 
     protected $connection = 'poa_prod';
-    protected $table = 'acciones_sustantivas';
+    protected $table = 'actividades_sustantivas';
     protected $primaryKey = 'accion_sustantiva_id';
     public $timestamps = false;
 

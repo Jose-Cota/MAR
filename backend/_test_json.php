@@ -1,17 +1,9 @@
 <?php
-$jsonStr = file_get_contents('C:\Cota\MAR\Respaldo_MAR_TECDMX_2026-09-23.json');
-$data = json_decode($jsonStr, true);
-$projects = $data['poaProjects'] ?? [];
-$actions = $data['poaActions'] ?? [];
-
-echo "Looking for Planeación...\n";
-foreach ($projects as $p) {
-    if (strpos(mb_strtolower($p['name']), 'planeación y recursos') !== false && $p['exercise'] == 2026) {
-        print_r($p);
-        foreach ($actions as $a) {
-            if ($a['projectId'] === $p['id']) {
-                print_r($a);
-            }
-        }
-    }
+$db = json_decode(file_get_contents('C:\Cota\MAR\backend\respaldo.json'), true);
+$c26 = 0; $c27 = 0;
+foreach ($db['poaActions'] as $a) {
+    if ($a['exercise'] == 2026) $c26++;
+    if ($a['exercise'] == 2027) $c27++;
 }
+echo "2026 acciones: $c26\n";
+echo "2027 acciones: $c27\n";

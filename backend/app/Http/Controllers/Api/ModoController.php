@@ -634,11 +634,8 @@ class ModoController extends Controller
         if (empty($mapPy)) return $stats;
 
         // Acciones Sustantivas
-        $actividades = DB::connection('poa_prod')->table('acciones_sustantivas')->whereIn('proyecto_id', array_keys($mapPy))->get();
-        if ($actividades->isEmpty()) {
-            $actividades = DB::connection('poa_prod')->table('actividades_sustantivas')->whereIn('proyecto_id', array_keys($mapPy))->get();
-        }
-        $targetTable = ($ejercicioDestino >= 2027) ? 'actividades_sustantivas' : 'acciones_sustantivas';
+        $actividades = DB::connection('poa_prod')->table('actividades_sustantivas')->whereIn('proyecto_id', array_keys($mapPy))->get();
+        $targetTable = 'actividades_sustantivas';
         
         $insertsAct = [];
         foreach ($actividades as $act) {

@@ -73,14 +73,17 @@ class RiesgoController extends Controller
         try {
             \Log::info("Starting store...");
 
+            $areaIdStore = $request->area_id;
+
             // Generar local_id consecutivo por proyecto (area_id)
             $ejercicioId = $this->internalEjercicioId($request->ejercicio_id);
-            $conteoExistente = Riesgo::where('area_id', $request->area_id)
+            $conteoExistente = Riesgo::where('area_id', $areaIdStore)
                 ->where('ejercicio_id', $ejercicioId)
                 ->count();
             $localId = 'R' . ($conteoExistente + 1);
 
             $datos = $request->all();
+            $datos['area_id'] = $areaIdStore;
             $datos['local_id'] = $localId;
             $datos['ejercicio_id'] = $ejercicioId;
 
@@ -130,6 +133,8 @@ class RiesgoController extends Controller
                 'probabilidad', 'impacto', 'probabilidad_inicial', 'impacto_inicial',
                 'status', 'last_observation',
             ]);
+
+            // No translation needed
 
             // Nunca guardar el año como ejercicio_id: resolver al id interno (17/19)
             if (array_key_exists('ejercicio_id', $datos)) {
@@ -299,12 +304,10 @@ class RiesgoController extends Controller
         $actIds = $pivots->flatten(1)->pluck('actividad_sustantiva_id')->unique()->values()->toArray();
 
         $nuevas = DB::table('actividades_sustantivas')->whereIn('id', $actIds)->get()->keyBy('id');
-        $viejas = DB::connection('poa_prod')->table('acciones_sustantivas')
-            ->whereIn('accion_sustantiva_id', $actIds)->get()->keyBy('accion_sustantiva_id');
+        $viejas = collect();
 
         $proyectoIds = collect([])
             ->merge($nuevas->pluck('proyecto_id'))
-            ->merge($viejas->pluck('proyecto_id'))
             ->unique()->values()->toArray();
 
         $proyectos = DB::table('proyectos')->whereIn('proyecto_id', $proyectoIds)->get()->keyBy('proyecto_id');
@@ -413,19 +416,17 @@ class RiesgoController extends Controller
 
             // Actividades propias del área (tablas nueva y vieja)
             $nuevasArea = DB::table('actividades_sustantivas')->whereIn('proyecto_id', $proyIds)->get()->keyBy('id');
-            $viejasArea = DB::connection('poa_prod')->table('acciones_sustantivas')
-                ->whereIn('proyecto_id', $proyIds)->get()->keyBy('accion_sustantiva_id');
+            $viejasArea = collect();
 
             if ($proyectosUsadosDelAnio) {
                 // Para el ejercicio del riesgo se usa la tabla correspondiente
-                $fuente = ($anio !== null && $anio < 2027) ? $viejasArea : $nuevasArea;
+                $fuente = $nuevasArea;
                 $ids = $fuente->keys()->values()
                     ->map(fn($id) => (string)$id)
                     ->all();
             } else {
                 // Sin proyectos del año del riesgo: cualquier actividad del área
                 $ids = collect($nuevasArea->keys())
-                    ->merge($viejasArea->keys())
                     ->map(fn($id) => (string)$id)
                     ->unique()
                     ->values()

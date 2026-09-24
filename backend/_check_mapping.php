@@ -1,17 +1,18 @@
 <?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+try {
+    $pdo = new PDO("mysql:host=192.168.22.238", "root", "myPass1326!");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("USE `0201sadpyrf_mar2026`");
 
-use Illuminate\Support\Facades\DB;
-
-$proyectos2026 = DB::table('proyectos')->where('ejercicio_id', 17)->get();
-$proyectos2027 = DB::table('proyectos')->where('ejercicio_id', 19)->get();
-
-echo "2026 Projects: " . count($proyectos2026) . "\n";
-echo "2027 Projects: " . count($proyectos2027) . "\n";
-
-foreach ($proyectos2027 as $p) {
-    echo "2027 Project: {$p->nombre} (RO: {$p->responsable_operativo_id})\n";
+    $stmt = $pdo->query("
+        SELECT a.area_id, a.nombre as area_nombre, urg.numero, urg.nombre as urg_nombre 
+        FROM areas a 
+        LEFT JOIN `0201sadpyrf_poa`.unidades_responsables_gastos urg 
+        ON (a.nombre = urg.nombre OR a.nombre LIKE CONCAT('%', urg.nombre, '%') OR urg.nombre LIKE CONCAT('%', a.nombre, '%'))
+        WHERE urg.unidad_responsable_gasto_id < 240
+        GROUP BY a.area_id
+    ");
+    print_r($stmt->fetchAll(PDO::FETCH_ASSOC));
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
 }

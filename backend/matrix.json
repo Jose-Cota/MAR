@@ -1,0 +1,625 @@
+[
+  {
+    "nombre_area": "Presidencia",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Representación oficial e institucional del Tribunal",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Presidencia",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Reuniones de trabajo y coordinación institucional",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Presidencia",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Seguimiento al cumplimiento de acuerdos y resoluciones del Pleno",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Secretaría General",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Recepción, registro, turno e integración de expedientes jurisdiccionales",
+    "riesgos_vinculados": "R1, R2, R3, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Secretaría General",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Diligencias, notificaciones y actuaciones ordenadas",
+    "riesgos_vinculados": "R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Secretaría General",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Apoyo técnico-jurídico al Pleno, sesiones, actas, acuerdos y certificaciones",
+    "riesgos_vinculados": "R3, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Secretaría Administrativa",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Coordinación de la administración de recursos humanos, materiales y financieros",
+    "riesgos_vinculados": "R1, R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Secretaría Administrativa",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Informes institucionales, planeación, POA, presupuesto y seguimiento de auditorías",
+    "riesgos_vinculados": "R1, R2, R3, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Planeación y Recursos Financieros",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Planeación, integración del POA y Anteproyecto de Presupuesto",
+    "riesgos_vinculados": "R3, R5, R7, R1, R2, R6",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Planeación y Recursos Financieros",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Informes programático-presupuestales, financieros y Cuenta Pública",
+    "riesgos_vinculados": "R2, R4, R7",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Planeación y Recursos Financieros",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Gestión, control y seguimiento presupuestal",
+    "riesgos_vinculados": "R3, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Planeación y Recursos Financieros",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Registro, control y armonización contable",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Planeación y Recursos Financieros",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Conciliaciones y control de recursos financieros",
+    "riesgos_vinculados": "R6",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Humanos",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Nómina, remuneraciones y pagos",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Humanos",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Movimientos y seguridad social",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Humanos",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Salud y seguros del personal",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Humanos",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Normatividad, procedimientos y servicios al personal",
+    "riesgos_vinculados": "R1, R3, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Materiales y Servicios Generales",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Programa y procedimientos de adquisiciones",
+    "riesgos_vinculados": "R1, R3, R4, R2, R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Materiales y Servicios Generales",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Servicios generales y contratación de servicios institucionales",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Materiales y Servicios Generales",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Protección civil y capacitación de brigadas",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección de Recursos Materiales y Servicios Generales",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Transparencia, solicitudes de información y atención de auditorías",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Informes trimestrales, anuales y requeridos por entes públicos",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Investigación y procedimientos de responsabilidad administrativa",
+    "riesgos_vinculados": "R2, R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Prevención, responsabilidades, declaraciones patrimoniales y verificaciones",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Auditorías, informes finales y seguimiento de observaciones",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Instrumentar y operar la función de la Contraloría Interna como Autoridad Garante con autonomía técnica, normativa, procedimientos y herramientas suficientes.",
+    "riesgos_vinculados": "R6",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 6,
+    "actividad_alineacion": "Recibir, sustanciar, resolver y verificar oportunamente los procedimientos competencia de la Autoridad Garante.",
+    "riesgos_vinculados": "R7",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Contraloría Interna",
+    "no_consecutivo": 7,
+    "actividad_alineacion": "Fortalecer la protección de datos personales y la cultura institucional de transparencia, acceso a la información y protección de datos.",
+    "riesgos_vinculados": "R8",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección General Jurídica",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Representación y defensa jurídica del Tribunal",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección General Jurídica",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Consultas, asesoría y opiniones jurídicas",
+    "riesgos_vinculados": "R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección General Jurídica",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Elaboración, análisis y revisión de normativa",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Dirección General Jurídica",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Convenios, actos jurídicos y compromisos institucionales",
+    "riesgos_vinculados": "R4, R3, R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Comunicación Social y Relaciones Públicas",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Posicionamiento y comunicación institucional",
+    "riesgos_vinculados": "R1, R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Comunicación Social y Relaciones Públicas",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Relaciones públicas, cobertura y eventos institucionales",
+    "riesgos_vinculados": "R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Comunicación Social y Relaciones Públicas",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Elaboración y difusión de información y contenidos institucionales",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Transparencia y Datos Personales",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Solicitudes de acceso a la información y recursos",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Transparencia y Datos Personales",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Sesiones, acuerdos y seguimiento del Comité de Transparencia",
+    "riesgos_vinculados": "R2, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Transparencia y Datos Personales",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Protección y tratamiento de datos personales",
+    "riesgos_vinculados": "R3, R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Transparencia y Datos Personales",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Obligaciones de transparencia, asesoría y capacitación especializada",
+    "riesgos_vinculados": "R5, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Instituto de Formación y Capacitación",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Programa y acciones institucionales de capacitación",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Instituto de Formación y Capacitación",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Cursos, talleres y actividades formativas",
+    "riesgos_vinculados": "R1, R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Comisión de Controversias Laborales y Administrativas",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Sustanciación de controversias laborales e inconformidades administrativas",
+    "riesgos_vinculados": "R1, R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Comisión de Controversias Laborales y Administrativas",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Normativa, criterios y actualización de instrumentos aplicables",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Servicios Informáticos",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Desarrollo y modernización de procesos y servicios informáticos",
+    "riesgos_vinculados": "R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Servicios Informáticos",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Infraestructura tecnológica y continuidad de servicios críticos",
+    "riesgos_vinculados": "R1, R5, R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Servicios Informáticos",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Seguridad de la información y controles tecnológicos",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Servicios Informáticos",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Respaldos, recuperación y continuidad tecnológica",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Servicios Informáticos",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Desarrollo, mantenimiento y actualización de sistemas institucionales",
+    "riesgos_vinculados": "R1, R2, R4, R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Estadística y Jurisprudencia",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Jurisprudencia, tesis, precedentes y criterios jurisdiccionales",
+    "riesgos_vinculados": "R1, R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad de Estadística y Jurisprudencia",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Estadística jurisdiccional",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Difusión y Publicación",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Obras, publicaciones y materiales editoriales",
+    "riesgos_vinculados": "R1, R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Difusión y Publicación",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Biblioteca, acervo y servicios documentales",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Difusión y Publicación",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Producción y gestión de publicaciones institucionales",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Difusión y Publicación",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Diseño y producción de materiales gráficos y audiovisuales",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Archivo",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Programa Anual de Desarrollo Archivístico (PADA)",
+    "riesgos_vinculados": "R1, R4, R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Archivo",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Gestión, integración, conservación y control documental",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Archivo",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Orientación y capacitación en materia archivística",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Derechos Humanos y Género",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Política institucional de derechos humanos e igualdad",
+    "riesgos_vinculados": "R1, R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Derechos Humanos y Género",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Comités, grupos y mecanismos institucionales de igualdad",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Derechos Humanos y Género",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Capacitación y sensibilización en derechos humanos y género",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Defensoría Pública de Participación Ciudadana y de Procesos Democráticos",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Asesoría y defensa de derechos político-electorales",
+    "riesgos_vinculados": "R1, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Defensoría Pública de Participación Ciudadana y de Procesos Democráticos",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Difusión, orientación y acercamiento sobre derechos político-electorales",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Defensoría Pública de Participación Ciudadana y de Procesos Democráticos",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Coordinación y cobertura de acciones de atención y defensa",
+    "riesgos_vinculados": "R1, R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Vinculación y Relaciones Internacionales",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Convenios y mecanismos de colaboración institucional",
+    "riesgos_vinculados": "R1, R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Vinculación y Relaciones Internacionales",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Vinculación nacional e internacional",
+    "riesgos_vinculados": "R1, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Coordinación de Vinculación y Relaciones Internacionales",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Eventos y actividades de vinculación",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad Especializada de Procedimientos Sancionadores",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Estudio y elaboración de proyectos en procedimientos especiales sancionadores",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad Especializada de Procedimientos Sancionadores",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Elaboración de proyectos, acuerdos y actuaciones de los procedimientos",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "Unidad Especializada de Procedimientos Sancionadores",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Seguimiento de impugnaciones e integridad de expedientes y documentación",
+    "riesgos_vinculados": "R1, R2, R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-02 · Ponencia del Magistrado José Jesús Hernández Rodríguez",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Garantizar la autonomía del Tribunal, respecto del funcionamiento, independencia e imparcialidad de sus decisiones.",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-02 · Ponencia del Magistrado José Jesús Hernández Rodríguez",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Ejercer la función jurisdiccional aplicando la potestad de emitir resoluciones y determinaciones.",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-02 · Ponencia del Magistrado José Jesús Hernández Rodríguez",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Aprobar los criterios de jurisprudencia y tesis relevantes.",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-02 · Ponencia del Magistrado José Jesús Hernández Rodríguez",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Llevar a cabo Sesiones Públicas para la resolución de los medios de impugnación y controversias planteadas ante este Tribunal.",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-02 · Ponencia del Magistrado José Jesús Hernández Rodríguez",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Participar en la integración de las Comisiones de Magistrados/as, que el Pleno determine y presentar los informes y acuerdos correspondientes.",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-03 · Ponencia del Magistrado Osiris Vázquez Rangel",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Garantizar la autonomía del Tribunal, respecto del funcionamiento, independencia e imparcialidad de sus decisiones.",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-03 · Ponencia del Magistrado Osiris Vázquez Rangel",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Ejercer la función jurisdiccional aplicando la potestad de emitir resoluciones y determinaciones.",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-03 · Ponencia del Magistrado Osiris Vázquez Rangel",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Aprobar los criterios de jurisprudencia y tesis relevantes.",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-03 · Ponencia del Magistrado Osiris Vázquez Rangel",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Llevar a cabo Sesiones Públicas para la resolución de los medios de impugnación y controversias planteadas ante este Tribunal.",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-03 · Ponencia del Magistrado Osiris Vázquez Rangel",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Participar en la integración de las Comisiones de Magistrados/as, que el Pleno determine y presentar los informes y acuerdos correspondientes.",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-04 · Ponencia de la Magistrada Karina Salgado Lunar",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Garantizar la autonomía del Tribunal, respecto del funcionamiento, independencia e imparcialidad de sus decisiones.",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-04 · Ponencia de la Magistrada Karina Salgado Lunar",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Ejercer la función jurisdiccional aplicando la potestad de emitir resoluciones y determinaciones.",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-04 · Ponencia de la Magistrada Karina Salgado Lunar",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Aprobar los criterios de jurisprudencia y tesis relevantes.",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-04 · Ponencia de la Magistrada Karina Salgado Lunar",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Llevar a cabo Sesiones Públicas para la resolución de los medios de impugnación y controversias planteadas ante este Tribunal.",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-04 · Ponencia de la Magistrada Karina Salgado Lunar",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Participar en la integración de las Comisiones de Magistrados/as, que el Pleno determine y presentar los informes y acuerdos correspondientes.",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-05 · Ponencia de la Magistrada Laura Patricia Jiménez Castillo",
+    "no_consecutivo": 1,
+    "actividad_alineacion": "Garantizar la autonomía del Tribunal, respecto del funcionamiento, independencia e imparcialidad de sus decisiones.",
+    "riesgos_vinculados": "R5",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-05 · Ponencia de la Magistrada Laura Patricia Jiménez Castillo",
+    "no_consecutivo": 2,
+    "actividad_alineacion": "Ejercer la función jurisdiccional aplicando la potestad de emitir resoluciones y determinaciones.",
+    "riesgos_vinculados": "R1",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-05 · Ponencia de la Magistrada Laura Patricia Jiménez Castillo",
+    "no_consecutivo": 3,
+    "actividad_alineacion": "Aprobar los criterios de jurisprudencia y tesis relevantes.",
+    "riesgos_vinculados": "R3",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-05 · Ponencia de la Magistrada Laura Patricia Jiménez Castillo",
+    "no_consecutivo": 4,
+    "actividad_alineacion": "Llevar a cabo Sesiones Públicas para la resolución de los medios de impugnación y controversias planteadas ante este Tribunal.",
+    "riesgos_vinculados": "R2",
+    "es_resumida": true
+  },
+  {
+    "nombre_area": "01-05 · Ponencia de la Magistrada Laura Patricia Jiménez Castillo",
+    "no_consecutivo": 5,
+    "actividad_alineacion": "Participar en la integración de las Comisiones de Magistrados/as, que el Pleno determine y presentar los informes y acuerdos correspondientes.",
+    "riesgos_vinculados": "R4",
+    "es_resumida": true
+  }
+]

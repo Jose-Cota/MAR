@@ -29,7 +29,7 @@ export default function POAPage() {
     if (!areaId) return;
     setLoading(true);
     // Enviamos el areaId real al backend — ahora filtra correctamente por nombre de URG
-    axios.get(`/poa/fichas?ejercicio_id=${ejercicio}&area_id=${areaId}`)
+    axios.get(`/poa/fichas?ejercicio=${ejercicio}&area_id=${areaId}`)
       .then(res => setFichas(res.data.data || res.data || []))
       .catch(() => setFichas([]))
       .finally(() => setLoading(false));
@@ -59,18 +59,21 @@ export default function POAPage() {
   // Construir lista de "panels" a mostrar
   const getPanels = () => {
     if (areaId === 'todas') {
-      // Agrupar por urg_id numérico (IDs internos del POA, aunque sean 564+)
+      // Agrupar por responsable_operativo_id para que cada área tenga su propio panel (urg_id a veces se comparte)
       const grupos = {};
       fichas.forEach(p => {
-        const key = String(p.urg_id || 'sin-area');
+        const key = String(p.responsable_operativo_id || p.urg_id || 'sin-area');
         if (!grupos[key]) grupos[key] = [];
         grupos[key].push(p);
       });
-      return Object.entries(grupos).map(([urgId, proyectos]) => ({
-        key: urgId,
-        titulo: `POA ${ejercicio}`,
-        proyectos,
-      }));
+      return Object.entries(grupos).map(([urgId, proyectos]) => {
+        const roNombre = proyectos.find(p => p.ro_nombre)?.ro_nombre || `Área ${urgId}`;
+        return {
+          key: urgId,
+          titulo: `POA ${ejercicio} - ${roNombre}`,
+          proyectos,
+        };
+      });
     } else {
       // Área específica: mostrar TODOS los proyectos retornados (el backend ya filtró o no pudo)
       const area = getAreaActual();
@@ -117,76 +120,88 @@ export default function POAPage() {
       )}
 
       {!loading && areaId !== 'todas' && getAreaActual() && fichas.length > 0 && (
-        <section className="panel" style={{ marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.25rem', margin: '0 0 8px' }}>
-            POA {ejercicio} - {getAreaActual()?.nombre || getAreaActual()?.denominacion}
-          </h2>
-          <p style={{ margin: '0 0 16px', color: '#555' }}>
-            {fichas.map(p => p.nombre).filter(Boolean).join('; ')}
-          </p>
-          
-          {fichas.some(p => (p.acciones || p.actividades || []).length > 0) ? (
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
-              <thead>
-                <tr>
-                  <th style={{ width: '40px' }}>#</th>
-                  <th>Acción sustantiva / alineación</th>
-                  <th style={{ width: '270px', textAlign: 'center' }}>Riesgos vinculados</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  // For 2027+ and 2026, use real DB actions
-                  return fichas.flatMap(p => p.acciones || p.actividades || []).map((a, idx) => {
-                    // Si la acción no tiene riesgos vinculados específicos, y es 2026, heredamos los riesgos del área (proyecto)
-                    const riesgos = a.riesgos_vinculados || a.riesgos || [];
-                    return (
-                      <tr key={idx}>
-                        <td>{a.numero || idx + 1}</td>
-                        <td>{a.descripcion || a.denominacion || a.texto || '—'}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          {riesgos.length > 0 ? (
-                            riesgos.map((r, ri) => {
-                              const rawId = String(r.local_id || r.id);
-                              const shortId = rawId.includes('-') ? rawId.split('-').pop() : rawId;
-                              const displayId = shortId.startsWith('R') ? shortId : `R${shortId}`;
-                              return (
-                                <span key={ri} className="chip" style={{ marginRight: '4px' }}>
-                                  {displayId}
-                                </span>
-                              );
-                            })
-                          ) : (
-                            <span className="muted" style={{ fontSize: '12px' }}>Sin riesgo</span>
-                          )}
-                        </td>
+        <>
+          {fichas.map((proyecto, pIdx) => {
+            const actividades = (proyecto.acciones || proyecto.actividades || []);
+            
+            if (actividades.length === 0) return null;
+            
+            return (
+              <section key={proyecto.id || pIdx} className="panel" style={{ marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '1.25rem', margin: '0 0 8px' }}>
+                  {proyecto.nombre || `Alineación técnica POA ${ejercicio} - Proyecto ${pIdx + 1}`}
+                </h2>
+                
+                <p style={{ margin: '0 0 16px', color: '#555', lineHeight: 1.5 }}>
+                  {actividades
+                    .map(a => a.descripcion || a.denominacion || a.texto)
+                    .filter(Boolean)
+                    .join('; ')}
+                </p>
+
+                
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px' }}>#</th>
+                        <th>Acción sustantiva / alineación</th>
+                        <th style={{ width: '270px', textAlign: 'center' }}>Riesgos vinculados</th>
                       </tr>
-                    );
-                  });
-                })()}
-              </tbody>
-            </table>
-          ) : (
-            <p style={{ color: '#888', fontSize: '0.85rem', margin: '0 0 8px' }}>Sin actividades sustantivas registradas.</p>
-          )}
-        </section>
+                    </thead>
+                    <tbody>
+                      {actividades.map((a, idx) => {
+                        const riesgos = a.riesgos_vinculados || a.riesgos || [];
+                        return (
+                          <tr key={idx}>
+                            <td>{a.numero || idx + 1}</td>
+                            <td>{a.descripcion || a.denominacion || a.texto || '—'}</td>
+                            <td style={{ textAlign: 'center' }}>
+                              {riesgos.length > 0 ? (
+                                riesgos.map((r, ri) => {
+                                  const rawId = String(r.local_id || r.id);
+                                  const shortId = rawId.includes('-') ? rawId.split('-').pop() : rawId;
+                                  const displayId = shortId.startsWith('R') ? shortId : `R${shortId}`;
+                                  return (
+                                    <span key={ri} className="chip" style={{ marginRight: '4px' }}>
+                                      {displayId}
+                                    </span>
+                                  );
+                                })
+                              ) : (
+                                <span className="muted" style={{ fontSize: '12px' }}>Sin riesgo</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+              </section>
+            );
+          })}
+        </>
       )}
 
       {!loading && areaId === 'todas' && getPanels().map((grupo, idx) => {
         const areaFichas = grupo.proyectos;
-        if (areaFichas.length === 0) return null;
+        const actividadesTotales = areaFichas.flatMap(p => p.acciones || p.actividades || []);
+        
+        if (actividadesTotales.length === 0) return null;
         
         return (
           <section className="panel" key={grupo.key || idx} style={{ marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.25rem', margin: '0 0 8px' }}>
               {grupo.titulo}
             </h2>
-            <p style={{ margin: '0 0 16px', color: '#555' }}>
-              {areaFichas.map(p => p.nombre).filter(Boolean).join('; ')}
+            
+            <p style={{ margin: '0 0 16px', color: '#555', lineHeight: 1.5 }}>
+              {actividadesTotales
+                .map(a => a.descripcion || a.denominacion || a.texto)
+                .filter(Boolean)
+                .join('; ')}
             </p>
             
-            {areaFichas.some(p => (p.acciones || p.actividades || []).length > 0) ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
                 <thead>
                   <tr>
                     <th style={{ width: '40px' }}>#</th>
@@ -196,9 +211,7 @@ export default function POAPage() {
                 </thead>
                 <tbody>
                   {(() => {
-                    // For 2027+ and 2026, use real DB actions
-                    return areaFichas.flatMap(p => p.acciones || p.actividades || []).map((a, idxAct) => {
-                      // Si la acción no tiene riesgos vinculados específicos, y es 2026, heredamos los riesgos del área (proyecto)
+                    return actividadesTotales.map((a, idxAct) => {
                       const riesgos = a.riesgos_vinculados || a.riesgos || [];
                       return (
                         <tr key={idxAct}>
@@ -226,9 +239,6 @@ export default function POAPage() {
                   })()}
                 </tbody>
               </table>
-            ) : (
-              <p style={{ color: '#888', fontSize: '0.85rem', margin: '0 0 8px' }}>Sin actividades sustantivas registradas.</p>
-            )}
           </section>
         );
       })}

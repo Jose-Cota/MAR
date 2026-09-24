@@ -16,17 +16,22 @@ class UnidadResponsableController extends Controller
     {
         $filtrarPorEjercicio = $request->has('ejercicio') && !empty($request->ejercicio);
 
+        // Las URG estructurales POA (id >= 240) se usan para conectar los proyectos
+        // en getFichas, pero NO deben mostrarse en el listado/dropdown (duplicarían
+        // las URG del catálogo 1-25 con el mismo nombre).
         if ($filtrarPorEjercicio) {
             $query = DB::connection('poa_prod')
                 ->table('unidades_responsables_gastos as urg')
                 ->join('ejercicios as e', 'urg.ejercicio_id', '=', 'e.ejercicio_id')
                 ->select('urg.*')
                 ->where('e.ejercicio', $request->ejercicio)
+                ->where('urg.unidad_responsable_gasto_id', '<', 240)
                 ->orderBy('urg.numero');
         } else {
             // Sin ejercicio: tomar solo el registro más reciente por número de URG
             $subquery = DB::connection('poa_prod')
                 ->table('unidades_responsables_gastos')
+                ->where('unidad_responsable_gasto_id', '<', 240)
                 ->select('numero', DB::raw('MAX(ejercicio_id) as max_ejercicio_id'))
                 ->groupBy('numero');
 
@@ -37,6 +42,7 @@ class UnidadResponsableController extends Controller
                          ->on('urg.ejercicio_id', '=', 'latest.max_ejercicio_id');
                 })
                 ->select('urg.*')
+                ->where('urg.unidad_responsable_gasto_id', '<', 240)
                 ->orderBy('urg.numero');
         }
 
@@ -87,51 +93,41 @@ class UnidadResponsableController extends Controller
 
     }
 
-
     /**
      * Store a newly created unidad responsable
      */
     public function store(Request $request)
     {
-        // ... (store logic remains same, but we could add an authorization check here)
-        if (!$request->user()->hasRole('Super Administrador') && !$request->user()->hasRole('Administrador')) {
-            return response()->json(['message' => 'No autorizado'], 403);
-        }
-
         $validator = Validator::make($request->all(), [
-            'numero' => 'required|string|max:5',
             'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'titular' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Check if numero already exists
-        $exists = DB::connection('poa_prod')
-            ->table('unidades_responsables_gastos')
-            ->where('numero', $request->numero)
-            ->exists();
+        // Determinar ID para guardar
+        $maxId = DB::table('unidades_responsables_gastos')
+            ->max('unidad_responsable_gasto_id');
+        
+        $newId = $maxId ? $maxId + 1 : 1;
 
-        if ($exists) {
-            return response()->json(['message' => 'El número de unidad ya existe'], 400);
-        }
+        DB::table('unidades_responsables_gastos')->insert([
+            'unidad_responsable_gasto_id' => $newId,
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'titular' => $request->titular,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
-        $id = DB::connection('poa_prod')
-            ->table('unidades_responsables_gastos')
-            ->insertGetId([
-                'ejercicio_id' => 1, // Defaulting to 1 for now, similar to old system session exercise
-                'numero' => $request->numero,
-                'nombre' => $request->nombre,
-                'cerrada' => 0 // Default to open
-            ]);
-
-        $unidad = DB::connection('poa_prod')
-            ->table('unidades_responsables_gastos')
-            ->where('unidad_responsable_gasto_id', $id)
+        $nuevaUnidad = DB::table('unidades_responsables_gastos')
+            ->where('unidad_responsable_gasto_id', $newId)
             ->first();
 
-        return response()->json($unidad, 201);
+        return response()->json($nuevaUnidad, 201);
     }
 
     /**
@@ -139,87 +135,57 @@ class UnidadResponsableController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = $request->user();
-        $updateData = [];
+        $validator = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'titular' => 'nullable|string|max:255',
+        ]);
 
-        if (!$user->hasRole('Administrador')) {
-            $userUrgIds = $user->unidadesResponsables->pluck('unidad_responsable_gasto_id')->toArray();
-            if (empty($userUrgIds)) {
-                $userUrgIds = [$user->area_id];
-            }
-            if (!in_array($id, $userUrgIds)) {
-                return response()->json(['message' => 'No autorizado'], 403);
-            }
-        } else {
-            $validator = Validator::make($request->all(), [
-                'numero' => 'required|string|max:5',
-                'nombre' => 'required|string|max:255',
-                'cerrada' => 'nullable|boolean'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-
-            // Check if numero exists for another unit
-            $exists = DB::connection('poa_prod')
-                ->table('unidades_responsables_gastos')
-                ->where('numero', $request->numero)
-                ->where('unidad_responsable_gasto_id', '!=', $id)
-                ->exists();
-
-            if ($exists) {
-                return response()->json(['message' => 'El número de unidad ya está en uso'], 400);
-            }
-
-            $updateData['numero'] = $request->numero;
-            $updateData['nombre'] = $request->nombre;
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // If cerrada is sent, update it
-        if ($request->has('cerrada')) {
-            $updateData['cerrada'] = $request->cerrada;
-            
-            // Sync with g_registros if needed as per old logic
-            DB::connection('poa_prod')
-                ->table('g_registros')
-                ->where('area_id', $id)
-                ->update(['cerrado' => $request->cerrada]);
-        }
-
-        if (!empty($updateData)) {
-            DB::connection('poa_prod')
-                ->table('unidades_responsables_gastos')
-                ->where('unidad_responsable_gasto_id', $id)
-                ->update($updateData);
-        }
-
-        $unidad = DB::connection('poa_prod')
-            ->table('unidades_responsables_gastos')
+        $unidad = DB::table('unidades_responsables_gastos')
             ->where('unidad_responsable_gasto_id', $id)
             ->first();
 
-        return response()->json($unidad);
-    }
-
-    public function destroy(Request $request, $id)
-    {
-        $user = $request->user();
-        if (!$user->hasRole('Administrador')) {
-            $userUrgIds = $user->unidadesResponsables->pluck('unidad_responsable_gasto_id')->toArray();
-            if (empty($userUrgIds)) {
-                $userUrgIds = [$user->area_id];
-            }
-            if (!in_array($id, $userUrgIds)) {
-                return response()->json(['message' => 'No autorizado'], 403);
-            }
+        if (!$unidad) {
+            return response()->json(['message' => 'Unidad no encontrada'], 404);
         }
 
-        DB::connection('poa_prod')
-            ->table('unidades_responsables_gastos')
+        DB::table('unidades_responsables_gastos')
+            ->where('unidad_responsable_gasto_id', $id)
+            ->update([
+                'nombre' => $request->nombre,
+                'descripcion' => $request->descripcion,
+                'titular' => $request->titular,
+                'updated_at' => now(),
+            ]);
+
+        $unidadActualizada = DB::table('unidades_responsables_gastos')
+            ->where('unidad_responsable_gasto_id', $id)
+            ->first();
+
+        return response()->json($unidadActualizada);
+    }
+
+    /**
+     * Remove the specified unidad responsable
+     */
+    public function destroy($id)
+    {
+        $unidad = DB::table('unidades_responsables_gastos')
+            ->where('unidad_responsable_gasto_id', $id)
+            ->first();
+
+        if (!$unidad) {
+            return response()->json(['message' => 'Unidad no encontrada'], 404);
+        }
+
+        DB::table('unidades_responsables_gastos')
             ->where('unidad_responsable_gasto_id', $id)
             ->delete();
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Unidad eliminada exitosamente']);
     }
 }

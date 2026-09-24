@@ -1,0 +1,574 @@
+[
+    {
+        "id": 1,
+        "nombre": "Presidencia",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los acuerdos y resoluciones del Pleno no sean atendidos, canalizados o seguidos oportunamente."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que las reuniones no cuenten con información, acuerdos o seguimiento suficientes para atender los asuntos institucionales."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que la representación institucional se realice sin información suficiente, coordinación previa o atención oportuna de compromisos derivados."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 2,
+        "nombre": "Secretaría General",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que la documentación jurisdiccional no sea recibida, registrada, integrada o turnada oportunamente."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que las diligencias, notificaciones o inspecciones no se practiquen oportunamente o presenten deficiencias de ejecución."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los acuerdos, actas, avisos o documentos de las reuniones y\/o sesiones se elaboren, circulen o integren de manera incorrecta o extemporánea."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las consultas, certificaciones o requerimientos no sean atendidos oportunamente o con información suficiente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 3,
+        "nombre": "Secretaría Administrativa",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que la coordinación de recursos no permita atender oportunamente las necesidades institucionales."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los informes institucionales se integren o presenten con información incompleta, inconsistente o extemporánea."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que el POA, anteproyecto o programas se integren sin congruencia, soporte o dentro de los plazos previstos."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que observaciones o requerimientos de auditoría no sean atendidos o coordinados oportunamente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 4,
+        "nombre": "Dirección de Planeación y Recursos Financieros",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los instrumentos de planeación, metas e indicadores se integren de manera incompleta, inconsistente o extemporánea."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que el seguimiento de metas e indicadores se realice con información incorrecta, incompleta o no actualizada."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que el anteproyecto de presupuesto se integre con estimaciones insuficientemente sustentadas o incongruentes con las necesidades institucionales."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que los registros, afectaciones o suficiencias presupuestarias se tramiten o registren de forma incorrecta o extemporánea."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que las operaciones financieras y presupuestarias se registren de forma incorrecta, incompleta o extemporánea."
+            },
+            {
+                "local_id": "R6",
+                "riesgo": "Que las diferencias bancarias, contables, presupuestarias o de inventario no sean identificadas o solventadas oportunamente."
+            },
+            {
+                "local_id": "R7",
+                "riesgo": "Que los estados financieros, informes o Cuenta Pública se emitan con información incorrecta, incompleta o extemporánea."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 5,
+        "nombre": "Dirección de Recursos Humanos",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que la nómina o prestaciones se calculen, validen o paguen de manera incorrecta o extemporánea."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que movimientos o expedientes del personal se registren de forma incompleta, incorrecta o extemporánea."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que las acciones de salud, capacitación o desarrollo no se programen, ejecuten o documenten oportunamente."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que convenios, servicios u obligaciones informativas se atiendan fuera de plazo o con documentación insuficiente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 6,
+        "nombre": "Dirección de Recursos Materiales y Servicios Generales",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los procedimientos de adquisición, arrendamiento o contratación se integren de forma incompleta, incorrecta o extemporánea."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los bienes no sean registrados, asignados, conciliados o resguardados correctamente."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que el mantenimiento, servicios generales o atención de incidencias no se realicen oportunamente."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las acciones preventivas, simulacros o medidas de protección civil no se implementen oportunamente."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que la información requerida no se entregue completa, correcta o dentro de plazo."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 7,
+        "nombre": "Contraloría Interna",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los informes o reportes se integren con información incompleta, inconsistente o extemporánea."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los procedimientos no se tramiten, sustancien o resuelvan dentro de plazo o con deficiencias documentales."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que las acciones preventivas, declaraciones, verificaciones u orientaciones no se realicen oportunamente."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las auditorías no se ejecuten conforme al programa o que las observaciones no tengan seguimiento oportuno."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que resoluciones, sanciones o registros derivados de procedimientos no se formalicen o actualicen oportunamente."
+            },
+            {
+                "local_id": "R6",
+                "riesgo": "Que la función de la Contraloría Interna como Autoridad Garante no sea instrumentada oportunamente o carezca de estructura, normativa, procedimientos, herramientas y controles suficientes para su operación con autonomía técnica."
+            },
+            {
+                "local_id": "R7",
+                "riesgo": "Que los recursos de revisión, verificaciones y denuncias en materia de transparencia, acceso a la información y protección de datos personales no sean recibidos, sustanciados, resueltos o atendidos dentro de los plazos legales o con las formalidades aplicables."
+            },
+            {
+                "local_id": "R8",
+                "riesgo": "Que el registro y supervisión de los sistemas de datos personales, las evaluaciones de impacto y las acciones de capacitación, promoción y difusión no se realicen de manera completa, oportuna y conforme a la normativa aplicable."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 8,
+        "nombre": "Dirección General Jurídica",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que la representación jurídica no se ejerza en los plazos legales o que los asuntos se atiendan con información incompleta."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que las consultas u opiniones jurídicas se emitan fuera de plazo o con análisis insuficiente."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que proyectos normativos, convenios o contratos se revisen, elaboren o validen, según el caso, con omisiones, inconsistencias o fuera de plazo."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que los asuntos no sean atendidos dentro de los plazos establecidos."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 9,
+        "nombre": "Coordinación de Comunicación Social y Relaciones Públicas",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que las campañas o acciones de posicionamiento no sean oportunas, coherentes o adecuadas a los públicos objetivo."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que la información institucional no se difunda de forma oportuna, clara o por los canales previstos."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que eventos o relaciones públicas no cuenten con coordinación, cobertura o seguimiento suficiente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 11,
+        "nombre": "Instituto de Formación y Capacitación",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que el programa de capacitación no se ejecute conforme a lo programado."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que las acciones formativas no cumplan los objetivos académicos."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 12,
+        "nombre": "Comisión de Controversias Laborales y Administrativas",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los asuntos no sean sustanciados, proyectados o resueltos dentro de plazo."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que las consultas no se atiendan oportunamente o con análisis suficiente."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que las necesidades de actualización normativa no se identifiquen o formalicen oportunamente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 13,
+        "nombre": "Unidad de Servicios Informáticos",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los sistemas, servicios o infraestructura presenten indisponibilidad, degradación o fallas que afecten la operación."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los desarrollos, actualizaciones o implementaciones no atiendan requerimientos, presenten fallas o se retrasen."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que las solicitudes o incidencias no sean atendidas oportunamente o queden sin solución adecuada."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que se presenten accesos no autorizados, pérdida de información, vulnerabilidades o incidentes de seguridad."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que ante una contingencia no se recuperen oportunamente los servicios críticos."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 15,
+        "nombre": "Coordinación de Difusión y Publicación",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que las publicaciones o materiales se produzcan con errores, fuera de plazo o sin las validaciones requeridas."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los productos gráficos\/audiovisuales no cumplan requerimientos técnicos, identidad institucional o plazos."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que materiales bibliográficos no se registren, actualicen, localicen o presten adecuadamente."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que los contenidos no se publiquen o distribuyan oportunamente o presenten inconsistencias."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 16,
+        "nombre": "Coordinación de Archivo",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que las acciones del PADA no se ejecuten, documenten o evalúen conforme a lo programado."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los instrumentos archivísticos estén desactualizados, incompletos o no reflejen la operación."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los documentos no se organicen, conserven, transfieran o localicen adecuadamente."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las áreas no apliquen adecuadamente los criterios archivísticos por falta de orientación o capacitación."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 17,
+        "nombre": "Coordinación de Derechos Humanos y Género",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que las acciones de transversalización no se implementen, documenten o evalúen conforme a lo programado."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los acuerdos, acciones o mecanismos no se atiendan oportunamente."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que las actividades de capacitación o difusión no lleguen a los públicos objetivo o se ejecuten fuera de plazo."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 18,
+        "nombre": "Defensoría Pública de Participación Ciudadana y de Procesos Democráticos",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que las solicitudes de asesoría o defensa no sean atendidas oportunamente o con análisis suficiente."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que las actividades de difusión u orientación no cubran a los públicos objetivo o se realicen fuera de programación."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que la información de atención y defensa se registre de forma incompleta o inconsistente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 19,
+        "nombre": "Coordinación de Vinculación y Relaciones Internacionales",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los convenios o mecanismos de colaboración no se integren, formalicen o sigan oportunamente."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los eventos o actividades de vinculación no se desarrollen conforme a objetivos, agenda o compromisos."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los compromisos de vinculación no se atiendan, documenten o actualicen oportunamente."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 20,
+        "nombre": "Unidad Especializada de Procedimientos Sancionadores",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los procedimientos no sean analizados o proyectados dentro del plazo o con calidad jurídica suficiente."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que los proyectos ordinarios o asuntos derivados de impugnaciones no sean atendidos oportunamente."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los expedientes o documentos se integren incorrectamente, se extravíen o no estén disponibles."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 21,
+        "nombre": "Ponencia del Magistrado Armando Ámbriz Hernández",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los asuntos turnados no sean sustanciados, tramitados o proyectados oportunamente, o que los proyectos presenten omisiones o deficiencias jurídicas que afecten su resolución."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que la Ponencia no cuente oportunamente con análisis o documentación suficiente para deliberar y votar, o que votos y engroses se elaboren extemporáneamente o con inconsistencias."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los criterios, tesis, proyectos, acuerdos o documentos sometidos a revisión se analicen con precedentes incompletos, inconsistencias o fuera del plazo requerido."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las comisiones, informes, acuerdos o asuntos administrativos asignados a la Ponencia no sean analizados o atendidos oportunamente."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que actuaciones o decisiones de la Ponencia se desarrollen sin salvaguardas suficientes de autonomía, independencia o imparcialidad."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 22,
+        "nombre": "Ponencia del Magistrado José Jesús Hernández Rodríguez",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los asuntos turnados no sean sustanciados, tramitados o proyectados oportunamente, o que los proyectos presenten omisiones o deficiencias jurídicas que afecten su resolución."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que la Ponencia no cuente oportunamente con análisis o documentación suficiente para deliberar y votar, o que votos y engroses se elaboren extemporáneamente o con inconsistencias."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los criterios, tesis, proyectos, acuerdos o documentos sometidos a revisión se analicen con precedentes incompletos, inconsistencias o fuera del plazo requerido."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las comisiones, informes, acuerdos o asuntos administrativos asignados a la Ponencia no sean analizados o atendidos oportunamente."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que actuaciones o decisiones de la Ponencia se desarrollen sin salvaguardas suficientes de autonomía, independencia o imparcialidad."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 23,
+        "nombre": "Ponencia del Magistrado Osiris Vázquez Rangel",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los asuntos turnados no sean sustanciados, tramitados o proyectados oportunamente, o que los proyectos presenten omisiones o deficiencias jurídicas que afecten su resolución."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que la Ponencia no cuente oportunamente con análisis o documentación suficiente para deliberar y votar, o que votos y engroses se elaboren extemporáneamente o con inconsistencias."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los criterios, tesis, proyectos, acuerdos o documentos sometidos a revisión se analicen con precedentes incompletos, inconsistencias o fuera del plazo requerido."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las comisiones, informes, acuerdos o asuntos administrativos asignados a la Ponencia no sean analizados o atendidos oportunamente."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que actuaciones o decisiones de la Ponencia se desarrollen sin salvaguardas suficientes de autonomía, independencia o imparcialidad."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 24,
+        "nombre": "Ponencia de la Magistrada Karina Salgado Lunar",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los asuntos turnados no sean sustanciados, tramitados o proyectados oportunamente, o que los proyectos presenten omisiones o deficiencias jurídicas que afecten su resolución."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que la Ponencia no cuente oportunamente con análisis o documentación suficiente para deliberar y votar, o que votos y engroses se elaboren extemporáneamente o con inconsistencias."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los criterios, tesis, proyectos, acuerdos o documentos sometidos a revisión se analicen con precedentes incompletos, inconsistencias o fuera del plazo requerido."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las comisiones, informes, acuerdos o asuntos administrativos asignados a la Ponencia no sean analizados o atendidos oportunamente."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que actuaciones o decisiones de la Ponencia se desarrollen sin salvaguardas suficientes de autonomía, independencia o imparcialidad."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    },
+    {
+        "id": 25,
+        "nombre": "Ponencia de la Magistrada Laura Patricia Jiménez Castillo",
+        "riesgos2027": [
+            {
+                "local_id": "R1",
+                "riesgo": "Que los asuntos turnados no sean sustanciados, tramitados o proyectados oportunamente, o que los proyectos presenten omisiones o deficiencias jurídicas que afecten su resolución."
+            },
+            {
+                "local_id": "R2",
+                "riesgo": "Que la Ponencia no cuente oportunamente con análisis o documentación suficiente para deliberar y votar, o que votos y engroses se elaboren extemporáneamente o con inconsistencias."
+            },
+            {
+                "local_id": "R3",
+                "riesgo": "Que los criterios, tesis, proyectos, acuerdos o documentos sometidos a revisión se analicen con precedentes incompletos, inconsistencias o fuera del plazo requerido."
+            },
+            {
+                "local_id": "R4",
+                "riesgo": "Que las comisiones, informes, acuerdos o asuntos administrativos asignados a la Ponencia no sean analizados o atendidos oportunamente."
+            },
+            {
+                "local_id": "R5",
+                "riesgo": "Que actuaciones o decisiones de la Ponencia se desarrollen sin salvaguardas suficientes de autonomía, independencia o imparcialidad."
+            }
+        ],
+        "proyectos2027": [],
+        "acciones2026": []
+    }
+]

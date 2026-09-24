@@ -346,6 +346,7 @@ export default function RiesgosPage() {
           const title = `${areaName}`;
           
           // Filtrar los riesgos correspondientes a esta UR
+          // Verificamos el area_id (que es el URG ID en la bd riesgos)
           const riesgosUR = filtrados.filter(r => String(r.area_id) === urgId);
 
           const isExpanded = expandedURs[urgId] !== false;

@@ -1,0 +1,30 @@
+M.db=db;return db};
+  M.resetDB=()=>{localStorage.removeItem(DBKEY);M.db=M.seedDatabase();M.saveDB(M.db)};
+  async function hash(text){const b=new TextEncoder().encode(text);const d=await crypto.subtle.digest('SHA-256',b);return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+  M.authenticate=async(u,p)=>{const user=M.db.users.find(x=>x.active&&x.username===u.trim());if(!user)return null;if(await hash(p)!==user.passwordHash)return null;return{userId:user.id,name:user.name,username:user.username,isAdmin:!!user.isAdmin}};
+  M.assignmentsFor=u=>M.db.assignments.filter(a=>a.userId===u);
+  M.permissions=(areaId)=>{const s=M.session;if(!s)return{canView:false};if(s.isAdmin)return{canView:true,canCapture:true,canValidate:true,canAdmin:true,roles:['Administrador']};const roles=[...new Set(M.db.assignments.filter(a=>a.userId===s.userId&&a.areaId===areaId).flatMap(a=>a.roles||[]))];return{canView:roles.length>0,canCapture:roles.includes('Capturista'),canValidate:roles.includes('Validador'),canAdmin:false,roles}};
+  M.visibleAreas=()=>M.session?.isAdmin?M.db.areas:M.db.areas.filter(a=>M.permissions(a.id).canView);
+  M.areaLabel=a=>a?`${a.displayCode?a.displayCode+' · ':''}${a.name}`:'';
+  M.log=(action,entityType,entityId,detail='')=>{M.db.auditLog.push({id:'log-'+Date.now()+'-'+Math.random().toString(36).slice(2),at:new Date().toISOString(),userId:M.session.userId,action,entityType,entityId,detail});M.saveDB(M.db)};
+
+  const STOP=new Set(['que','los','las','un','una','unos','unas','de','del','la','el','y','o','en','a','al','se','no','por','para','con','su','sus','sea','sean','ser','como']);
+  const toks=r=>String((r?.risk||'')+' '+(r?.objective||'')).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñáéíóúü\s]/g,' ').split(/\s+/).filter(x=>x.length>2&&!STOP.has(x));
+  M.riskSimilarity=(a,b)=>{const A=new Set(toks(a)),B=new Set(toks(b));if(!A.size||!B.size)return 0;let n=0;A.forEach(x=>{if(B.has(x))n++});return n/(A.size+B.size-n)};
+  M.suggestInstitutionalValuation=src=>{src=src||[];const probability=src.length?Math.max(...src.map(r=>Number(r.probability)||0)):0,impact=src.length?Math.max(...src.map(r=>Number(r.impact)||0)):0;return{probability,impact,quadrant:M.quadrantFor(probability,impact)}};
+  M.buildInstitutionalTraceability=ir=>(ir?.sourceRiskIds||[]).map(id=>{const r=M.db.risks.find(x=>x.id===id);if(!r)return null;const a=M.db.areas.find(x=>x.id===r.areaId),ids=r.linkedActionIds||r.poaActionIds||[];return{institutionalRiskId:ir.id,areaId:r.areaId,areaName:M.areaLabel(a)||r.areaId,sourceRiskId:r.id,sourceLocalId:r.localId||r.id,sourceRisk:r.risk,poaActions:ids.map(aid=>M.db.poaActions.find(x=>x.id===aid&&x.exercise===r.exercise&&x.areaId===r.areaId)?.text).filter(Boolean),probability:r.probability,impact:r.impact}}).filter(Boolean);
+  M.suggestRiskGroups=(risks,threshold=.22)=>{const rs=(risks||[]).filter(r=>r.status==='Validado'),edges=[];for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++){const score=M.riskSimilarity(rs[i],rs[j]);if(score>=threshold)edges.push({a:rs[i].id,b:rs[j].id,score})}const adj=new Map(rs.map(r=>[r.id,new Set()]));edges.forEach(e=>{adj.get(e.a)?.add(e.b);adj.get(e.b)?.add(e.a)});const seen=new Set(),groups=[];rs.forEach(r=>{if(seen.has(r.id)||!adj.get(r.id)?.size)return;const st=[r.id],ids=[];seen.add(r.id);while(st.length){const id=st.pop();ids.push(id);(adj.get(id)||[]).forEach(n=>{if(!seen.has(n)){seen.add(n);st.push(n)}})}if(ids.length>1){const sc=edges.filter(e=>ids.includes(e.a)&&ids.includes(e.b)).map(e=>e.score);groups.push({sourceRiskIds:ids,score:Number((sc.reduce((a,b)=>a+b,0)/Math.max(sc.length,1)).toFixed(2))})}});return groups.sort((a,b)=>b.score-a.score)};
+  M.currentYear=()=>Number(document.querySelector('#exerciseSelect')?.value||M.exercise||2026);
+  M.escape=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+})(window.MAR=window.MAR||{});
+
+(function(M){
+  M.routes={};
+  M.registerRoute=(name,fn)=>M.routes[name]=fn;
+  M.navigate=(route,params={})=>{M.route=route;document.querySelectorAll('.nav-link').forEach(x=>x.classList.toggle('active',x.dataset.route===route));const fn=M.routes[route]||M.routes.dashboard;fn(params);location.hash=route;};
+})(window.MAR=window.MAR||{});
+
+(function(M){
+  function stats(areaIds,year){const rs=M.db.risks.filter(r=>r.exercise===year&&areaIds.includes(r.areaId));const q={QI:0,QII:0,QIII:0,QIV:0};rs.forEach(r=>q[M.quadrantFor(r.probability,r.impact)]++);return{risks:rs.length,validated:rs.filter(r=>r.status==='Validado').length,review:rs.filter(r=>r.status==='En revisión').length,returned:rs.filter(r=>r.status==='Devuelto con observaciones').length,q}}
+  M.registerRoute('dashboard',()=>{const y=M.currentYear();const areas=M.visibleAreas();const s=stats(areas.map(a=>a.id),y);const institutional=M.session.isAdmin;
+    M.view.innerHTML=`<div class="page-head"><div><h1>${institutional?'Tablero institucional':'Mis áreas'}

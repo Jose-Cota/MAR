@@ -1,14 +1,11 @@
 <?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Api\POAFichasController;
 
-$request = Illuminate\Http\Request::create('/api/poa/fichas', 'GET', [
-    'ejercicio' => '2026',
-    'area_id' => '4'
-]);
-
-$controller = new App\Http\Controllers\Api\POAFichasController();
-$response = $controller->getFichas($request);
-echo json_encode($response->getData(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+$controller = new POAFichasController();
+$request = Illuminate\Http\Request::create('/api/poa/fichas', 'GET', ['ejercicio_id' => '2027', 'area_id' => '6']);
+$response = $controller->index($request);
+echo $response->getContent();

@@ -1,54 +1,23 @@
 <?php
 $html = file_get_contents('C:\Cota\MAR\Sistema_MAR_TECDMX_2026_2027_v7_7.html');
-$startStr = 'const SEED = {"schemaVersion"';
-$startIdx = strpos($html, $startStr);
-if ($startIdx !== false) {
-    $startIdx += strlen('const SEED = ');
-    // Find where the JSON ends by counting braces
-    $braceCount = 0;
-    $inString = false;
-    $escape = false;
-    $endIdx = -1;
-    for ($i = $startIdx; $i < strlen($html); $i++) {
-        $c = $html[$i];
-        if ($escape) {
-            $escape = false;
-            continue;
+echo "Size: " . strlen($html) . "\n";
+preg_match_all('/var\s+riesgos\s*=\s*(\[.*?\]);/s', $html, $m1);
+preg_match_all('/var\s+acciones2026\s*=\s*(\[.*?\]);/s', $html, $m2);
+preg_match_all('/var\s+acciones2027\s*=\s*(\[.*?\]);/s', $html, $m3);
+preg_match_all('/var\s+poaActions\s*=\s*(\[.*?\]);/s', $html, $m4);
+
+echo "Riesgos matches: " . count($m1[0]) . "\n";
+echo "Acciones 26 matches: " . count($m2[0]) . "\n";
+echo "Acciones 27 matches: " . count($m3[0]) . "\n";
+echo "poaActions matches: " . count($m4[0]) . "\n";
+
+if (isset($m4[1][0])) {
+    $actions = json_decode($m4[1][0], true);
+    if ($actions) {
+        $c2027 = 0;
+        foreach ($actions as $a) {
+            if (isset($a['exercise']) && $a['exercise'] == 2027) $c2027++;
         }
-        if ($c === '\\') {
-            $escape = true;
-            continue;
-        }
-        if ($c === '"') {
-            $inString = !$inString;
-            continue;
-        }
-        if (!$inString) {
-            if ($c === '{') $braceCount++;
-            if ($c === '}') {
-                $braceCount--;
-                if ($braceCount === 0) {
-                    $endIdx = $i;
-                    break;
-                }
-            }
-        }
+        echo "Valid poaActions JSON. Found " . count($actions) . " actions total, $c2027 for 2027.\n";
     }
-    
-    if ($endIdx !== -1) {
-        $jsonStr = substr($html, $startIdx, $endIdx - $startIdx + 1);
-        $seed = json_decode($jsonStr, true);
-        if ($seed) {
-            file_put_contents('C:\Cota\MAR\extracted_seed.json', json_encode($seed, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            echo "Extracted SEED to extracted_seed.json. Contains " . count($seed['poaProjects'] ?? []) . " projects.\n";
-            echo "Backup Date: " . ($seed['backupDate'] ?? 'unknown') . "\n";
-        } else {
-            echo "JSON DECODE FAILED!\n";
-            echo json_last_error_msg() . "\n";
-        }
-    } else {
-        echo "Could not find end of JSON.\n";
-    }
-} else {
-    echo "Could not find SEED.\n";
 }

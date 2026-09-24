@@ -525,8 +525,8 @@ class ProyectoController extends Controller
             ->where('py.proyecto_id', $proyectoId)
             ->first();
 
-        $table = ($proyecto && (int)$proyecto->ejercicio >= 2027) ? 'actividades_sustantivas' : 'acciones_sustantivas';
-        $pk = ($table === 'actividades_sustantivas') ? 'id' : 'accion_sustantiva_id';
+        $table = 'actividades_sustantivas';
+        $pk = 'id';
 
         return DB::connection('poa_prod')
             ->table($table)
@@ -846,7 +846,7 @@ class ProyectoController extends Controller
             DB::connection('poa_prod')->table('metas')->where('proyecto_id', $pid)->delete();
             
             // Delete other project related data
-            DB::connection('poa_prod')->table('acciones_sustantivas')->where('proyecto_id', $pid)->delete();
+            
             DB::connection('poa_prod')->table('actividades_sustantivas')->where('proyecto_id', $pid)->delete();
             DB::connection('poa_prod')->table('acciones_sustantivas_derechos_humanos')->where('proyecto_id', $pid)->delete();
             DB::connection('poa_prod')->table('equidades_generos')->where('proyecto_id', $pid)->delete();

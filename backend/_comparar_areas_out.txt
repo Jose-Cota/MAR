@@ -1,0 +1,164 @@
+PHP Deprecated:  PHP Startup: session.sid_length INI setting is deprecated in Unknown on line 0
+PHP Deprecated:  PHP Startup: session.sid_bits_per_character INI setting is deprecated in Unknown on line 0
+
+Deprecated: PHP Startup: session.sid_length INI setting is deprecated in Unknown on line 0
+
+Deprecated: PHP Startup: session.sid_bits_per_character INI setting is deprecated in Unknown on line 0
+=== JSON: riesgos y actividades por área ===
+  JSON[CA] r2026=4 r2027=4 | act2026=6 act2027=9
+  JSON[CCLA] r2026=3 r2027=3 | act2026=3 act2027=10
+  JSON[CCSyRP] r2026=3 r2027=3 | act2026=3 act2027=10
+  JSON[CDHyG] r2026=3 r2027=3 | act2026=5 act2027=5
+  JSON[CDyP] r2026=4 r2027=4 | act2026=5 act2027=20
+  JSON[CI] r2026=5 r2027=8 | act2026=5 act2027=31
+  JSON[CTyDP] r2026=5 r2027=5 | act2026=5 act2027=24
+  JSON[CVyRI] r2026=3 r2027=3 | act2026=4 act2027=4
+  JSON[DGJ] r2026=4 r2027=4 | act2026=6 act2027=36
+  JSON[DPPCyPD] r2026=3 r2027=3 | act2026=4 act2027=5
+  JSON[DPyRF] r2026=7 r2027=7 | act2026=7 act2027=21
+  JSON[DRH] r2026=4 r2027=4 | act2026=6 act2027=17
+  JSON[DRMySG] r2026=5 r2027=5 | act2026=7 act2027=9
+  JSON[IFyC] r2026=2 r2027=2 | act2026=3 act2027=7
+  JSON[PAAH] r2026=5 r2027=5 | act2026=16 act2027=16
+  JSON[PJHR] r2026=5 r2027=5 | act2026=16 act2027=16
+  JSON[PKSL] r2026=5 r2027=5 | act2026=16 act2027=16
+  JSON[PLPJC] r2026=5 r2027=5 | act2026=16 act2027=16
+  JSON[POVR] r2026=5 r2027=5 | act2026=16 act2027=16
+  JSON[PRES] r2026=3 r2027=3 | act2026=3 act2027=3
+  JSON[SA] r2026=4 r2027=4 | act2026=2 act2027=7
+  JSON[SG] r2026=4 r2027=4 | act2026=3 act2027=34
+  JSON[UEPS] r2026=3 r2027=3 | act2026=3 act2027=4
+  JSON[UEyJ] r2026=3 r2027=3 | act2026=4 act2027=11
+  JSON[USI] r2026=5 r2027=5 | act2026=6 act2027=12
+
+=== BD: riesgos por area_id (ej=17=2026, ej=19=2027) ===
+  DB[area_id=1] r2026=3 r2027=3 | Presidencia
+  DB[area_id=2] r2026=4 r2027=4 | Ponencia del Magistrado Adolfo Riva Palacio Neri 
+  DB[area_id=3] r2026=4 r2027=4 | Ponencia de la Magistrada Aidé Macedo Barceinas 
+  DB[area_id=4] r2026=7 r2027=7 | Ponencia del Magistrado Alejandro Delint García 
+  DB[area_id=5] r2026=4 r2027=4 | Ponencia del Magistrado Armando Ismael Maitret Hernández 
+  DB[area_id=6] r2026=5 r2027=5 | Ponencia del Magistrado Darío Velasco Gutiérrez
+  DB[area_id=7] r2026=5 r2027=8 | Secretaría General 
+  DB[area_id=8] r2026=4 r2027=4 | Secretaría Administrativa 
+  DB[area_id=9] r2026=3 r2027=3 | Contraloría General
+  DB[area_id=10] r2026=5 r2027=5 | Dirección General Jurídica
+  DB[area_id=11] r2026=2 r2027=2 | Unidad de Jurisprudencia y Estadística
+  DB[area_id=12] r2026=3 r2027=3 | Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales
+  DB[area_id=13] r2026=5 r2027=5 | Unidad de Tecnologías de la Información 
+  DB[area_id=14] r2026=3 r2027=3 | Coordinación de Comunicación Social
+  DB[area_id=15] r2026=4 r2027=4 | Coordinación de Transparencia
+  DB[area_id=16] r2026=4 r2027=4 | Centro de Capacitación
+  DB[area_id=17] r2026=3 r2027=3 | Comisión de Conciliación y Arbitraje
+  DB[area_id=18] r2026=3 r2027=3 | Ponencia de la Mgda. Martha Leticia Mercado Ramírez
+  DB[area_id=19] r2026=3 r2027=3 | Ponencia del Magistrado Eduardo Arana Miraval
+  DB[area_id=20] r2026=3 r2027=3 | Ponencia del Magistrado Armando Hernández Cruz
+  DB[area_id=21] r2026=5 r2027=5 | Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez
+  DB[area_id=22] r2026=5 r2027=5 | Ponencia del Magistrado Gustavo Anzaldo Hernández
+  DB[area_id=23] r2026=5 r2027=5 | Comisión de Controversias Laborales y Administrativas
+  DB[area_id=24] r2026=5 r2027=5 | Ponencia de la Magistrada Martha Alejandra Chávez Camarena
+  DB[area_id=25] r2026=5 r2027=5 | Instituto de Formación y Capacitación
+
+=== MAPEO PROPUESTO (JSON areaId → DB area_id) ===
+  CA (r26=4, r27=4) → area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ) | area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ) | area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ) | area_id=8 (Secretaría Administrativa ) | area_id=15 (Coordinación de Transparencia) | area_id=16 (Centro de Capacitación)
+  CCLA (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  CCSyRP (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  CDHyG (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  CDyP (r26=4, r27=4) → area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ) | area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ) | area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ) | area_id=8 (Secretaría Administrativa ) | area_id=15 (Coordinación de Transparencia) | area_id=16 (Centro de Capacitación)
+  CI (r26=5, r27=8) → area_id=7 (Secretaría General )
+  CTyDP (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  CVyRI (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  DGJ (r26=4, r27=4) → area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ) | area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ) | area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ) | area_id=8 (Secretaría Administrativa ) | area_id=15 (Coordinación de Transparencia) | area_id=16 (Centro de Capacitación)
+  DPPCyPD (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  DPyRF (r26=7, r27=7) → area_id=4 (Ponencia del Magistrado Alejandro Delint García )
+  DRH (r26=4, r27=4) → area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ) | area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ) | area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ) | area_id=8 (Secretaría Administrativa ) | area_id=15 (Coordinación de Transparencia) | area_id=16 (Centro de Capacitación)
+  DRMySG (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  IFyC (r26=2, r27=2) → area_id=11 (Unidad de Jurisprudencia y Estadística)
+  PAAH (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  PJHR (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  PKSL (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  PLPJC (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  POVR (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+  PRES (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  SA (r26=4, r27=4) → area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ) | area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ) | area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ) | area_id=8 (Secretaría Administrativa ) | area_id=15 (Coordinación de Transparencia) | area_id=16 (Centro de Capacitación)
+  SG (r26=4, r27=4) → area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ) | area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ) | area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ) | area_id=8 (Secretaría Administrativa ) | area_id=15 (Coordinación de Transparencia) | area_id=16 (Centro de Capacitación)
+  UEPS (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  UEyJ (r26=3, r27=3) → area_id=1 (Presidencia) | area_id=9 (Contraloría General) | area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales) | area_id=14 (Coordinación de Comunicación Social) | area_id=17 (Comisión de Conciliación y Arbitraje) | area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez) | area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval) | area_id=20 (Ponencia del Magistrado Armando Hernández Cruz)
+  USI (r26=5, r27=5) → area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez) | area_id=10 (Dirección General Jurídica) | area_id=13 (Unidad de Tecnologías de la Información ) | area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez) | area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández) | area_id=23 (Comisión de Controversias Laborales y Administrativas) | area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena) | area_id=25 (Instituto de Formación y Capacitación)
+
+=== TODOS proyectos 2026 (ej=17) ===
+  [1589] POA 2026 – Presidencia
+  [1590] POA 2026 – Secretaría General
+  [1591] POA 2026 – Secretaría Administrativa
+  [1592] POA 2026 – Dirección de Planeación y Recursos Financieros
+  [1593] POA 2026 – Dirección de Recursos Humanos
+  [1594] POA 2026 – Dirección de Recursos Materiales y Servicios Generales
+  [1595] POA 2026 – Contraloría Interna
+  [1596] POA 2026 – Dirección General Jurídica
+  [1597] POA 2026 – Coordinación de Comunicación Social y Relaciones Públicas
+  [1598] POA 2026 – Coordinación de Transparencia y Datos Personales
+  [1599] POA 2026 – Instituto de Formación y Capacitación
+  [1600] POA 2026 – Comisión de Controversias Laborales y Administrativas
+  [1601] POA 2026 – Unidad de Servicios Informáticos
+  [1602] POA 2026 – Unidad de Estadística y Jurisprudencia
+  [1603] POA 2026 – Coordinación de Difusión y Publicación
+  [1604] POA 2026 – Coordinación de Archivo
+  [1605] POA 2026 – Coordinación de Derechos Humanos y Género
+  [1606] POA 2026 – Defensoría Pública de Participación Ciudadana y de Procesos Democráticos
+  [1607] POA 2026 – Coordinación de Vinculación y Relaciones Internacionales
+  [1608] POA 2026 – Unidad Especializada de Procedimientos Sancionadores
+  [1609] Alineación técnica POA 2027 – Proyecto 1
+  [1610] Alineación técnica POA 2027 – Proyecto 2
+  [1611] Alineación técnica POA 2027 – Proyecto 1
+  [1612] Alineación técnica POA 2027 – Proyecto 2
+  [1613] Alineación técnica POA 2027 – Proyecto 1
+  [1614] Alineación técnica POA 2027 – Proyecto 2
+  [1615] Alineación técnica POA 2027 – Proyecto 1
+  [1616] Alineación técnica POA 2027 – Proyecto 2
+  [1617] Alineación técnica POA 2027 – Proyecto 1
+  [1618] Alineación técnica POA 2027 – Proyecto 2
+
+=== TODOS proyectos 2027 (ej=19) ===
+  [1757] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1758] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1759] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional
+  [1760] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1761] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1762] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1763] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1764] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1765] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1766] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1767] Representación del Tribunal en los distintos eventos de carácter local, nacional e internacional. Celebrar los convenios institucionales que se requieran; así como realizar los actos administrativos necesarios para el buen funcionamiento del Tribunal.
+  [1768] Control de Gestión Jurisdiccional
+  [1769] Diligencias practicadas del Tribunal Electoral de la Ciudad de México
+  [1770] Apoyo técnico jurídico del Pleno
+  [1771] Administración de los Recursos Humanos, Materiales y Financieros
+  [1772] Administración de Recursos Financieros.
+  [1773] Operación y control de pago de nóminas, prestaciones y enteros institucionales
+  [1774] Administración de recursos materiales y servicios generales
+  [1775] Presentación de informes de la Contraloría Interna
+  [1776] Ejercicio y fortalecimiento de las atribuciones de la Contraloría Interna como Autoridad Garante en materia de transparencia, acceso a la información pública y protección de datos personales del TECDMX
+  [1777] Procedimientos Administrativos, recursos en materia de responsabilidades administrativas, adquisiciones, obra y prestación de servicios
+  [1778] Acompañamiento en el cumplimiento de las obligaciones de las personas servidoras públicas en el Tribunal Electoral de la Ciudad de México
+  [1779] Programa Interno de Auditoría (PIA): Diseño, ejecución y seguimiento de auditorías
+  [1780] Coordinación de la representación legal y asesoramiento jurídico del Tribunal Electoral de la Ciudad de México.
+  [1781] Atención y seguimiento a los procedimientos jurisdiccionales, ministeriales y administrativos en los que el Tribunal sea parte, así como a los trámites y desahogo de asuntos consultivos.
+  [1782] Atención y seguimiento de Convenios y Contratos, así como a los asuntos normativos y consultivos.
+  [1783] Posicionamiento de la imagen institucional y Cultura Democrática en la Ciudad de México.
+  [1784] Comunicación e Información institucional.
+  [1788] Capacitación Formativa
+  [1789] Sustanciación de los juicios especiales laborales entre sus trabajadores y el Tribunal Electoral de la Ciudad de México, derivados de las relaciones de trabajo; y de los juicios de inconformidad administrativa entre el Tribunal y sus servidores, emanados de la determinación de sanciones administrativas.
+  [1790] Modernización de los procesos jurisdiccionales
+  [1791] Fortalecimiento integral de la gestión tecnológica institucional.
+  [1792] Elaboración de Anteproyectos de Jurisprudencias y Tesis
+  [1793] Sistematización de la Estadística Jurisdiccional
+  [1794] Elaboración de Obras colectivas
+  [1795] Servicios de Préstamo de material bibliográfico
+  [1796] Fortalecimiento de la Imagen Institucional en la Ciudad de México.
+  [1797] Coordinar el Sistema Institucional de Archivos del TECDMX.
+  [1798] Cultura Democrática Derechos Humanos y Género
+  [1799] Proporcionar a la ciudadanía de manera gratuita servicios de asesoría y defensa en los procesos de participación ciudadana y democráticos, en los mecanismos de democracia directa, así como en los instrumentos de democracia participativa. Garantizar los derechos político-electorales de la ciudadanía que habita la Ciudad de México, sin menoscabo de su sexo, afiliación partidista, condición social, discapacidad, origen étnico, religión, opiniones o preferencias sexuales.
+  [1800] Vinculación entre las áreas del Tribunal y organismos nacionales e internacionales
+  [1801] Estudio y análisis de los procedimientos sancionadores remitidos por el Instituto Electoral de la Ciudad de México.
+  [1802] Vinculación y Convenios con Organismos Nacionales e Internacionales
+  [1803] POA 2027 – Coordinación de Transparencia y Datos Personales

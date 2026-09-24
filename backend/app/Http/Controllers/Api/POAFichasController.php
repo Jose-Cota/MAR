@@ -37,86 +37,91 @@ class POAFichasController extends Controller
         
         $rgIds = null; // null = sin filtro (todas las áreas)
 
+        // Umbral mínimo de IDs de URG estructurales (POA): 2026 usa 240-257 y 2027 usa 564-581.
+        $urgEstructuralMin = 240;
+
         if ($urgSeleccionada && $area_id !== 'todas') {
-            // Obtener todos los urg_ids únicos de responsables_operativos para este ejercicio
-            $rosEjercicio = DB::table('responsables_operativos')
-                ->where('ejercicio_id', $ejercicio_db_id)
-                ->get()
-                ->groupBy('unidad_responsable_gasto_id');
+            // Mapeo determinístico de la URG seleccionada hacia los responsables_operativos
+            // del ejercicio, sin coincidencias por semejanza de texto:
+            //  1) Si la URG seleccionada es una URG estructural POA (id >= 240),
+            //     sus RO son todos los responsables_operativos con ese urg_id.
+            //  2) Si es una URG del catálogo 1-25, buscamos la URG estructural POA
+            //     (id >= 240) del mismo ejercicio con el MISMO nombre (normalizado sin
+            //     acentos) y usamos sus RO. Fallback: RO cuyo nombre sea idéntico al
+            //     nombre de la URG.
+            $normalizar = function ($s) {
+                $s = mb_strtolower(trim($s));
+                $s = preg_replace('/[áàäâ]/u', 'a', $s);
+                $s = preg_replace('/[éèëê]/u', 'e', $s);
+                $s = preg_replace('/[íìïî]/u', 'i', $s);
+                $s = preg_replace('/[óòöô]/u', 'o', $s);
+                $s = preg_replace('/[úùüû]/u', 'u', $s);
+                return $s;
+            };
 
-            // Buscar qué urg_id_poa corresponde a la URG seleccionada.
-            // Comparamos el nombre de la URG contra los nombres de los ROs del grupo
-            // (un RO por área generalmente incluye el nombre del área en su nombre).
-            $urgNombreLower = mb_strtolower(trim($urgSeleccionada->nombre));
-            $urgNumero      = trim($urgSeleccionada->numero);
-
-            $maxCoincidencias = 0;
             $roIdsPoa = [];
-            
-            $urgNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($urgSeleccionada->nombre)));
-            $urgNombreClean = preg_replace('/[éèëê]/u', 'e', $urgNombreClean);
-            $urgNombreClean = preg_replace('/[íìïî]/u', 'i', $urgNombreClean);
-            $urgNombreClean = preg_replace('/[óòöô]/u', 'o', $urgNombreClean);
-            $urgNombreClean = preg_replace('/[úùüû]/u', 'u', $urgNombreClean);
 
-            $palabras = array_filter(
-                explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $urgNombreClean)),
-                fn($p) => mb_strlen($p) > 5
-            );
+            if ((int)$urgSeleccionada->unidad_responsable_gasto_id >= $urgEstructuralMin) {
+                $roIdsPoa = DB::table('responsables_operativos')
+                    ->where('ejercicio_id', $ejercicio_db_id)
+                    ->where('unidad_responsable_gasto_id', $urgSeleccionada->unidad_responsable_gasto_id)
+                    ->pluck('responsable_operativo_id')
+                    ->toArray();
+            } else {
+                $urgNombreClean = $normalizar($urgSeleccionada->nombre);
 
-            foreach ($rosEjercicio as $urgIdPoa => $rosGrupo) {
-                foreach ($rosGrupo as $ro) {
-                    $roNombreLower = mb_strtolower(trim($ro->nombre));
-                    $roNombreClean = preg_replace('/[áàäâ]/u', 'a', mb_strtolower(trim($ro->nombre)));
-                    $roNombreClean = preg_replace('/[éèëê]/u', 'e', $roNombreClean);
-                    $roNombreClean = preg_replace('/[íìïî]/u', 'i', $roNombreClean);
-                    $roNombreClean = preg_replace('/[óòöô]/u', 'o', $roNombreClean);
-                    $roNombreClean = preg_replace('/[úùüû]/u', 'u', $roNombreClean);
-                    
-                    $roNombreClean = str_replace(['director', 'directora'], 'direccion', $roNombreClean);
-                    $roNombreClean = str_replace(['presidente', 'presidenta'], 'presidencia', $roNombreClean);
-                    $roNombreClean = str_replace(['secretario', 'secretaria'], 'secretaria', $roNombreClean);
-                    $roNombreClean = str_replace(['contralor', 'contralora'], 'contraloria', $roNombreClean);
-                    $roNombreClean = str_replace(['interno', 'interna'], 'interna', $roNombreClean);
-                    $roNombreClean = str_replace(['defensor', 'defensora'], 'defensoria', $roNombreClean);
-                    $roNombreClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $roNombreClean);
-                    $roNombreClean = str_replace(['administrativo', 'administrativos'], 'administrativa', $roNombreClean);
-                    $roNombreClean = str_replace(['tecnico', 'tecnica'], 'tecnica', $roNombreClean);
+                // Áreas del catálogo que NO tienen nombre idéntico al de la URG estructural:
+                // DPyRF (4), DRH (5) y DRMySG (6) están agrupadas en la URG estructural
+                // "Secretaría Administrativa" (UR código 04). Mapeo explícito por número de RO
+                // (código POA estable UR=04, RO=10/11/12 en ambos ejercicios).
+                $directorias = [
+                    3 => '09', // Secretaría Administrativa
+                    4 => '10', // Dirección de Planeación y Recursos Financieros
+                    5 => '11', // Dirección de Recursos Humanos
+                    6 => '12', // Dirección de Recursos Materiales y Servicios Generales
+                ];
 
-                    $coincidencias = 0;
-                    foreach ($palabras as $palabra) {
-                        if (str_contains($roNombreClean, $palabra)) {
-                            $coincidencias++;
-                        }
-                    }
-                    
-                    if (str_contains($urgNombreClean, 'secretaria administrativa') && str_contains($roNombreClean, 'controversias')) {
-                        $coincidencias = 0;
-                    }
+                $catalogoId = (int)$urgSeleccionada->unidad_responsable_gasto_id;
+                if (isset($directorias[$catalogoId])) {
+                    $roIdsPoa = DB::table('responsables_operativos')
+                        ->join('unidades_responsables_gastos', 'responsables_operativos.unidad_responsable_gasto_id', '=', 'unidades_responsables_gastos.unidad_responsable_gasto_id')
+                        ->where('unidades_responsables_gastos.numero', '04')
+                        ->where('responsables_operativos.numero', $directorias[$catalogoId])
+                        ->pluck('responsables_operativos.responsable_operativo_id')
+                        ->toArray();
+                } else {
+                    $urgEstructural = DB::table('unidades_responsables_gastos')
+                        ->where('ejercicio_id', $ejercicio_db_id)
+                        ->where('unidad_responsable_gasto_id', '>=', $urgEstructuralMin)
+                        ->get()
+                        ->first(function ($u) use ($normalizar, $urgNombreClean) {
+                            return $normalizar($u->nombre) === $urgNombreClean;
+                        });
 
-                    if ($coincidencias > 0) {
-                        if ($coincidencias > $maxCoincidencias) {
-                            $maxCoincidencias = $coincidencias;
-                            $roIdsPoa = [$ro->responsable_operativo_id];
-                        } elseif ($coincidencias == $maxCoincidencias) {
-                            $roIdsPoa[] = $ro->responsable_operativo_id;
-                        }
+                    if ($urgEstructural) {
+                        $roIdsPoa = DB::table('responsables_operativos')
+                            ->where('unidad_responsable_gasto_id', $urgEstructural->unidad_responsable_gasto_id)
+                            ->pluck('responsable_operativo_id')
+                            ->toArray();
+                    } else {
+                        $roIdsPoa = DB::table('responsables_operativos')
+                            // Removed where('ejercicio_id') because some 2027 projects point to 2025/2026 ROs!
+                            ->get()
+                            ->filter(function ($ro) use ($normalizar, $urgNombreClean) {
+                                $roNorm = $normalizar($ro->nombre);
+                                if ($roNorm === $urgNombreClean) return true;
+                                
+                                // Reemplazos para que hagan match Direccion con Director(a), etc.
+                                $urgCore = str_replace(['direccion de ', 'direccion general ', 'unidad de ', 'coordinacion de ', 'la '], '', $urgNombreClean);
+                                $urgCore = str_replace('juridica', 'juridic', $urgCore);
+                                $urgCore = str_replace('secretaria administrativa', 'administrativo', $urgCore);
+                                
+                                return strlen($urgCore) > 5 && str_contains($roNorm, $urgCore);
+                            })
+                            ->pluck('responsable_operativo_id')
+                            ->toArray();
                     }
                 }
-            }
-
-            // Excepciones manuales conocidas para 2026
-            $exactMap = [
-                'secretaria administrativa' => 446,
-                'direccion de recursos humanos' => 448,
-                'direccion de recursos materiales y servicios generales' => 449,
-                'direccion de planeacion y recursos financieros' => 447,
-                'direccion general juridica' => 453,
-                'coordinacion de comunicacion social y relaciones publicas' => 468,
-                'coordinacion de archivo' => 463,
-            ];
-            if (isset($exactMap[$urgNombreClean])) {
-                $roIdsPoa = [$exactMap[$urgNombreClean]];
             }
 
             $rgIds = array_unique($roIdsPoa);
@@ -143,60 +148,39 @@ class POAFichasController extends Controller
 
         $proyectos = $query->get();
 
-        // Construir mapa inverso de urg_id_poa -> URG ID (1-25)
+        // Construir mapa inverso urg_estructural -> URG ID del catálogo 1-25
+        // basado en nombre exacto (normalizado) y no en semejanza.
         $mapa_ro_urg = [];
         $todasUrgs = DB::table('unidades_responsables_gastos')->get();
-        $rosEjercicio = DB::table('responsables_operativos')->where('ejercicio_id', $ejercicio_db_id)->get()->groupBy('unidad_responsable_gasto_id');
-        
-        foreach ($todasUrgs as $u) {
-            $uClean = preg_replace('/[áàäâéèëêíìïîóòöôúùüû]/u', 'a', mb_strtolower(trim($u->nombre)));
-            $uClean = str_replace(['é','í','ó','ú'], ['e','i','o','u'], mb_strtolower(trim($u->nombre))); // Simple replace
-            
-            // just to be safe, use same manual normalizations
-            $uClean = str_replace(['director', 'directora'], 'direccion', $uClean);
-            $uClean = str_replace(['presidente', 'presidenta'], 'presidencia', $uClean);
-            $uClean = str_replace(['secretario', 'secretaria'], 'secretaria', $uClean);
-            $uClean = str_replace(['contralor', 'contralora'], 'contraloria', $uClean);
-            $uClean = str_replace(['interno', 'interna'], 'interna', $uClean);
-            $uClean = str_replace(['defensor', 'defensora'], 'defensoria', $uClean);
-            $uClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $uClean);
-            
-            $palabras = array_filter(explode(' ', preg_replace('/[^\p{L}\p{N} ]/u', ' ', $uClean)), fn($p) => mb_strlen($p) > 5);
-            
-            foreach ($rosEjercicio as $urgIdPoa => $rosGrupo) {
-                foreach ($rosGrupo as $ro) {
-                    $rClean = mb_strtolower(trim($ro->nombre));
-                    $rClean = str_replace(['á','é','í','ó','ú'], ['a','e','i','o','u'], $rClean);
-                    $rClean = str_replace(['director', 'directora'], 'direccion', $rClean);
-                    $rClean = str_replace(['presidente', 'presidenta'], 'presidencia', $rClean);
-                    $rClean = str_replace(['secretario', 'secretaria'], 'secretaria', $rClean);
-                    $rClean = str_replace(['contralor', 'contralora'], 'contraloria', $rClean);
-                    $rClean = str_replace(['interno', 'interna'], 'interna', $rClean);
-                    $rClean = str_replace(['defensor', 'defensora'], 'defensoria', $rClean);
-                    $rClean = str_replace(['ciudadano', 'ciudadana'], 'ciudadana', $rClean);
-                    $rClean = str_replace(['administrativo', 'administrativos'], 'administrativa', $rClean);
-                    $rClean = str_replace(['tecnico', 'tecnica'], 'tecnica', $rClean);
+        $urgsEstructurales = $todasUrgs->where('unidad_responsable_gasto_id', '>=', $urgEstructuralMin);
 
-                    $coincidencias = 0;
-                    foreach ($palabras as $palabra) {
-                        if (str_contains($rClean, $palabra)) $coincidencias++;
-                    }
-                    
-                    if (str_contains($uClean, 'secretaria administrativa') && str_contains($rClean, 'controversias')) {
-                        $coincidencias = 0;
-                    }
-                    if ($coincidencias >= 2 || (count($palabras) === 1 && $coincidencias >= 1)) {
-                        $mapa_ro_urg[$urgIdPoa] = $u->unidad_responsable_gasto_id;
-                        break;
-                    }
-                }
+        $normalizar2 = function ($s) {
+            $s = mb_strtolower(trim($s));
+            $s = preg_replace('/[áàäâ]/u', 'a', $s);
+            $s = preg_replace('/[éèëê]/u', 'e', $s);
+            $s = preg_replace('/[íìïî]/u', 'i', $s);
+            $s = preg_replace('/[óòöô]/u', 'o', $s);
+            $s = preg_replace('/[úùüû]/u', 'u', $s);
+            return $s;
+        };
+
+        foreach ($urgsEstructurales as $estruct) {
+            $matchingCatalogo = $todasUrgs
+                ->where('unidad_responsable_gasto_id', '<', $urgEstructuralMin)
+                ->first(function ($u) use ($normalizar2, $estruct) {
+                    return $normalizar2($u->nombre) === $normalizar2($estruct->nombre);
+                });
+            if ($matchingCatalogo) {
+                $mapa_ro_urg[$estruct->unidad_responsable_gasto_id] = $matchingCatalogo->unidad_responsable_gasto_id;
             }
         }
 
         foreach ($proyectos as $p) {
-            // Usar directamente el area_id del request para obtener riesgos del área
-            // El mapa_ro_urg puede fallar para áreas con nombres cortos (ej. Presidencia)
-            $direct_area_id = ($area_id && $area_id !== 'todas') ? (int)$area_id : ($mapa_ro_urg[$p->urg_id] ?? null);
+            // Los riesgos se almacenan con el area_id del catálogo 1-25.
+            // Si el área seleccionada es una URG estructural, traducimos a ese catálogo.
+            $direct_area_id = ($area_id && $area_id !== 'todas')
+                ? ((int)$area_id >= $urgEstructuralMin ? ($mapa_ro_urg[$p->urg_id] ?? (int)$area_id) : (int)$area_id)
+                : ($mapa_ro_urg[$p->urg_id] ?? null);
             $p->riesgos_area = $direct_area_id
                 ? DB::table('riesgos')->where('ejercicio_id', $ejercicio_db_id)->where('area_id', $direct_area_id)->select('id', 'local_id', 'riesgo')->get()
                 : collect();
@@ -205,9 +189,7 @@ class POAFichasController extends Controller
 
             // Actividades sustantivas
             $actividades = DB::table('actividades_sustantivas')->where('proyecto_id', $p->id)->get();
-            if ($actividades->isEmpty()) {
-                $actividades = DB::table('acciones_sustantivas')->where('proyecto_id', $p->id)->get();
-            }
+            
             $p->acciones = $actividades;
 
             foreach ($p->acciones as $accion) {
@@ -222,6 +204,23 @@ class POAFichasController extends Controller
             }
         }
 
-        return response()->json($proyectos->values());
+        // Deduplicar proyectos por nombre usando normalizar2
+        $proyectosUnicos = collect();
+        $nombresVistos = [];
+        foreach ($proyectos as $p) {
+            $nombreKey = $normalizar2($p->nombre ?? '');
+            if (empty($nombreKey)) {
+                // If the name is completely empty, we can just group it by some fallback or let it pass?
+                // Actually, if it's empty, they might all be "Alineación técnica POA...". Let's deduplicate them too.
+                $nombreKey = 'empty_project_name';
+            }
+            if (!isset($nombresVistos[$nombreKey])) {
+                $nombresVistos[$nombreKey] = true;
+                $proyectosUnicos->push($p);
+            }
+        }
+
+        \Illuminate\Support\Facades\Log::info("Count proyectos inside getFichas: " . $proyectosUnicos->count());
+        return response()->json($proyectosUnicos->values());
     }
 }

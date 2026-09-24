@@ -1,0 +1,202 @@
+PHP Deprecated:  PHP Startup: session.sid_length INI setting is deprecated in Unknown on line 0
+PHP Deprecated:  PHP Startup: session.sid_bits_per_character INI setting is deprecated in Unknown on line 0
+
+Deprecated: PHP Startup: session.sid_length INI setting is deprecated in Unknown on line 0
+
+Deprecated: PHP Startup: session.sid_bits_per_character INI setting is deprecated in Unknown on line 0
+=== TODAS las áreas en BD ===
+  [1] Presidencia
+  [2] Ponencia del Magistrado Adolfo Riva Palacio Neri 
+  [3] Ponencia de la Magistrada Aidé Macedo Barceinas 
+  [4] Ponencia del Magistrado Alejandro Delint García 
+  [5] Ponencia del Magistrado Armando Ismael Maitret Hernández 
+  [6] Ponencia del Magistrado Darío Velasco Gutiérrez
+  [7] Secretaría General 
+  [8] Secretaría Administrativa 
+  [9] Contraloría General
+  [10] Dirección General Jurídica
+  [11] Unidad de Jurisprudencia y Estadística
+  [12] Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales
+  [13] Unidad de Tecnologías de la Información 
+  [14] Coordinación de Comunicación Social
+  [15] Coordinación de Transparencia
+  [16] Centro de Capacitación
+  [17] Comisión de Conciliación y Arbitraje
+  [18] Ponencia de la Mgda. Martha Leticia Mercado Ramírez
+  [19] Ponencia del Magistrado Eduardo Arana Miraval
+  [20] Ponencia del Magistrado Armando Hernández Cruz
+  [21] Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez
+  [22] Ponencia del Magistrado Gustavo Anzaldo Hernández
+  [23] Comisión de Controversias Laborales y Administrativas
+  [24] Ponencia de la Magistrada Martha Alejandra Chávez Camarena
+  [25] Instituto de Formación y Capacitación
+  [26] Coordinación de Difusión y Publicación
+  [27] Coordinación de Archivo y Documentación
+  [28] Coordinación de Género y Derechos Humanos
+  [29] Contraloría Interna
+  [30] Unidad de Estadística y Jurisprudencia
+  [31] Coordinación de Archivo
+  [32] Unidad de Servicios Informáticos
+  [33] Defensoria Publica de Participación Ciudadana y de Proceso Democraticos
+  [34] Coordinación de Vinculación y Relaciones Internacionales
+  [35] Unidad Especializada de Procedimientos Sancionadores
+  [36] Coordinación de Derechos Humanos y Género
+  [37] Coordinación de Transparencia y Protección de Datos Personales
+  [38] Coordinación de Comunicación Social y Relaciones Públicas
+  [39] Ponencia del Magistrado Juan Carlos Sánchez León
+
+=== TODOS los proyectos 2026 (ej=17) ===
+  [1589] POA 2026 – Presidencia
+  [1590] POA 2026 – Secretaría General
+  [1591] POA 2026 – Secretaría Administrativa
+  [1592] POA 2026 – Dirección de Planeación y Recursos Financieros
+  [1593] POA 2026 – Dirección de Recursos Humanos
+  [1594] POA 2026 – Dirección de Recursos Materiales y Servicios Generales
+  [1595] POA 2026 – Contraloría Interna
+  [1596] POA 2026 – Dirección General Jurídica
+  [1597] POA 2026 – Coordinación de Comunicación Social y Relaciones Públicas
+  [1598] POA 2026 – Coordinación de Transparencia y Datos Personales
+  [1599] POA 2026 – Instituto de Formación y Capacitación
+  [1600] POA 2026 – Comisión de Controversias Laborales y Administrativas
+  [1601] POA 2026 – Unidad de Servicios Informáticos
+  [1602] POA 2026 – Unidad de Estadística y Jurisprudencia
+  [1603] POA 2026 – Coordinación de Difusión y Publicación
+  [1604] POA 2026 – Coordinación de Archivo
+  [1605] POA 2026 – Coordinación de Derechos Humanos y Género
+  [1606] POA 2026 – Defensoría Pública de Participación Ciudadana y de Procesos Democráticos
+  [1607] POA 2026 – Coordinación de Vinculación y Relaciones Internacionales
+  [1608] POA 2026 – Unidad Especializada de Procedimientos Sancionadores
+  [1609] Alineación técnica POA 2027 – Proyecto 1
+  [1610] Alineación técnica POA 2027 – Proyecto 2
+  [1611] Alineación técnica POA 2027 – Proyecto 1
+  [1612] Alineación técnica POA 2027 – Proyecto 2
+  [1613] Alineación técnica POA 2027 – Proyecto 1
+  [1614] Alineación técnica POA 2027 – Proyecto 2
+  [1615] Alineación técnica POA 2027 – Proyecto 1
+  [1616] Alineación técnica POA 2027 – Proyecto 2
+  [1617] Alineación técnica POA 2027 – Proyecto 1
+  [1618] Alineación técnica POA 2027 – Proyecto 2
+
+=== TODOS los proyectos 2027 (ej=19) ===
+  [1757] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1758] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1759] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional
+  [1760] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1761] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1762] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1763] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1764] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1765] Acciones del Pleno, administrativas y jurisdiccionales necesarias, para impartir justicia en los medios de impugnación en materia electoral y controversias laborales y administrativas; así como para el fortalecimiento institucional.
+  [1766] Acciones que la Ponencia realiza para la impartición de justicia electoral, laboral y administrativa.
+  [1767] Representación del Tribunal en los distintos eventos de carácter local, nacional e internacional. Celebrar los convenios institucionales que se requieran; así como realizar los actos administrativos necesarios para el buen funcionamiento del Tribunal.
+  [1768] Control de Gestión Jurisdiccional
+  [1769] Diligencias practicadas del Tribunal Electoral de la Ciudad de México
+  [1770] Apoyo técnico jurídico del Pleno
+  [1771] Administración de los Recursos Humanos, Materiales y Financieros
+  [1772] Administración de Recursos Financieros.
+  [1773] Operación y control de pago de nóminas, prestaciones y enteros institucionales
+  [1774] Administración de recursos materiales y servicios generales
+  [1775] Presentación de informes de la Contraloría Interna
+  [1776] Ejercicio y fortalecimiento de las atribuciones de la Contraloría Interna como Autoridad Garante en materia de transparencia, acceso a la información pública y protección de datos personales del TECDMX
+  [1777] Procedimientos Administrativos, recursos en materia de responsabilidades administrativas, adquisiciones, obra y prestación de servicios
+  [1778] Acompañamiento en el cumplimiento de las obligaciones de las personas servidoras públicas en el Tribunal Electoral de la Ciudad de México
+  [1779] Programa Interno de Auditoría (PIA): Diseño, ejecución y seguimiento de auditorías
+  [1780] Coordinación de la representación legal y asesoramiento jurídico del Tribunal Electoral de la Ciudad de México.
+  [1781] Atención y seguimiento a los procedimientos jurisdiccionales, ministeriales y administrativos en los que el Tribunal sea parte, así como a los trámites y desahogo de asuntos consultivos.
+  [1782] Atención y seguimiento de Convenios y Contratos, así como a los asuntos normativos y consultivos.
+  [1783] Posicionamiento de la imagen institucional y Cultura Democrática en la Ciudad de México.
+  [1784] Comunicación e Información institucional.
+  [1788] Capacitación Formativa
+  [1789] Sustanciación de los juicios especiales laborales entre sus trabajadores y el Tribunal Electoral de la Ciudad de México, derivados de las relaciones de trabajo; y de los juicios de inconformidad administrativa entre el Tribunal y sus servidores, emanados de la determinación de sanciones administrativas.
+  [1790] Modernización de los procesos jurisdiccionales
+  [1791] Fortalecimiento integral de la gestión tecnológica institucional.
+  [1792] Elaboración de Anteproyectos de Jurisprudencias y Tesis
+  [1793] Sistematización de la Estadística Jurisdiccional
+  [1794] Elaboración de Obras colectivas
+  [1795] Servicios de Préstamo de material bibliográfico
+  [1796] Fortalecimiento de la Imagen Institucional en la Ciudad de México.
+  [1797] Coordinar el Sistema Institucional de Archivos del TECDMX.
+  [1798] Cultura Democrática Derechos Humanos y Género
+  [1799] Proporcionar a la ciudadanía de manera gratuita servicios de asesoría y defensa en los procesos de participación ciudadana y democráticos, en los mecanismos de democracia directa, así como en los instrumentos de democracia participativa. Garantizar los derechos político-electorales de la ciudadanía que habita la Ciudad de México, sin menoscabo de su sexo, afiliación partidista, condición social, discapacidad, origen étnico, religión, opiniones o preferencias sexuales.
+  [1800] Vinculación entre las áreas del Tribunal y organismos nacionales e internacionales
+  [1801] Estudio y análisis de los procedimientos sancionadores remitidos por el Instituto Electoral de la Ciudad de México.
+  [1802] Vinculación y Convenios con Organismos Nacionales e Internacionales
+  [1803] POA 2027 – Coordinación de Transparencia y Datos Personales
+
+=== Riesgos 2026 (ej=17) — area_id distintas ===
+  area_id=1 (Presidencia): R1, R2, R3
+  area_id=10 (Dirección General Jurídica): R1, R2, R3, R4, R5
+  area_id=11 (Unidad de Jurisprudencia y Estadística): R1, R2
+  area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales): R1, R2, R3
+  area_id=13 (Unidad de Tecnologías de la Información ): R1, R2, R3, R4, R5
+  area_id=14 (Coordinación de Comunicación Social): R1, R2, R3
+  area_id=15 (Coordinación de Transparencia): R1, R2, R3, R4
+  area_id=16 (Centro de Capacitación): R1, R2, R3, R4
+  area_id=17 (Comisión de Conciliación y Arbitraje): R3, R1, R2
+  area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez): R1, R2, R3
+  area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval): R1, R2, R3
+  area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ): R1, R2, R3, R4
+  area_id=20 (Ponencia del Magistrado Armando Hernández Cruz): R1, R2, R3
+  area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez): R1, R2, R3, R4, R5
+  area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández): R1, R2, R3, R4, R5
+  area_id=23 (Comisión de Controversias Laborales y Administrativas): R1, R2, R3, R4, R5
+  area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena): R1, R2, R3, R4, R5
+  area_id=25 (Instituto de Formación y Capacitación): R1, R2, R3, R4, R5
+  area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ): R1, R2, R3, R4
+  area_id=4 (Ponencia del Magistrado Alejandro Delint García ): R1, R2, R3, R4, R5, R6, R7
+  area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ): R1, R2, R3, R4
+  area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez): R1, R2, R3, R4, R5
+  area_id=7 (Secretaría General ): R1, R2, R3, R4, R5
+  area_id=8 (Secretaría Administrativa ): R1, R2, R3, R4
+  area_id=9 (Contraloría General): R1, R2, R3
+
+=== Riesgos 2027 (ej=19) — area_id distintas ===
+  area_id=1 (Presidencia): R1, R2, R3
+  area_id=10 (Dirección General Jurídica): R1, R2, R3, R4, R5
+  area_id=11 (Unidad de Jurisprudencia y Estadística): R1, R2
+  area_id=12 (Unidad de Promoción de los Derechos Político-Electorales y de Relación con Organismos Electorales Nacionales e Internacionales): R1, R2, R3
+  area_id=13 (Unidad de Tecnologías de la Información ): R1, R2, R3, R4, R5
+  area_id=14 (Coordinación de Comunicación Social): R1, R2, R3
+  area_id=15 (Coordinación de Transparencia): R1, R2, R3, R4
+  area_id=16 (Centro de Capacitación): R1, R2, R3, R4
+  area_id=17 (Comisión de Conciliación y Arbitraje): R1, R2, R3
+  area_id=18 (Ponencia de la Mgda. Martha Leticia Mercado Ramírez): R1, R2, R3
+  area_id=19 (Ponencia del Magistrado Eduardo Arana Miraval): R1, R2, R3
+  area_id=2 (Ponencia del Magistrado Adolfo Riva Palacio Neri ): R1, R2, R3, R4
+  area_id=20 (Ponencia del Magistrado Armando Hernández Cruz): R1, R2, R3
+  area_id=21 (Ponencia de la Magistrada Gabriela Eugenia del Valle Pérez): R1, R2, R3, R4, R5
+  area_id=22 (Ponencia del Magistrado Gustavo Anzaldo Hernández): R1, R2, R3, R4, R5
+  area_id=23 (Comisión de Controversias Laborales y Administrativas): R1, R2, R3, R4, R5
+  area_id=24 (Ponencia de la Magistrada Martha Alejandra Chávez Camarena): R1, R2, R3, R4, R5
+  area_id=25 (Instituto de Formación y Capacitación): R1, R2, R3, R4, R5
+  area_id=3 (Ponencia de la Magistrada Aidé Macedo Barceinas ): R1, R2, R3, R4
+  area_id=4 (Ponencia del Magistrado Alejandro Delint García ): R1, R2, R3, R4, R5, R6, R7
+  area_id=5 (Ponencia del Magistrado Armando Ismael Maitret Hernández ): R1, R2, R3, R4
+  area_id=6 (Ponencia del Magistrado Darío Velasco Gutiérrez): R1, R2, R3, R4, R5
+  area_id=7 (Secretaría General ): R1, R2, R3, R4, R5, R6, R7, R8
+  area_id=8 (Secretaría Administrativa ): R1, R2, R3, R4
+  area_id=9 (Contraloría General): R1, R2, R3
+
+=== Responsables operativos 2026/2027 con sus unidades ===
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[42S22]: Column not found: 1054 Unknown column 'urg.clave' in 'SELECT' (Connection: mysql, Host: 192.168.22.238, Port: 3306, Database: 0201sadpyrf_mar2026, SQL: select `ro`.`responsable_operativo_id`, `ro`.`ejercicio_id`, `ro`.`nombre` as `ro_nombre`, `urg`.`nombre` as `urg_nombre`, `urg`.`clave` from `responsables_operativos` as `ro` inner join `unidades_responsables_gastos` as `urg` on `urg`.`unidad_responsable_gasto_id` = `ro`.`unidad_responsable_gasto_id` where `ro`.`ejercicio_id` in (17, 19))
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:857
+    853▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
+    854▕                 ? UniqueConstraintViolationException::class
+    855▕                 : QueryException::class;
+    856▕ 
+  ➜ 857▕             $exception = new $exceptionType(
+    858▕                 $this->getNameWithReadWriteType(),
+    859▕                 $query,
+    860▕                 $this->prepareBindings($bindings),
+    861▕                 $e,
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:435
+      PDOException::("SQLSTATE[42S22]: Column not found: 1054 Unknown column 'urg.clave' in 'SELECT'")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:435
+      PDO::prepare("select `ro`.`responsable_operativo_id`, `ro`.`ejercicio_id`, `ro`.`nombre` as `ro_nombre`, `urg`.`nombre` as `urg_nombre`, `urg`.`clave` from `responsables_operativos` as `ro` inner join `unidades_responsables_gastos` as `urg` on `urg`.`unidad_responsable_gasto_id` = `ro`.`unidad_responsable_gasto_id` where `ro`.`ejercicio_id` in (?, ?)")
+

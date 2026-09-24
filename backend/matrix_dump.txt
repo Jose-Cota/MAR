@@ -1,0 +1,309 @@
+
+  
+> <script>/* MAR_V66_POA2027_MASTER_MATRIX */
+  (function(M){
+  const PON=['PAAH','PJHR','POVR','PKSL','PLPJC'];
+  const PONMAP={R1:['01-A3','01-A4','01-A6','02-A1'],R2:['01-A7','01-A8','02-A2','02-A3','02-A4','02-A5'],R3:['01-A5','02-A7'],R4:['02-A6','02-A8'],R5:['01-A1','01-A2']};
+  const PRESMAP={R1:['POA2027-020603-A1'],R2:['POA2027-020603-A2'],R3:['POA2027-020603-A3']};
+  function activeRisks(areaId,y){const seen=new Set();return (M.db.risks||[]).filter(r=>!r.isDeleted&&r.exercise===y&&r.areaId===areaId).filter(r=>{const k=r.localId||r.id;if(seen.has(k))return false;seen.add(k);return true})}
+  function apply(){
+   if(!M.db||M.db.semanticLinks2027Version===1)return;
+   const presActs=(M.db.poaActions||[]).filter(a=>a.exercise===2027&&a.areaId==='PRES'),presIds=new Set(presActs.map(a=>a.id));
+   activeRisks('PRES',2027).forEach(r=>{const keep=(r.linkedActionIds||[]).filter(id=>!presIds.has(id));r.linkedActionIds=[...keep,...(PRESMAP[r.localId]||[])];});
+   PON.forEach(aid=>{
+     const acts=(M.db.poaActions||[]).filter(a=>a.exercise===2027&&a.areaId===aid),ids=new Set(acts.map(a=>a.id));
+     activeRisks(aid,2027).forEach(r=>{
+       const keep=(r.linkedActionIds||[]).filter(id=>!ids.has(id));
+       const suffixes=PONMAP[r.localId]||[];
+       const add=acts.filter(a=>suffixes.some(sf=>a.id.includes(sf))).map(a=>a.id);
+       r.linkedActionIds=[...keep,...new Set(add)];
+     });
+   });
+   M.db.semanticLinks2027Version=1;
+   M.db.poa2027MasterMatrixSource='Fichas Descriptivas de Proyectos POA 2027';
+   if(M.saveDB)M.saveDB(M.db);
+  }
+  function groups2027(areaId){
+   const acts=(M.db.poaActions||[]).filter(a=>a.exercise===2027&&a.areaId===areaId);
+   const r27=activeRisks(areaId,2027), links=new Map(acts.map(a=>[a.id,r27.filter(r=>(r.linkedActionIds||[]).includes(a.id))]));
+   const base=(M.db.poaActions||[]).filter(a=>a.exercise===2026&&a.areaId===areaId);
+   const r26=activeRisks(areaId,2026), r27ByLocal=new Map(r27.map(r=>[r.localId,r]));
+   const groups=base.map((a,i)=>{const locals=r26.filter(r=>(r.linkedActionIds||[]).includes(a.id)).map(r=>r.localId);return{id:'G'+(i+1),label:a.text,risks:locals.map(x=>r27ByLocal.get(x)).filter(Boolean),actions:[]};});
+   const represented=new Set(groups.flatMap(g=>g.risks.map(r=>r.localId)));
+   r27.filter(r=>!represented.has(r.localId)).forEach(r=>groups.push({id:'G'+(groups.length+1),label:r.objective||r.risk,risks:[r],actions:[]}));
+   acts.forEach(a=>{const ars=links.get(a.id)||[];if(!ars.length)return;const aset=new Set(ars.map(r=>r.localId));let best=null,nmax=0;groups.forEach(g=>{const n=g.risks.reduce((n,r)=>n+(aset.has(r.localId)?1:0),0);if(n>nmax){nmax=n;best=g}});if(best)best.actions.push(a)});
+   return {acts,r27,links,groups,pending:acts.filter(a=>!groups.some(g=>g.actions.includes(a)))};
+  }
+  function render2027(){
+   apply();
+   const areas=M.db.areas||[], preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id;
+   const opts=areas.map(a=>'<option value="'+a.id+'" '+(a.id===preferred?'selected':'')+'>'+M.escape(M.areaLabel(a))+'</option>').join('');
+   M.view.innerHTML='<div class="page-head"><div><h1>Programa Operativo Anual</h1><p>Presentación compacta 2027 con trazabilidad a las actividades originales de las Fichas Descriptivas.</p></div><select id="poaAreaV66" class="input">'+opts+'</select></div><div id="poaContentV66"></div>';
+   const sel=document.querySelector('#poaAreaV66');
+   function render(){
+     const areaId=sel.value;if(M.setActiveAreaId)M.setActiveAreaId(areaId);const area=areas.find(a=>a.id===areaId),x=groups2027(areaId);
+     const chips=rs=>rs.length?rs.map(r=>'<span class="chip">'+M.escape(r.localId)+'</span>').join(' '):'<span class="muted">Sin riesgo</span>';
+     const rows=x.groups.map((g,i)=>{const details=g.actions.length?'<details><summary>'+g.actions.length+' actividad'+(g.actions.length===1?'':'es')+' original'+(g.actions.length===1?'':'es')+' 2027</summary><ol>'+g.actions.map(a=>'<li>'+M.escape(a.text)+'</li>').join('')+'</ol></details>':'<small class="muted">Sin actividad original asignada.</small>';return '<tr><td>'+(i+1)+'</td><td><b>'+M.escape(g.label)+'</b>'+details+'</td><td>'+chips(g.risks)+'</td></tr>'}).join('');
+     const pending=x.pending.length?'<section class="panel"><h2>Actividades originales 2027 sin vínculo directo</h2><p class="muted">Se conservan sin forzar su asociación a un riesgo.</p><ol>'+x.pending.map(a=>'<li>'+M.escape(a.text)+'</li>').join('')+'</ol></section>':'';
+     document.querySelector('#poaContentV66').innerHTML='<section class="panel"><h2>POA 2027 – '+M.escape(M.areaLabel(area)||area?.name||areaId)+'</h2><p class="muted">Fuente maestra: Fichas Descriptivas de Proyectos POA 2027. Las actividades originales se conservan dentro de cada agrupación.</p><table><thead><tr><th>#</th><th>Grupo sustantivo / alineación</th><th>Riesgos vinculados</th></tr></thead><tbody>'+rows+'</tbody></table></section>'+pending;
+   }
+   sel.onchange=render;render();
+  }
+  apply();
+  const previousPOA=(M.routes&&M.routes.poa)||null;
+  M.registerRoute('poa',(params)=>M.currentYear()===2027?render2027():(previousPOA?previousPOA(params):null));
+  })(window.MAR=window.MAR||{});
+  </script>
+  <script>/* MAR_V68_DRH_SOURCE_LABELS */
+  (function(M){
+   const LABELS={'DRH-2026-A1':'Nómina, remuneraciones y pagos','DRH-2026-A2':'Movimientos y seguridad social','DRH-2026-A3':'Expedientes y documentación del personal','DRH-2026-A4':'Salud y seguros del personal','DRH-2026-A5':'Normatividad, procedimientos y servicios al personal','DRH-2026-A6':'Información institucional y requerimientos de Recursos Humanos'};
+   const DESC='Nómina, remuneraciones y pagos; movimientos y seguridad social; expedientes y documentación del personal; salud y seguros del personal; normatividad, procedimientos y servicios al personal; información institucional y requerimientos de Recursos Humanos.';
+   function apply(){if(!M.db)return;let ch=false;(M.db.poaActions||[]).forEach(a=>{if(LABELS[a.id]&&a.text!==LABELS[a.id]){a.text=LABELS[a.id];ch=true;}});(M.db.poaProjects||[]).forEach(p=>{if(p.id==='DRH-2026-P1'&&p.description!==DESC){p.description=DESC;ch=true;}});if(M.db.drhSourceLabelsVersion!==1){M.db.drhSourceLabelsVersion=1;ch=true;}if(ch&&M.saveDB)M.saveDB(M.db);}
+   apply();const oldNav=M.navigate;if(oldNav)M.navigate=function(route,...args){apply();return oldNav.call(this,route,...args)};
+  })(window.MAR=window.MAR||{});
+  </script>
+  \n<script>/* MAR_V69_FINE_SOURCE_LABELS_ALL_AREAS */
+  (function(M){
+  const LABELS={
+  'PRES-2026-A1':'Representación oficial e institucional del Tribunal','PRES-2026-A2':'Reuniones de trabajo y coordinación institucional','PRES-2026-A3':'Seguimiento al cumplimiento de acuerdos y resoluciones del Pleno',
+  'SG-2026-A1':'Recepción, registro, turno e integración de expedientes jurisdiccionales','SG-2026-A2':'Diligencias, notificaciones y actuaciones ordenadas','SG-2026-A3':'Apoyo técnico-jurídico al Pleno, sesiones, actas, acuerdos y certificaciones',
+  'SA-2026-A1':'Coordinación de la administración de recursos humanos, materiales y financieros','SA-2026-A2':'Informes institucionales, planeación, POA, presupuesto y seguimiento de auditorías',
+  'DPyRF-2026-A1':'Planeación, integración del POA y Anteproyecto de Presupuesto','DPyRF-2026-A2':'Informes programático-presupuestales, financieros y Cuenta Pública','DPyRF-2026-A3':'Gestión, control y seguimiento presupuestal','DPyRF-2026-A4':'Registro, control y armonización contable','DPyRF-2026-A5':'Conciliaciones y control de recursos financieros','DPyRF-2026-A6':'Armonización contable, SEVAC y cumplimiento CONAC','DPyRF-2026-A7':'Transparencia, requerimientos y actualización de instrumentos administrativos',
+  'DRH-2026-A1':'Nómina, remuneraciones, prestaciones y enteros','DRH-2026-A2':'Movimientos de personal y seguridad social','DRH-2026-A3':'Expedientes, nombramientos, constancias y documentación del personal','DRH-2026-A4':'Servicios de salud y administración de seguros del personal','DRH-2026-A5':'Normatividad, procedimientos, convenios y servicios al personal','DRH-2026-A6':'Información institucional, estadística y atención de requerimientos de Recursos Humanos',
+  'DRMySG-2026-A1':'Programa y procedimientos de adquisiciones','DRMySG-2026-A2':'Arrendamientos y contratación de bienes y servicios','DRMySG-2026-A3':'Servicios generales y contratación de servicios institucionales','DRMySG-2026-A4':'Almacén, inventarios y movimientos de bienes','DRMySG-2026-A5':'Mantenimiento e infraestructura institucional','DRMySG-2026-A6':'Protección civil y capacitación de brigadas','DRMySG-2026-A7':'Transparencia, solicitudes de información y atención de auditorías',
+  'CI-2026-A1':'Informes trimestrales, anuales y requeridos por entes públicos','CI-2026-A2':'Investigación y procedimientos de responsabilidad administrativa','CI-2026-A3':'Prevención, responsabilidades, declaraciones patrimoniales y verificaciones','CI-2026-A4':'Auditorías, informes finales y seguimiento de observaciones','CI-2026-A5':'Asesoría, acompañamiento, integridad y prevención de actos de corrupción',
+  'DGJ-2026-A1':'Representación y defensa jurídica del Tribunal','DGJ-2026-A2':'Atención de asuntos contenciosos y procedimientos jurisdiccionales','DGJ-2026-A3':'Consultas, asesoría y opiniones jurídicas','DGJ-2026-A4':'Elaboración, análisis y revisión de normativa','DGJ-2026-A5':'Convenios, actos jurídicos y compromisos institucionales','DGJ-2026-A6':'Contratos e instrumentos jurídicos',
+  'CCSyRP-2026-A1':'Posicionamiento y comunicación institucional','CCSyRP-2026-A2':'Relaciones públicas, cobertura y eventos institucionales','CCSyRP-2026-A3':'Elaboración y difusión de información y contenidos institucionales',
+  'CTyDP-2026-A1':'Solicitudes de acceso a la información y recursos','CTyDP-2026-A2':'Sesiones, acuerdos y seguimiento del Comité de Transparencia','CTyDP-2026-A3':'Protección y tratamiento de datos personales','CTyDP-2026-A4':'Derechos ARCO y procedimientos vinculados','CTyDP-2026-A5':'Obligaciones de transparencia, asesoría y capacitación especializada',
+  'IFyC-2026-A1':'Programa y acciones institucionales de capacitación','IFyC-2026-A2':'Cursos, talleres y actividades formativas','IFyC-2026-A3':'Mecanismos de educación, formación y profesionalización',
+  'CCLA-2026-A1':'Sustanciación de controversias laborales e inconformidades administrativas','CCLA-2026-A2':'Consultas y asesoría en materia laboral y administrativa','CCLA-2026-A3':'Normativa, criterios y actualización de instrumentos aplicables',
+  'USI-2026-A1':'Desarrollo y modernización de procesos y servicios informáticos','USI-2026-A2':'Infraestructura tecnológica y continuidad de servicios críticos','USI-2026-A3':'Soporte técnico, atención y seguimiento de incidencias','USI-2026-A4':'Seguridad de la información y controles tecnológicos','USI-2026-A5':'Respaldos, recuperación y continuidad tecnológica','USI-2026-A6':'Desarrollo, mantenimiento y actualización de sistemas institucionales',
+  'UEyJ-2026-A1':'Jurisprudencia, tesis, precedentes y criterios jurisdiccionales','UEyJ-2026-A2':'Sistematización de información jurisdiccional','UEyJ-2026-A3':'Estadística jurisdiccional','UEyJ-2026-A4':'Informes, consultas y productos estadísticos',
+  'CDyP-2026-A1':'Obras, publicaciones y materiales editoriales','CDyP-2026-A2':'Biblioteca, acervo y servicios documentales','CDyP-2026-A3':'Producción y gestión de publicaciones institucionales','CDyP-2026-A4':'Difusión, publicación y distribución de contenidos','CDyP-2026-A5':'Diseño y producción de materiales gráficos y audiovisuales',
+  'CA-2026-A1':'Programa Anual de Desarrollo Archivístico (PADA)','CA-2026-A2':'Instrumentos de control y consulta archivística','CA-2026-A3':'Gestión, integración, conservación y control documental','CA-2026-A4':'Orientación y capacitación en materia archivística','CA-2026-A5':'Normativa y funcionamiento del Sistema Institucional de Archivos','CA-2026-A6':'Patrimonio documental y conservación de archivos',
+  'CDHyG-2026-A1':'Política institucional de derechos humanos e igualdad','CDHyG-2026-A2':'Transversalización de derechos humanos y perspectiva de género','CDHyG-2026-A3':'Comités, grupos y mecanismos institucionales de igualdad','CDHyG-2026-A4':'Capacitación y sensibilización en derechos humanos y género','CDHyG-2026-A5':'Difusión y promoción de derechos humanos, igualdad y no discriminación',
+  'DPPCyPD-2026-A1':'Asesoría y defensa de derechos político-electorales','DPPCyPD-2026-A2':'Difusión, orientación y acercamiento sobre derechos político-electorales','DPPCyPD-2026-A3':'Registro, seguimiento e informes de servicios y defensas','DPPCyPD-2026-A4':'Coordinación y cobertura de acciones de atención y defensa',
+  'CVyRI-2026-A1':'Convenios y mecanismos de colaboración institucional','CVyRI-2026-A2':'Vinculación nacional e internacional','CVyRI-2026-A3':'Eventos y actividades de vinculación','CVyRI-2026-A4':'Relaciones interinstitucionales y seguimiento de compromisos',
+  'UEPS-2026-A1':'Estudio y elaboración de proyectos en procedimientos especiales sancionadores','UEPS-2026-A2':'Elaboración de proyectos, acuerdos y actuaciones de los procedimientos','UEPS-2026-A3':'Seguimiento de impugnaciones e integridad de expedientes y documentación'
+  };
+  const DESCS={};Object.entries(LABELS).forEach(([id,label])=>{const m=id.match(/^(.+)-2026-A\\d+$/);if(!m)return;(DESCS[m[1]]||(DESCS[m[1]]=[])).push(label)});
+  function apply(){if(!M.db)return;let ch=false;(M.db.poaActions||[]).forEach(a=>{if(LABELS[a.id]&&a.text!==LABELS[a.id]){a.text=LABELS[a.id];ch=true;}});(M.db.poaProjects||[]).forEach(p=>{if(p.exercise!==2026||!DESCS[p.areaId])return;const d=DESCS[p.areaId].join('; ')+'.';if(p.description!==d){p.description=d;ch=true;}});if(M.db.fineSourceLabelsAllAreasVersion!==1){M.db.fineSourceLabelsAllAreasVersion=1;ch=true;}if(ch&&M.saveDB)M.saveDB(M.db);}
+  apply();const oldNav=M.navigate;if(oldNav)M.navigate=function(route,...args){apply();return oldNav.call(this,route,...args)};
+  })(window.MAR=window.MAR||{});
+  </script>\n<script>/* MAR_V70_CANONICAL_2027_AND_UNIFIED_POA */
+  (function(M){
+   function canonical2027(){
+    if(!M.db||!Array.isArray(M.db.risks))return;
+    const seed=M.seedDatabase(), canon=(seed.risks||[]).filter(r=>r.exercise===2027&&!r.isDeleted);
+    const key=r=>r.areaId+'|'+r.localId, byKey=new Map(canon.map(r=>[key(r),r]));
+    const existing=(M.db.risks||[]).filter(r=>r.exercise===2027&&!r.isDeleted), groups=new Map();
+    existing.forEach(r=>{const k=key(r);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)});
+    const final27=[], remap=new Map();
+    canon.forEach(base=>{
+      const arr=groups.get(key(base))||[], canonical=arr.find(r=>r.id===base.id), newest=arr.slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))[0];
+      let keep=structuredClone(canonical||base);
+      if(newest&&newest.id!==keep.id){
+        ['objective','risk','factors','controls','indicators','probability','impact','initialProbability','initialImpact','status','linkedActionIds','lastObservation','valuationJustification','validationResponsible','validatedAt','updatedAt'].forEach(f=>{if(newest[f]!==undefined)keep[f]=structuredClone(newest[f])});
+      }
+      keep.id=base.id;keep.areaId=base.areaId;keep.localId=base.localId;keep.exercise=2027;keep.isDeleted=false;
+      arr.forEach(r=>{if(r.id!==keep.id)remap.set(r.id,keep.id)}); final27.push(keep);
+    });
+    const old27Ids=new Set(existing.map(r=>r.id));
+    M.db.risks=(M.db.risks||[]).filter(r=>r.exercise!==2027||r.isDeleted).concat(final27);
+    for(const k of ['monthlyResults','quarterlyReviews','riskVersions','fieldHistory','documentStates'])if(Array.isArray(M.db[k]))M.db[k].forEach(x=>{if(remap.has(x.riskId))x.riskId=remap.get(x.riskId)});
+    if(Array.isArray(M.db.institutionalRisks))M.db.institutionalRisks.forEach(x=>{if(Array.isArray(x.sourceRiskIds))x.sourceRiskIds=[...new Set(x.sourceRiskIds.map(id=>remap.get(id)||id).filter(id=>!old27Ids.has(id)||final27.some(r=>r.id===id))) ]});
+    M.db.canonical2027Version=70; M.saveDB(M.db);
+   }
+   function unifiedPOA(){
+    canonical2027();
+    const y=M.currentYear(),areas=M.visibleAreas(),E=M.escape,preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id;
+    M.view.innerHTML=`<div class="page-head"><div><h1>POA y acciones sustantivas</h1><p>Trazabilidad de proyectos y acciones hacia los riesgos.</p></div><select id="poaArea" class="input">${areas.map(a=>`<option value="${a.id}" ${a.id===preferred?'selected':''}>${E(M.areaLabel(a))}</option>`).join('')}</select></div><div id="poaContent"></div>`;
+    const sel=document.querySelector('#poaArea');
+    const render=()=>{const areaId=sel.value;if(M.setActiveAreaId)M.setActiveAreaId(areaId);const ps=(M.db.poaProjects||[]).filter(p=>p.exercise===y&&p.areaId===areaId),acts=(M.db.poaActions||[]).filter(a=>a.exercise===y&&a.areaId===areaId),risks=(M.db.risks||[]).filter(r=>!r.isDeleted&&r.exercise===y&&r.areaId===areaId);document.querySelector('#poaContent').innerHTML=ps.length?ps.map(p=>`<section class="panel"><h2>${E(p.name)}</h2><p>${E(p.description||'')}</p><table><thead><tr><th>#</th><th>Acción sustantiva / alineación</th><th>Riesgos vinculados</th></tr></thead><tbody>${acts.filter(a=>a.projectId===p.id).map(a=>{const linked=risks.filter(r=>(r.linkedActionIds||[]).includes(a.id));return`<tr><td>${E(a.number||'')}</td><td>${E(a.text||'')}</td><td>${linked.length?linked.map(r=>`<span class="chip">${E(r.localId)}</span>`).join(' '):'<span class="muted">Sin riesgo</span>'}</td></tr>`}).join('')}</tbody></table></section>`).join(''):'<div class="empty">Sin ficha POA precargada para este ejercicio.</div>'};
+    sel.onchange=render;render();
+   }
+   canonical2027();
+   M.registerRoute('poa',unifiedPOA);
+  })(window.MAR=window.MAR||{});
+  </script>
+  
+  <script>/* MAR_V71_GROUPED_POA_2027_TRACEABILITY */
+  (function(M){
+   const E=M.escape;
+   function activeRisks(areaId,y){const seen=new Set();return (M.db.risks||[]).filter(r=>!r.isDeleted&&r.exercise===y&&r.areaId===areaId).filter(r=>{const k=r.localId||r.id;if(seen.has(k))return false;seen.add(k);return true})}
+   function linksFor(acts,risks){return new Map(acts.map(a=>[a.id,risks.filter(r=>(r.linkedActionIds||[]).includes(a.id))]))}
+   function groupsFor(areaId,y){
+     const acts=(M.db.poaActions||[]).filter(a=>a.exercise===y&&a.areaId===areaId), risks=activeRisks(areaId,y), links=linksFor(acts,risks);
+     if(y===2026)return {acts,risks,links,groups:acts.map((a,i)=>({id:'G'+(i+1),label:a.text||('Grupo '+(i+1)),actions:[a],risks:links.get(a.id)||[]})),pending:[]};
+     const base=(M.db.poaActions||[]).filter(a=>a.exercise===2026&&a.areaId===areaId), r26=activeRisks(areaId,2026), r27=new Map(risks.map(r=>[r.localId,r]));
+     const groups=base.map((a,i)=>{const locals=r26.filter(r=>(r.linkedActionIds||[]).includes(a.id)).map(r=>r.localId);return{id:'G'+(i+1),label:a.text||('Grupo '+(i+1)),actions:[],risks:locals.map(x=>r27.get(x)).filter(Boolean)}});
+     const represented=new Set(groups.flatMap(g=>g.risks.map(r=>r.localId)));
+     risks.filter(r=>!represented.has(r.localId)).forEach(r=>groups.push({id:'G'+(groups.length+1),label:r.objective||r.risk,actions:[],risks:[r]}));
+     acts.forEach(a=>{const ar=links.get(a.id)||[];if(!ar.length)return;const set=new Set(ar.map(r=>r.localId));let best=null,nmax=0;groups.forEach(g=>{const n=g.risks.reduce((n,r)=>n+(set.has(r.localId)?1:0),0);if(n>nmax){nmax=n;best=g}});if(best&&nmax)best.actions.push(a)});
+     const assigned=new Set(groups.flatMap(g=>g.actions.map(a=>a.id))),pending=acts.filter(a=>!assigned.has(a.id));
+     return {acts,risks,links,groups,pending};
+   }
+   function chips(rs){return rs.length?rs.map(r=>`<span class="chip">${E(r.localId)}</span>`).join(' '):'<span class="muted">Sin riesgo directo</span>'}
+   function groupUnion(g,links){const out=[],seen=new Set();g.actions.forEach(a=>(links.get(a.id)||[]).forEach(r=>{if(!seen.has(r.id)){seen.add(r.id);out.push(r)}}));if(!g.actions.length)g.risks.forEach(r=>{if(!seen.has(r.id)){seen.add(r.id);out.push(r)}});return out}
+   function groupedPOA2027(){
+     const y=2027,areas=M.visibleAreas(),preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id;
+     M.view.innerHTML=`<div class="page-head"><div><h1>POA y acciones sustantivas</h1><p>Presentación agrupada de las actividades POA y su alineación con MAR · 2027.</p></div><select id="poaArea" class="input">${areas.map(a=>`<option value="${a.id}" ${a.id===preferred?'selected':''}>${E(M.areaLabel(a))}</option>`).join('')}</select></div><div id="poaContent"></div>`;
+     const sel=document.querySelector('#poaArea');function render(){const areaId=sel.value;if(M.setActiveAreaId)M.setActiveAreaId(areaId);const area=areas.find(a=>a.id===areaId),d=groupsFor(areaId,y),projs=(M.db.poaProjects||[]).filter(p=>p.exercise===y&&p.areaId===areaId);
+       const rows=d.groups.map(g=>{const union=groupUnion(g,d.links),detail=g.actions.length?g.actions.map(a=>`<li><b>${E(a.number||'')}</b> ${E(a.text||'')} <span class="muted">${chips(d.links.get(a.id)||[])}</span></li>`).join(''):'<li class="muted">Sin actividad original 2027 asignada directamente.</li>';return `<tr><td><b>${E(g.id)}</b></td><td><b>${E(g.label)}</b><details><summary>${g.actions.length} actividad(es) original(es)</summary><div><b>Actividades originales 2027 que integran el grupo</b><ul>${detail}</ul></div></details></td><td>${chips(union)}</td></tr>`}).join('');
+       const pending=d.pending.length?`<section class="panel"><h2>Actividades originales 2027 sin agrupación sustentada</h2><table><thead><tr><th>Actividad</th><th>Riesgo(s)</th></tr></thead><tbody>${d.pending.map(a=>`<tr><td><b>${E(a.number||'')}</b> ${E(a.text||'')}</td><td>${chips(d.links.get(a.id)||[])}</td></tr>`).join('')}</tbody></table></section>`:'';
+       document.querySelector('#poaContent').innerHTML=`<section class="panel"><h2>POA 2027 – ${E(M.areaLabel(area)||area?.name||areaId)}</h2><div class="kpis"><div class="kpi"><b>${projs.length}</b><span>Proyectos</span></div><div class="kpi"><b>${d.acts.length}</b><span>Actividades originales</span></div><div class="kpi"><b>${d.groups.length}</b><span>Grupos sustantivos</span></div><div class="kpi"><b>${d.risks.length}</b><span>Riesgos MAR</span></div></div><table><thead><tr><th>Grupo</th><th>Actividad sustantiva agrupada</th><th>Riesgos vinculados</th></tr></thead><tbody>${rows||'<tr><td colspan="3" class="muted">Sin información.</td></tr>'}</tbody></table></section>${pending}`;
+     } sel.onchange=render;render();
+   }
+   const prevPOA=M.routes&&M.routes['poa'];M.registerRoute('poa',(p)=>M.currentYear()===2027?groupedPOA2027():prevPOA(p));
+   function isSuper(){const u=(M.db?.users||[]).find(x=>x.id===M.session?.userId||x.username===M.session?.username),roles=[...(M.session?.roles||[]),...(u?.roles||[])];return roles.includes('Super Administrador')||M.session?.role==='Super Administrador'}
+   M.registerRoute('poa-traceability',()=>{if(!isSuper()){M.view.innerHTML='<div class="notice"><b>Acceso restringido.</b> Solo el Super Administrador puede consultar esta trazabilidad.</div>';return}const areas=M.db.areas||[],preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id,y0=M.currentYear();M.view.innerHTML=`<div class="page-head"><div><h1>Trazabilidad POA–MAR</h1><p>Grupo sustantivo → actividades POA originales → riesgo individual → unión de riesgos del grupo.</p></div><div><select id="trYear" class="input small"><option ${y0===2026?'selected':''}>2026</option><option ${y0===2027?'selected':''}>2027</option></select> <select id="trArea" class="input">${areas.map(a=>`<option value="${a.id}" ${a.id===preferred?'selected':''}>${E(M.areaLabel(a))}</option>`).join('')}</select></div></div><div id="trBody"></div>`;const ys=document.querySelector('#trYear'),as=document.querySelector('#trArea');function render(){const y=+ys.value,areaId=as.value,area=areas.find(a=>a.id===areaId),d=groupsFor(areaId,y),projs=(M.db.poaProjects||[]).filter(p=>p.exercise===y&&p.areaId===areaId);const rows=d.groups.map(g=>{const union=groupUnion(g,d.links),details=g.actions.length?g.actions.map(a=>`<tr><td><small>${E(a.id)}</small></td><td>${E((projs.find(p=>p.id===a.projectId)||{}).name||a.projectId||'—')}</td><td><b>${E(a.number||'')}</b> ${E(a.text||'')}</td><td>${chips(d.links.get(a.id)||[])}</td></tr>`).join(''):'<tr><td colspan="4" class="muted">Sin actividad original asignada.</td></tr>';return `<tr><td><b>${E(g.id)}</b></td><td><b>${E(g.label)}</b><details><summary>${g.actions.length} actividad(es)</summary><table><thead><tr><th>ID</th><th>Proyecto</th><th>Actividad POA original</th><th>Riesgo individual</th></tr></thead><tbody>${details}</tbody></table></details></td><td>${chips(union)}</td></tr>`}).join('');const pending=d.pending.length?`<section class="panel"><h2>Actividades originales pendientes de agrupación</h2><table><thead><tr><th>ID</th><th>Actividad</th><th>Riesgo(s)</th></tr></thead><tbody>${d.pending.map(a=>`<tr><td>${E(a.id)}</td><td>${E(a.text||'')}</td><td>${chips(d.links.get(a.id)||[])}</td></tr>`).join('')}</tbody></table></section>`:'';document.querySelector('#trBody').innerHTML=`<section class="panel"><h2>${y} – ${E(M.areaLabel(area)||area?.name||areaId)}</h2><div class="kpis"><div class="kpi"><b>${d.acts.length}</b><span>Actividades originales</span></div><div class="kpi"><b>${d.groups.length}</b><span>Grupos sustantivos</span></div><div class="kpi"><b>${d.risks.length}</b><span>Riesgos activos</span></div><div class="kpi"><b>${d.pending.length}</b><span>Pendientes de agrupación</span></div></div></section><section class="panel"><h2>Matriz de trazabilidad agrupada</h2><table><thead><tr><th>Grupo</th><th>Actividades originales que lo integran</th><th>Unión de riesgos del grupo</th></tr></thead><tbody>${rows}</tbody></table></section>${pending}`;}ys.onchange=render;as.onchange=render;render();});
+  })(window.MAR=window.MAR||{});
+  </script>
+  <script>/* MAR_V73_POA2027_SAME_STRUCTURE_2026 */
+  (function(M){
+   const E=M.escape;
+   function activeRisks(areaId,y){const seen=new Set();return (M.db.risks||[]).filter(r=>!r.isDeleted&&r.exercise===y&&r.areaId===areaId).filter(r=>{const k=r.localId||r.id;if(seen.has(k))return false;seen.add(k);return true})}
+   function linksFor(acts,risks){return new Map(acts.map(a=>[a.id,risks.filter(r=>(r.linkedActionIds||[]).includes(a.id))]))}
+   function groups2027(areaId){
+     const acts=(M.db.poaActions||[]).filter(a=>a.exercise===2027&&a.areaId===areaId),risks=activeRisks(areaId,2027),links=linksFor(acts,risks);
+     const base=(M.db.poaActions||[]).filter(a=>a.exercise===2026&&a.areaId===areaId),r26=activeRisks(areaId,2026),r27=new Map(risks.map(r=>[r.localId,r]));
+     const groups=base.map((a,i)=>{const locals=r26.filter(r=>(r.linkedActionIds||[]).includes(a.id)).map(r=>r.localId);return{id:'G'+(i+1),label:a.text||('Grupo '+(i+1)),actions:[],risks:locals.map(x=>r27.get(x)).filter(Boolean)}});
+     const represented=new Set(groups.flatMap(g=>g.risks.map(r=>r.localId)));risks.filter(r=>!represented.has(r.localId)).forEach(r=>groups.push({id:'G'+(groups.length+1),label:r.objective||r.risk,actions:[],risks:[r]}));
+     acts.forEach(a=>{const ar=links.get(a.id)||[];if(!ar.length)return;const set=new Set(ar.map(r=>r.localId));let best=null,nmax=0;groups.forEach(g=>{const n=g.risks.reduce((n,r)=>n+(set.has(r.localId)?1:0),0);if(n>nmax){nmax=n;best=g}});if(best&&nmax)best.actions.push(a)});
+     const assigned=new Set(groups.flatMap(g=>g.actions.map(a=>a.id))),pending=acts.filter(a=>!assigned.has(a.id));return{acts,risks,links,groups,pending};
+   }
+   function chips(rs){return rs.length?rs.map(r=>`<span class="chip">${E(r.localId)}</span>`).join(' '):'<span class="muted">Sin riesgo directo</span>'}
+   function union(g,links){const out=[],seen=new Set();g.actions.forEach(a=>(links.get(a.id)||[]).forEach(r=>{const k=r.localId||r.id;if(!seen.has(k)){seen.add(k);out.push(r)}}));if(!g.actions.length)g.risks.forEach(r=>{const k=r.localId||r.id;if(!seen.has(k)){seen.add(k);out.push(r)}});return out}
+   function poa2027Like2026(){
+     const areas=M.visibleAreas(),preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id;
+     M.view.innerHTML=`<div class="page-head"><div><h1>POA y acciones sustantivas</h1><p>Actividades sustantivas agrupadas y su alineación con la MAR.</p></div><select id="poaArea" class="input">${areas.map(a=>`<option value="${a.id}" ${a.id===preferred?'selected':''}>${E(M.areaLabel(a))}</option>`).join('')}</select></div><div id="poaContent"></div>`;
+     const sel=document.querySelector('#poaArea');function render(){const areaId=sel.value;if(M.setActiveAreaId)M.setActiveAreaId(areaId);const area=areas.find(a=>a.id===areaId),d=groups2027(areaId);const usable=d.groups.filter(g=>g.label&&g.label.trim());const desc=usable.map(g=>g.label.trim()).join('; ')+(usable.length?'.':'');
+       const rows=usable.map((g,i)=>`<tr><td>${i+1}</td><td>${E(g.label)}</td><td>${chips(union(g,d.links))}</td></tr>`).join('');
+       const pending=d.pending.length?`<details class="panel" style="margin-top:14px"><summary><b>Actividades originales 2027 pendientes de vínculo/agrupación (${d.pending.length})</b></summary><p class="muted">Se conservan para trazabilidad y no se fuerza su asociación a un riesgo.</p><ol>${d.pending.map(a=>`<li>${E(a.text||'')}</li>`).join('')}</ol></details>`:'';
+       document.querySelector('#poaContent').innerHTML=`<section class="panel"><h2>POA 2027 – ${E(M.areaLabel(area)||area?.name||areaId)}</h2><p>${E(desc)}</p><table><thead><tr><th>#</th><th>Acción sustantiva / alineación</th><th>Riesgos vinculados</th></tr></thead><tbody>${rows||'<tr><td colspan="3" class="muted">Sin información.</td></tr>'}</tbody></table></section>${pending}`;
+     }sel.onchange=render;render();
+   }
+   const prev=M.routes&&M.routes['poa'];M.registerRoute('poa',(p)=>M.currentYear()===2027?poa2027Like2026():prev(p));
+  })(window.MAR=window.MAR||{});
+  </script>
+  <script>/* MAR_V74_POA_LINK_SUPERADMIN */
+  (function(M){
+   const E=M.escape;
+   function isSuper(){
+     const u=(M.db?.users||[]).find(x=>x.id===M.session?.userId||x.username===M.session?.username);
+     const roles=[...(M.session?.roles||[]),...(u?.roles||[])];
+     return roles.includes('Super Administrador')||M.session?.role==='Super Administrador';
+   }
+   function addNav(){
+     const nav=document.querySelector('.sidebar nav'); if(!nav)return;
+     let b=nav.querySelector('[data-route="poa-link"]');
+     if(!isSuper()){if(b)b.remove();return}
+     if(b)return;
+     b=document.createElement('button'); b.className='nav-link'; b.dataset.route='poa-link';
+     b.innerHTML='⛓ <span>POA Vincular</span>';
+     const tr=nav.querySelector('[data-route="poa-traceability"]'), admin=nav.querySelector('[data-route="admin"]');
+     if(tr) nav.insertBefore(b,tr); else if(admin) nav.insertBefore(b,admin); else nav.appendChild(b);
+     b.onclick=()=>M.navigate('poa-link');
+   }
+   function activeRisks(areaId,y){
+     const seen=new Set();
+     return (M.db.risks||[]).filter(r=>!r.isDeleted&&r.exercise===y&&r.areaId===areaId).filter(r=>{const k=r.localId||r.id;if(seen.has(k))return false;seen.add(k);return true});
+   }
+   function pendingActions(areaId,y){
+     const risks=activeRisks(areaId,y), linked=new Set(risks.flatMap(r=>r.linkedActionIds||[]));
+     return (M.db.poaActions||[]).filter(a=>a.exercise===y&&a.areaId===areaId&&!linked.has(a.id));
+   }
+   M.registerRoute('poa-link',()=>{
+     if(!isSuper()){M.view.innerHTML='<div class="notice"><b>Acceso restringido.</b> Solo el Super Administrador puede vincular actividades POA con riesgos.</div>';return}
+     const areas=M.db.areas||[], y0=M.currentYear(), preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id;
+     M.view.innerHTML=`<div class="page-head"><div><h1>POA Vincular</h1><p>Vinculación manual de actividades POA pendientes con uno o más riesgos MAR. Módulo exclusivo del Super Administrador.</p></div><div><select id="pvYear" class="input small"><option ${y0===2026?'selected':''}>2026</option><option ${y0===2027?'selected':''}>2027</option></select> <select id="pvArea" class="input">${areas.map(a=>`<option value="${a.id}" ${a.id===preferred?'selected':''}>${E(M.areaLabel(a))}</option>`).join('')}</select></div></div><div id="pvBody"></div>`;
+     const ys=document.querySelector('#pvYear'), as=document.querySelector('#pvArea');
+     function render(){
+       const y=+ys.value, areaId=as.value, area=areas.find(a=>a.id===areaId), risks=activeRisks(areaId,y), acts=pendingActions(areaId,y), projects=M.db.poaProjects||[];
+       const riskChecks=a=>risks.map(r=>`<label class="check" style="display:inline-flex;margin:3px 12px 3px 0"><input type="checkbox" class="pvRisk" data-action="${E(a.id)}" value="${E(r.id)}"> <b>${E(r.localId||r.id)}</b>&nbsp; ${E(r.risk||r.objective||'')}</label>`).join('');
+       const rows=acts.map((a,i)=>{const p=projects.find(x=>x.id===a.projectId);return `<tr><td>${i+1}</td><td><small>${E(a.id)}</small><br><b>${E(p?.name||a.projectId||'POA')}</b></td><td><b>${E(a.number||'')}</b> ${E(a.text||'')}</td><td>${riskChecks(a)||'<span class="muted">No hay riesgos activos en el área.</span>'}</td><td><button class="btn primary pvSave" data-action="${E(a.id)}" ${risks.length?'':'disabled'}>Vincular</button></td></tr>`}).join('');
+       document.querySelector('#pvBody').innerHTML=`<section class="panel"><h2>Actividades pendientes de vincular · ${y} – ${E(M.areaLabel(area)||area?.name||areaId)}</h2><div class="kpis"><div class="kpi"><b>${acts.length}</b><span>Pendientes</span></div><div class="kpi"><b>${risks.length}</b><span>Riesgos disponibles</span></div></div>${acts.length?`<table><thead><tr><th>#</th><th>Proyecto / ID</th><th>Actividad POA original</th><th>Seleccionar riesgo(s)</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="notice"><b>Sin pendientes.</b> Todas las actividades POA de esta área y ejercicio tienen al menos un riesgo vinculado.</div>'}<p class="muted" style="margin-top:12px">La vinculación se guarda en la MAR y se refleja automáticamente en POA y en Trazabilidad POA–MAR.</p></section>`;
+       document.querySelectorAll('.pvSave').forEach(btn=>btn.onclick=()=>{
+         if(!isSuper())return alert('Acceso restringido al Super Administrador.');
+         const aid=btn.dataset.action, selected=[...document.querySelectorAll(`.pvRisk[data-action="${CSS.escape(aid)}"]:checked`)].map(x=>x.value);
+         if(!selected.length)return alert('Seleccione al menos un riesgo para vincular la actividad.');
+         selected.forEach(rid=>{const r=(M.db.risks||[]).find(x=>x.id===rid);if(!r)return;r.linkedActionIds=[...new Set([...(r.linkedActionIds||[]),aid])];});
+         M.saveDB(M.db); if(M.log)M.log('Vincular POA–MAR','POAAction',aid,`Vinculación manual a ${selected.length} riesgo(s) por Super Administrador`);
+         render();
+       });
+     }
+     ys.onchange=render; as.onchange=render; render();
+   });
+   const oldApply=M.applyAccessControl; if(typeof oldApply==='function')M.applyAccessControl=function(){const z=oldApply.apply(this,arguments);setTimeout(addNav,0);return z};
+   const oldNav=M.navigate; M.navigate=function(){const z=oldNav.apply(this,arguments);setTimeout(addNav,0);return z};
+   setTimeout(addNav,0);
+  })(window.MAR=window.MAR||{});
+  </script>
+  <script>/* MAR_V75_HIDE_UNLINKED_NORMAL_POA */
+  (function(M){
+   const E=M.escape;
+   function activeRisks(areaId,y){const seen=new Set();return (M.db.risks||[]).filter(r=>!r.isDeleted&&r.exercise===y&&r.areaId===areaId).filter(r=>{const k=r.localId||r.id;if(seen.has(k))return false;seen.add(k);return true})}
+   function linksFor(acts,risks){return new Map(acts.map(a=>[a.id,risks.filter(r=>(r.linkedActionIds||[]).includes(a.id))]))}
+   function groups2027(areaId){
+     const acts=(M.db.poaActions||[]).filter(a=>a.exercise===2027&&a.areaId===areaId),risks=activeRisks(areaId,2027),links=linksFor(acts,risks);
+     const base=(M.db.poaActions||[]).filter(a=>a.exercise===2026&&a.areaId===areaId),r26=activeRisks(areaId,2026),r27=new Map(risks.map(r=>[r.localId,r]));
+     const groups=base.map((a,i)=>{const locals=r26.filter(r=>(r.linkedActionIds||[]).includes(a.id)).map(r=>r.localId);return{id:'G'+(i+1),label:a.text||('Grupo '+(i+1)),actions:[],risks:locals.map(x=>r27.get(x)).filter(Boolean)}});
+     const represented=new Set(groups.flatMap(g=>g.risks.map(r=>r.localId)));risks.filter(r=>!represented.has(r.localId)).forEach(r=>groups.push({id:'G'+(groups.length+1),label:r.objective||r.risk,actions:[],risks:[r]}));
+     acts.forEach(a=>{const ar=links.get(a.id)||[];if(!ar.length)return;const set=new Set(ar.map(r=>r.localId));let best=null,nmax=0;groups.forEach(g=>{const n=g.risks.reduce((n,r)=>n+(set.has(r.localId)?1:0),0);if(n>nmax){nmax=n;best=g}});if(best&&nmax)best.actions.push(a)});
+     return{acts,risks,links,groups};
+   }
+   function chips(rs){return rs.length?rs.map(r=>`<span class="chip">${E(r.localId)}</span>`).join(' '):'<span class="muted">Sin riesgo directo</span>'}
+   function union(g,links){const out=[],seen=new Set();g.actions.forEach(a=>(links.get(a.id)||[]).forEach(r=>{const k=r.localId||r.id;if(!seen.has(k)){seen.add(k);out.push(r)}}));if(!g.actions.length)g.risks.forEach(r=>{const k=r.localId||r.id;if(!seen.has(k)){seen.add(k);out.push(r)}});return out}
+   function render2027(){
+     const areas=M.visibleAreas(),preferred=(M.activeAreaId&&M.activeAreaId())||areas[0]?.id;
+     M.view.innerHTML=`<div class="page-head"><div><h1>POA y acciones sustantivas</h1><p>Actividades sustantivas agrupadas y su alineación con la MAR.</p></div><select id="poaArea" class="input">${areas.map(a=>`<option value="${a.id}" ${a.id===preferred?'selected':''}>${E(M.areaLabel(a))}</option>`).join('')}</select></div><div id="poaContent"></div>`;
+     const sel=document.querySelector('#poaArea');function render(){const areaId=sel.value;if(M.setActiveAreaId)M.setActiveAreaId(areaId);const area=areas.find(a=>a.id===areaId),d=groups2027(areaId);const usable=d.groups.filter(g=>g.label&&g.label.trim()&&g.actions.length);const desc=usable.map(g=>g.label.trim()).join('; ')+(usable.length?'.':'');const rows=usable.map((g,i)=>`<tr><td>${i+1}</td><td>${E(g.label)}</td><td>${chips(union(g,d.links))}</td></tr>`).join('');document.querySelector('#poaContent').innerHTML=`<section class="panel"><h2>POA 2027 – ${E(M.areaLabel(area)||area?.name||areaId)}</h2><p>${E(desc)}</p><table><thead><tr><th>#</th><th>Acción sustantiva / alineación</th><th>Riesgos vinculados</th></tr></thead><tbody>${rows||'<tr><td colspan="3" class="muted">Sin actividades vinculadas.</td></tr>'}</tbody></table></section>`;}sel.onchange=render;render();
+   }
+   const prev=M.routes&&M.routes['poa'];M.registerRoute('poa',(p)=>M.currentYear()===2027?render2027():prev(p));
+  })(window.MAR=window.MAR||{});
+  </script>
+  <script>/* MAR_V76_HARD_GUARD_2027_105 */
+  (function(M){
+   const expected2027=105;
+   function normalize2027(db){
+     if(!db||!Array.isArray(db.risks)||!M.seedDatabase)return db;
+     const seed=M.seedDatabase();
+     const canon=(seed.risks||[]).filter(r=>r.exercise===2027&&!r.isDeleted);
+     const key=(areaId,localId)=>String(areaId||'')+'|'+String(localId||'');
+     const canonByKey=new Map(canon.map(r=>[key(r.areaId,r.localId),r]));
+     const current=db.risks.filter(r=>r.exercise===2027&&!r.isDeleted);
+     const groups=new Map();
+     current.forEach(r=>{const k=key(r.areaId,r.localId);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)});
+     const remap=new Map(), final27=[];
+     canon.forEach(base=>{
+       const arr=groups.get(key(base.areaId,base.localId))||[];
+       const ranked=arr.slice().sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+       const canonical=arr.find(r=>r.id===base.id);
+       const source=ranked[0]||canonical||base;
+       const keep=structuredClone(base);
+       const editable=['objective','risk','factors','controls','indicators','probability','impact','initialProbability','initialImpact','status','linkedActionIds','lastObservation','valuationJustification','validationResponsible','validatedAt','updatedAt','owner','consequences','internalFactors','externalFactors'];
+       editable.forEach(f=>{if(source&&source[f]!==undefined)keep[f]=structuredClone(source[f])});
+       keep.id=base.id; keep.areaId=base.areaId; keep.localId=base.localId; keep.exercise=2027; delete keep.isDeleted;
+       arr.forEach(r=>{if(r.id!==keep.id)remap.set(r.id,keep.id)});
+       final27.push(keep);
+     });
+     current.forEach(r=>{if(!canonByKey.has(key(r.areaId,r.localId)))remap.set(r.id,null)});
+     db.risks=db.risks.filter(r=>r.exercise!==2027||r.isDeleted).concat(final27);
+     for(const bucket of ['monthlyResults','quarterlyReviews','riskVersions','fieldHistory','documentStates']){
+       if(!Array.isArray(db[bucket]))continue;
+       db[bucket]=db[bucket].filter(x=>!remap.has(x.riskId)||remap.get(x.riskId)).map(x=>remap.has(x.riskId)?{...x,riskId:remap.get(x.riskId)}:x);
+     }
+     if(Array.isArray(db.institutionalRisks))db.institutionalRisks.forEach(x=>{if(Array.isArray(x.sourceRiskIds))x.sourceRiskIds=[...new Set(x.sourceRiskIds.map(id=>remap.has(id)?remap.get(id):id).filter(Boolean))]});
+     db.canonical2027Version=76;
+     db.expectedRiskCount2027=expected2027;
+     return db;
+   }
+   const rawSave=M.saveDB;
+   M.normalize2027Risks=normalize2027;
+   M.saveDB=function(db){normalize2027(db);return rawSave.call(M,db)};
+   normalize2027(M.db);
+   rawSave.call(M,M.db);
+  })(window.MAR=window.MAR||{});
+  </script>
+  </body></html>
+

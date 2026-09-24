@@ -1,14 +1,8 @@
 <?php
-require 'vendor/autoload.php';
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use Illuminate\Support\Facades\DB;
 
-$proyectos = DB::table('responsables_operativos')->where('id', 970)->first();
-print_r(\);
-    if (strpos(mb_strtolower($p->nombre), 'presidencia') !== false) {
-        echo "Found: {$p->nombre} (RO: {$p->responsable_operativo_id})\n";
-    }
-}
+$ro = DB::connection('poa_prod')->table('responsables_operativos')->where('responsable_operativo_id', 970)->first();
+print_r($ro);
