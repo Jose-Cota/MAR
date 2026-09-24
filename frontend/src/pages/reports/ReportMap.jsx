@@ -15,13 +15,14 @@ const quadrantFor = (p, i) => {
   return 'QIV';
 };
 
-export default function ReportMap() {
-  const { areaId } = useParams();
+export default function ReportMap({ areaId: propAreaId, asModal, onCloseModal }) {
+  const params = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const areaId = propAreaId || params.areaId;
   const [riesgos, setRiesgos] = useState([]);
   const [area, setArea] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(asModal || !!state?.openModal);
   const ejercicio = useGlobalStore((state) => state.ejercicio);
 
   useEffect(() => {
@@ -41,6 +42,14 @@ export default function ReportMap() {
       console.error(e);
     }
   };
+
+  useEffect(() => {
+    const originalTitle = document.title;
+    document.title = '\u200B'; // Zero-width space so Chrome prints nothing in the header
+    return () => {
+      document.title = originalTitle;
+    };
+  }, []);
 
   const renderSvg = () => {
     const W = 760, H = 520, left = 68, top = 24, w = 650, h = 430;
@@ -113,21 +122,22 @@ export default function ReportMap() {
         `}
       </style>
 
-      <div className={`main-content ${showModal ? 'no-print' : ''}`}>
-        <div className="page-head no-print">
-          <div>
-            <h1>Mapa de Riesgos</h1>
-            <p>{area?.nombre || area?.denominacion} · {ejercicio}</p>
+      {!asModal && (
+        <div className={`main-content ${showModal ? 'no-print' : ''}`}>
+          <div className="page-head no-print">
+            <div>
+              <h1>Mapa de Riesgos</h1>
+              <p>{area?.nombre || area?.denominacion} · {ejercicio}</p>
+            </div>
+            <div>
+              {state?.fromMapMAR ? (
+                <button className="btn" onClick={() => navigate('/mapmar', { state: { areaId: state.areaId } })}>Volver a MAPA y MAR</button>
+              ) : (
+                <button className="btn" onClick={() => navigate('/reportes')}>Volver</button>
+              )}{' '}
+              <button className="btn primary" onClick={() => setShowModal(true)}>Imprimir / PDF</button>
+            </div>
           </div>
-          <div>
-            {state?.fromMapMAR ? (
-              <button className="btn" onClick={() => navigate('/mapmar', { state: { areaId: state.areaId } })}>Volver a MAPA y MAR</button>
-            ) : (
-              <button className="btn" onClick={() => navigate('/reportes')}>Volver</button>
-            )}{' '}
-            <button className="btn primary" onClick={() => setShowModal(true)}>Imprimir / PDF</button>
-          </div>
-        </div>
         
         {/* Vista normal en pantalla si no está el modal abierto */}
         {!showModal && (
@@ -164,7 +174,8 @@ export default function ReportMap() {
             </table>
           </section>
         )}
-      </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, padding: '40px 20px', overflowY: 'auto'}}>
@@ -177,7 +188,7 @@ export default function ReportMap() {
                 <button className="icon-btn" onClick={() => window.print()} title="Confirmar Impresión" style={{ padding: '8px', fontSize: '20px' }}>
                   <PrintIcon fontSize="inherit" />
                 </button>
-                <button className="icon-btn" onClick={() => setShowModal(false)} title="Cerrar vista preliminar" style={{ padding: '8px', fontSize: '20px', background: '#ffebee', color: '#c62828' }}>
+                <button className="icon-btn" onClick={() => { setShowModal(false); if(onCloseModal) onCloseModal(); }} title="Cerrar vista preliminar" style={{ padding: '8px', fontSize: '20px', background: '#ffebee', color: '#c62828' }}>
                   <CloseIcon fontSize="inherit" />
                 </button>
               </div>
@@ -187,7 +198,7 @@ export default function ReportMap() {
               {!isAllValidated && (
                 <div style={{
                   position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)',
-                  fontSize: '8rem', color: 'rgba(255, 0, 0, 0.12)', zIndex: 10, pointerEvents: 'none', whiteSpace: 'nowrap', fontWeight: 'bold'
+                  fontSize: '8rem', color: 'rgba(255, 0, 0, 0.12)', zIndex: 9999, pointerEvents: 'none', whiteSpace: 'nowrap', fontWeight: 'bold'
                 }}>
                   VISTA PRELIMINAR
                 </div>

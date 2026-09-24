@@ -7,6 +7,8 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ReportMap from '../reports/ReportMap';
+import ReportMAR from '../reports/ReportMAR';
 
 // ── Componente de modal reutilizable ────────────────────────────────────────
 function Dialog({ open, type = 'confirm', title, message, onConfirm, onCancel, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar' }) {
@@ -76,6 +78,8 @@ export default function MapMarPage() {
   const [areas, setAreas] = useState([]);
   const [areaId, setAreaId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [showMarModal, setShowMarModal] = useState(false);
 
   // Estado del dialog
   const [dialog, setDialog] = useState({ open: false, type: 'confirm', title: '', message: '', onConfirm: null });
@@ -216,53 +220,62 @@ export default function MapMarPage() {
         cancelLabel={dialog.cancelLabel}
       />
 
-      <div className="page-head">
-        <div>
-          <h1>MAPA y MAR</h1>
-          <p>Revisión integral y validación de la información del área.</p>
+      <div className={showMapModal || showMarModal ? 'no-print' : ''}>
+        <div className="page-head">
+          <div>
+            <h1>MAPA y MAR</h1>
+            <p>Revisión integral y validación de la información del área.</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
+          <section className="panel" style={{ padding: '24px' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz de Administración de Riesgos</h2>
+            <label style={{ display: 'block', marginBottom: '20px' }}>
+              <b style={{ display: 'block', marginBottom: '8px', color: '#5b6773', fontSize: '0.9rem' }}>Área / Unidad Responsable</b>
+              <select className="input" value={areaId} onChange={e => setAreaId(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d8e0e8' }}>
+                {areas.length === 0 && <option value="">Sin áreas asignadas</option>}
+                {areas.map((a, i) => (
+                  <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
+                    {a.nombre || a.denominacion}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '15px' }}>
+              <button className="btn primary" onClick={() => setShowMapModal(true)} disabled={!areaId}>Mapa / PDF</button>
+              <button className="btn" onClick={() => setShowMarModal(true)} disabled={!areaId}>MAR imprimible</button>
+            </div>
+            <p style={{ color: '#8898a9', fontSize: '0.9rem', margin: 0 }}>Estas vistas utilizan el mismo formato disponible en Reportes.</p>
+          </section>
+
+          <section className="panel" style={{ padding: '24px' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Validación del área</h2>
+
+            <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', backgroundColor: allValidated ? '#e6f4ea' : '#edf5fb', borderLeft: `4px solid ${allValidated ? '#34a853' : '#2d75b8'}` }}>
+              <p style={{ margin: 0, color: allValidated ? '#137333' : '#17324d' }}>
+                {allValidated ? 'Todos los riesgos del área están validados.' : 'Para validar integralmente, todos los riesgos deben encontrarse en estatus de "Captura".'}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {canValidate && (
+                <button className="btn primary" onClick={handleBatchValidate}>Validar datos del área</button>
+              )}
+              {isSuperAdmin && (
+                <button className="btn" onClick={handleBatchUnvalidate} style={{ backgroundColor: '#fde7e9', color: '#c62828', borderColor: '#f8bbd0' }}>Des-Validar</button>
+              )}
+            </div>
+          </section>
         </div>
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
-        <section className="panel" style={{ padding: '24px' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz de Administración de Riesgos</h2>
-          <label style={{ display: 'block', marginBottom: '20px' }}>
-            <b style={{ display: 'block', marginBottom: '8px', color: '#5b6773', fontSize: '0.9rem' }}>Área / Unidad Responsable</b>
-            <select className="input" value={areaId} onChange={e => setAreaId(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d8e0e8' }}>
-              {areas.length === 0 && <option value="">Sin áreas asignadas</option>}
-              {areas.map((a, i) => (
-                <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
-                  {a.nombre || a.denominacion}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '15px' }}>
-            <button className="btn primary" onClick={handleVerMapa} disabled={!areaId}>Mapa / PDF</button>
-            <button className="btn" onClick={() => navigate(`/reportes/mar/${areaId}`, { state: { fromMapMAR: true, areaId } })} disabled={!areaId}>MAR imprimible</button>
-          </div>
-          <p style={{ color: '#8898a9', fontSize: '0.9rem', margin: 0 }}>Estas vistas utilizan el mismo formato disponible en Reportes.</p>
-        </section>
-
-        <section className="panel" style={{ padding: '24px' }}>
-          <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Validación del área</h2>
-
-          <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', backgroundColor: allValidated ? '#e6f4ea' : '#edf5fb', borderLeft: `4px solid ${allValidated ? '#34a853' : '#2d75b8'}` }}>
-            <p style={{ margin: 0, color: allValidated ? '#137333' : '#17324d' }}>
-              {allValidated ? 'Todos los riesgos del área están validados.' : 'Para validar integralmente, todos los riesgos deben encontrarse en estatus de "Captura".'}
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {canValidate && (
-              <button className="btn primary" onClick={handleBatchValidate}>Validar datos del área</button>
-            )}
-            {isSuperAdmin && (
-              <button className="btn" onClick={handleBatchUnvalidate} style={{ backgroundColor: '#fde7e9', color: '#c62828', borderColor: '#f8bbd0' }}>Des-Validar</button>
-            )}
-          </div>
-        </section>
-      </div>
+      {showMapModal && (
+        <ReportMap asModal={true} areaId={areaId} onCloseModal={() => setShowMapModal(false)} />
+      )}
+      
+      {showMarModal && (
+        <ReportMAR asModal={true} areaId={areaId} onCloseModal={() => setShowMarModal(false)} />
+      )}
     </>
   );
 }

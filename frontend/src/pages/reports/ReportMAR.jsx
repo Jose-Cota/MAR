@@ -7,13 +7,14 @@ import PrintIcon from '@mui/icons-material/Print';
 import logoTecdmx from '../../assets/logo_tecdmx.png';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
-export default function ReportMAR() {
-  const { areaId } = useParams();
+export default function ReportMAR({ areaId: propAreaId, asModal, onCloseModal }) {
+  const params = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const areaId = propAreaId || params.areaId;
   const [riesgos, setRiesgos] = useState([]);
   const [area, setArea] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(asModal || !!state?.openModal);
   const ejercicio = useGlobalStore((state) => state.ejercicio);
 
   useEffect(() => {
@@ -41,6 +42,14 @@ export default function ReportMAR() {
     ? new Date(Math.max(...riesgos.map(r => new Date(r.updated_at || r.created_at || Date.now())))).toLocaleDateString('es-MX') 
     : '';
 
+  useEffect(() => {
+    const originalTitle = document.title;
+    document.title = '\u200B'; // Zero-width space so Chrome prints nothing in the header
+    return () => {
+      document.title = originalTitle;
+    };
+  }, []);
+
   const renderTableBody = () => (
     <tbody>
       {riesgos.map(r => (
@@ -60,20 +69,32 @@ export default function ReportMAR() {
           </td>
           <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
             {(r.indicadores || []).map((i, idx) => {
-              const formulaText = i.formula || (i.numerador && i.denominador ? `Resultado = (${i.numerador} / ${i.denominador}) × 100` : '');
+              let formulaText = i.formula;
+              if (!formulaText || formulaText === 'Resultado = (N / D) × 100') {
+                formulaText = (i.numerador && i.denominador) 
+                  ? `Resultado = (${i.numerador} / ${i.denominador}) × 100` 
+                  : i.nombre || '';
+              }
               return (
                 <div key={idx} style={{ marginBottom: '8px' }}>
-                  {i.nombre && <strong style={{ display: 'block', marginBottom: '2px' }}>{i.nombre}</strong>}
                   {formulaText && <span>{formulaText}</span>}
                 </div>
               );
             })}
-            {(!r.indicadores || r.indicadores.length === 0) && r.indicador && (
-              <div style={{ marginBottom: '8px' }}>
-                {r.indicador.nombre && <strong style={{ display: 'block', marginBottom: '2px' }}>{r.indicador.nombre}</strong>}
-                <span>{r.indicador.formula || (r.indicador.numerador && r.indicador.denominador ? `Resultado = (${r.indicador.numerador} / ${r.indicador.denominador}) × 100` : '')}</span>
-              </div>
-            )}
+            {(!r.indicadores || r.indicadores.length === 0) && r.indicador && (() => {
+              const i = r.indicador;
+              let formulaText = i.formula;
+              if (!formulaText || formulaText === 'Resultado = (N / D) × 100') {
+                formulaText = (i.numerador && i.denominador) 
+                  ? `Resultado = (${i.numerador} / ${i.denominador}) × 100` 
+                  : i.nombre || '';
+              }
+              return (
+                <div style={{ marginBottom: '8px' }}>
+                  {formulaText && <span>{formulaText}</span>}
+                </div>
+              );
+            })()}
           </td>
         </tr>
       ))}
@@ -103,7 +124,8 @@ export default function ReportMAR() {
         `}
       </style>
 
-      <div className={`main-content ${showModal ? 'no-print' : ''}`}>
+      {!asModal && (
+        <div className={`main-content ${showModal ? 'no-print' : ''}`}>
         <div className="page-head no-print">
           <div>
             <h1>MAR imprimible</h1>
@@ -144,7 +166,8 @@ export default function ReportMAR() {
             </table>
           </section>
         )}
-      </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, padding: '40px 20px', overflowY: 'auto'}}>
@@ -157,7 +180,7 @@ export default function ReportMAR() {
                 <button className="icon-btn" onClick={() => window.print()} title="Confirmar Impresión" style={{ padding: '8px', fontSize: '20px' }}>
                   <PrintIcon fontSize="inherit" />
                 </button>
-                <button className="icon-btn" onClick={() => setShowModal(false)} title="Cerrar vista preliminar" style={{ padding: '8px', fontSize: '20px', background: '#ffebee', color: '#c62828' }}>
+                <button className="icon-btn" onClick={() => { setShowModal(false); if(onCloseModal) onCloseModal(); }} title="Cerrar vista preliminar" style={{ padding: '8px', fontSize: '20px', background: '#ffebee', color: '#c62828' }}>
                   <CloseIcon fontSize="inherit" />
                 </button>
               </div>
@@ -167,7 +190,7 @@ export default function ReportMAR() {
               {isCaptura && (
                 <div style={{
                   position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)',
-                  fontSize: '8rem', color: 'rgba(255, 0, 0, 0.12)', zIndex: 10, pointerEvents: 'none', whiteSpace: 'nowrap', fontWeight: 'bold'
+                  fontSize: '8rem', color: 'rgba(255, 0, 0, 0.12)', zIndex: 9999, pointerEvents: 'none', whiteSpace: 'nowrap', fontWeight: 'bold'
                 }}>
                   EN CAPTURA
                 </div>
