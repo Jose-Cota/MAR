@@ -166,19 +166,20 @@ export default function ControlesPage() {
       return <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Sin indicadores</span>;
     }
 
-    const formulaText = ind.formula || (ind.numerador && ind.denominador ? `Resultado = (${ind.numerador} / ${ind.denominador}) × 100` : ind.nombre || '—');
+    let formulaText = ind.formula;
+    if (!formulaText || formulaText === 'Resultado = (N / D) × 100') {
+      formulaText = (ind.numerador && ind.denominador) 
+        ? `Resultado = (${ind.numerador} / ${ind.denominador}) × 100` 
+        : ind.nombre || '—';
+    }
 
     return (
       <div style={{ 
-        padding: '12px 14px', 
-        border: '1px solid #cbd5e1', 
-        borderRadius: '6px', 
-        backgroundColor: '#ffffff', 
         color: '#0f172a',
         fontSize: '0.9rem',
         lineHeight: 1.45
       }}>
-        <b>{formulaText}</b>
+        {formulaText}
       </div>
     );
   };
