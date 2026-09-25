@@ -135,6 +135,41 @@ export default function RiesgosPage() {
       nombre: p.nombre || '',
       clave: proyectoLabel(p),
     }));
+
+    let initialLocalId = '';
+    let initialActividades = [];
+    let initialProyectoId = '';
+
+    if (r) {
+      initialLocalId = r.local_id;
+      initialActividades = linkedActIds;
+      initialProyectoId = linkedProyectoId ? String(linkedProyectoId) : (riesgoProyectos[0] ? String(riesgoProyectos[0].id) : '');
+    } else {
+      // Find the first project and activity for the area
+      const uniqueProyectosMap = new Map();
+      actividades.filter(a => !areaId || String(a.area_id) === String(areaId)).forEach(a => {
+        if (a.proyecto_id !== undefined && a.proyecto_id !== null && !uniqueProyectosMap.has(String(a.proyecto_id))) {
+          uniqueProyectosMap.set(String(a.proyecto_id), true);
+        }
+      });
+      const uniqueProyectos = Array.from(uniqueProyectosMap.keys());
+      const firstProjectId = uniqueProyectos.length > 0 ? uniqueProyectos[0] : '';
+      const actividadesDelProyecto = actividades.filter(a => String(a.proyecto_id) === firstProjectId);
+      const firstActivityId = actividadesDelProyecto.length > 0 ? String(actividadesDelProyecto[0].id) : '';
+
+      const projectActivitiesIds = actividadesDelProyecto.map(a => String(a.id));
+      let count = 0;
+      riesgos.forEach(risk => {
+        const rActIds = (risk.actividades || []).map(a => String(a.id || a));
+        if (rActIds.some(id => projectActivitiesIds.includes(id))) {
+          count++;
+        }
+      });
+      initialLocalId = `R${count + 1}`;
+      initialActividades = firstActivityId ? [firstActivityId] : [];
+      initialProyectoId = firstProjectId;
+    }
+
     setFormData(r ? {
       local_id: r.local_id,
       objetivo: r.objetivo || '',
@@ -152,18 +187,18 @@ export default function RiesgosPage() {
       indicador: (r.indicadores || [])[0]?.nombre || '',
       probabilidad: r.probabilidad || 2,
       impacto: r.impacto || 8,
-      actividades: linkedActIds,
+      actividades: initialActividades,
     } : {
-      local_id: '',
+      local_id: initialLocalId,
       objetivo: '', efectos_consecuencias: '', riesgo: '',
       factores: '', factores_internos: '', factores_externos: '',
       control: '', control_estado: 'Propuesto',
       ev_tipo: '', ev_ref: '', ev_periodo: '', ev_resp: '',
-      indicador: '', probabilidad: 2, impacto: 8, actividades: [],
+      indicador: '', probabilidad: 2, impacto: 8, actividades: initialActividades,
     });
     setEditorAreaId(r ? r.area_id : areaId);
     setEditorProyectos(riesgoProyectos);
-    setEditorProyectoId(linkedProyectoId ? String(linkedProyectoId) : (riesgoProyectos[0] ? String(riesgoProyectos[0].id) : ''));
+    setEditorProyectoId(initialProyectoId);
     setEditorOpen(true);
   };
 
@@ -227,7 +262,7 @@ export default function RiesgosPage() {
       factores_externos: formData.factores_externos,
       probabilidad: Number(formData.probabilidad),
       impacto: Number(formData.impacto),
-      status: editRiesgo?.status || 'Borrador',
+      status: editRiesgo?.status || 'Captura',
       controles: formData.control ? [{
         texto: formData.control,
         estado_validacion: formData.control_estado || 'Propuesto',
@@ -237,8 +272,26 @@ export default function RiesgosPage() {
         evidencia_responsable: formData.ev_resp,
       }] : [],
       indicadores: formData.indicador ? [{ nombre: formData.indicador, tipo: 'Riesgo', periodicidad: 'Trimestral' }] : [],
-      actividades: formData.actividades,
     };
+
+    if (!editRiesgo) {
+      // Siempre toma el primer proyecto y la primera actividad de la UR
+      const targetAreaId = editorAreaId || areaId;
+      const uniqueProyectosMap = new Map();
+      actividades.filter(a => !targetAreaId || String(a.area_id) === String(targetAreaId)).forEach(a => {
+        if (a.proyecto_id !== undefined && a.proyecto_id !== null && !uniqueProyectosMap.has(String(a.proyecto_id))) {
+          uniqueProyectosMap.set(String(a.proyecto_id), true);
+        }
+      });
+      const uniqueProyectos = Array.from(uniqueProyectosMap.keys());
+      const firstProjectId = uniqueProyectos.length > 0 ? uniqueProyectos[0] : '';
+      const actividadesDelProyecto = actividades.filter(a => String(a.proyecto_id) === firstProjectId);
+      const firstActivityId = actividadesDelProyecto.length > 0 ? String(actividadesDelProyecto[0].id) : '';
+
+      payload.actividades = firstActivityId ? [firstActivityId] : [];
+    } else {
+      payload.actividades = formData.actividades;
+    }
     try {
       if (editRiesgo) {
         await axios.put(`/riesgos/${editRiesgo.id}`, payload);
@@ -275,8 +328,12 @@ export default function RiesgosPage() {
     }
   };
 
-  const confirmDelete = (id) => {
-    setRiskToDelete(id);
+  const confirmDelete = (r) => {
+    if (r.status !== 'Captura') {
+      showError('Solo se puede dar de baja un riesgo con estatus "Captura".');
+      return;
+    }
+    setRiskToDelete(r.id);
     setDeleteConfirmOpen(true);
   };
 
@@ -420,7 +477,7 @@ export default function RiesgosPage() {
                               </Tooltip>
 
                               <Tooltip title="Eliminar">
-                                <IconButton size="small" color="error" onClick={() => confirmDelete(r.id)}>
+                                <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); confirmDelete(r); }}>
                                   <Delete fontSize="small" />
                                 </IconButton>
                               </Tooltip>
@@ -540,7 +597,7 @@ export default function RiesgosPage() {
 
               return (
                 <div className="wide" style={{ marginBottom: '12px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '16px', alignItems: 'end', marginBottom: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: (!editRiesgo ? '1fr' : '120px 1fr'), gap: '16px', alignItems: 'end', marginBottom: '16px' }}>
                     <label style={{ display: 'block', fontWeight: 'bold' }}>
                       ID local
                       <input 
@@ -550,63 +607,27 @@ export default function RiesgosPage() {
                         disabled 
                       />
                     </label>
-                    <label style={{ display: 'block', fontWeight: 'bold' }}>
-                      UR
-                      <select 
-                        className="input" 
-                        style={{ width: '100%', marginTop: 5, fontWeight: 'normal', backgroundColor: (areaId || editRiesgo) ? '#f1f5f9' : '#fff' }}
-                        value={editorAreaId} 
-                        onChange={e => setEditorAreaId(e.target.value)}
-                        disabled={!!areaId || !!editRiesgo}
-                      >
-                        <option value="">Seleccione UR...</option>
-                        {areas.map((a, i) => (
-                          <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
-                            {a.nombre || a.denominacion}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    {editRiesgo && (
+                      <label style={{ display: 'block', fontWeight: 'bold' }}>
+                        UR
+                        <select 
+                          className="input" 
+                          style={{ width: '100%', marginTop: 5, fontWeight: 'normal', backgroundColor: (areaId || editRiesgo) ? '#f1f5f9' : '#fff' }}
+                          value={editorAreaId} 
+                          onChange={e => setEditorAreaId(e.target.value)}
+                          disabled={!!areaId || !!editRiesgo}
+                        >
+                          <option value="">Seleccione UR...</option>
+                          {areas.map((a, i) => (
+                            <option key={a.unidad_responsable_gasto_id || a.id_unidad || a.id || i} value={String(a.unidad_responsable_gasto_id || a.id_unidad || a.id)}>
+                              {a.nombre || a.denominacion}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
                   </div>
-
-                  {!editRiesgo && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                    <label style={{ display: 'block', fontWeight: 'bold' }}>
-                      Proyecto
-                      <select 
-                        className="input" 
-                        style={{ width: '100%', marginTop: 5, fontWeight: 'normal' }}
-                        value={editorProyectoId} 
-                        onChange={e => handleProyectoSelect(e.target.value)}
-                      >
-                        <option value="">Seleccione un proyecto...</option>
-                        {uniqueProyectos.map(p => (
-                          <option key={p.id} value={String(p.id)}>
-                            {p.clave} {p.nombre}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label style={{ display: 'block', fontWeight: 'bold' }}>
-                      Actividad Sustantiva
-                      <select 
-                        className="input" 
-                        style={{ width: '100%', marginTop: 5, fontWeight: 'normal' }}
-                        value={actividadIdSeleccionada} 
-                        onChange={e => handleActividadSeleccion(e.target.value)}
-                      >
-                        <option value="">Seleccione una actividad...</option>
-                        {actividadesDelProyecto.map(a => (
-                          <option key={String(a.id)} value={String(a.id)}>
-                            {[a.numero, a.descripcion || a.denominacion || 'Actividad'].filter(Boolean).join(' · ')}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    </div>
-                  )}
-
-                  {!editRiesgo && (
+                  {editRiesgo && (
                     <fieldset style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
                       <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas</legend>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '180px', overflowY: 'auto', paddingRight: '8px' }}>
