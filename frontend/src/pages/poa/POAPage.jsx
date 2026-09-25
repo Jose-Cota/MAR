@@ -133,10 +133,7 @@ export default function POAPage() {
                 </h2>
                 
                 <p style={{ margin: '0 0 16px', color: '#555', lineHeight: 1.5 }}>
-                  {actividades
-                    .map(a => a.descripcion || a.denominacion || a.texto)
-                    .filter(Boolean)
-                    .join('; ')}
+                  {proyecto.descripcion_proyecto || proyecto.descripcion || proyecto.objetivo || ''}
                 </p>
 
                 
@@ -195,10 +192,7 @@ export default function POAPage() {
             </h2>
             
             <p style={{ margin: '0 0 16px', color: '#555', lineHeight: 1.5 }}>
-              {actividadesTotales
-                .map(a => a.descripcion || a.denominacion || a.texto)
-                .filter(Boolean)
-                .join('; ')}
+              {areaFichas.map(p => p.descripcion_proyecto || p.descripcion || p.objetivo).filter(Boolean).join(' ')}
             </p>
             
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 8 }}>
