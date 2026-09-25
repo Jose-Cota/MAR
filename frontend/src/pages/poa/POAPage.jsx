@@ -129,7 +129,7 @@ export default function POAPage() {
             return (
               <section key={proyecto.id || pIdx} className="panel" style={{ marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '1.25rem', margin: '0 0 8px' }}>
-                  {proyecto.nombre || `Alineación técnica POA ${ejercicio} - Proyecto ${pIdx + 1}`}
+                  {(proyecto.nombre || `Alineación técnica POA ${ejercicio} - Proyecto ${pIdx + 1}`).replace(/POA \d{4}/g, 'POA')}
                 </h2>
                 
                 <p style={{ margin: '0 0 16px', color: '#555', lineHeight: 1.5 }}>
