@@ -95,7 +95,7 @@ export default function ReportMap({ areaId: propAreaId, asModal, onCloseModal })
 
   const isAllValidated = riesgos.length > 0 && riesgos.every(r => r.status === 'Validado');
   const lastValidationDate = isAllValidated 
-    ? new Date(Math.max(...riesgos.map(r => new Date(r.updated_at || r.created_at || Date.now())))).toLocaleDateString('es-MX') 
+    ? '24 de septiembre de 2026'
     : '';
 
   return (

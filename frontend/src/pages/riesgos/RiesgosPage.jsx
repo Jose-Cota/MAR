@@ -627,7 +627,7 @@ export default function RiesgosPage() {
                       </label>
                     )}
                   </div>
-                  {editRiesgo && (
+                  {false && editRiesgo && (
                     <fieldset style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', backgroundColor: '#f8fafc', marginBottom: '4px' }}>
                       <legend style={{ fontWeight: '600', color: '#1e293b', padding: '0 8px', fontSize: '0.9rem' }}>Acciones sustantivas POA vinculadas</legend>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '180px', overflowY: 'auto', paddingRight: '8px' }}>
@@ -643,7 +643,7 @@ export default function RiesgosPage() {
                       </div>
                     </fieldset>
                   )}
-                  {!editRiesgo && (
+                  {false && !editRiesgo && (
                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>Si no selecciona alguna acción, al guardar se vincularán automáticamente las acciones sustantivas del área para el ejercicio {ejercicio}.</p>
                   )}
                 </div>
