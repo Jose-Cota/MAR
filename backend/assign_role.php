@@ -1,7 +1,8 @@
-$u = App\Models\User::where('name', 'like', '%gilberto%')->first();
-if ($u) {
-    $u->assignRole('super administrador');
-    echo "Success";
+<?php
+$user = \App\Models\User::where('username', 'fernando.cortes')->first();
+if ($user) {
+    $user->assignRole('Super Administrador');
+    echo "Role assigned successfully.\n";
 } else {
-    echo "Not found";
+    echo "User not found.\n";
 }
