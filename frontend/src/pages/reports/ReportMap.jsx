@@ -94,8 +94,10 @@ export default function ReportMap({ areaId: propAreaId, asModal, onCloseModal })
   };
 
   const isAllValidated = riesgos.length > 0 && riesgos.every(r => r.status === 'Validado');
+  const today = new Date();
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
   const lastValidationDate = isAllValidated 
-    ? '24 de septiembre de 2026'
+    ? today.toLocaleDateString('es-ES', options)
     : '';
 
   return (
