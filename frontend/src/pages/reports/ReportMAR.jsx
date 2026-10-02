@@ -38,10 +38,8 @@ export default function ReportMAR({ areaId: propAreaId, asModal, onCloseModal })
   const isAllValidated = riesgos.length > 0 && riesgos.every(r => r.status === 'Validado');
   const isCaptura = riesgos.some(r => !r.status || r.status.toLowerCase().includes('captura'));
   
-  const today = new Date();
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
   const lastValidationDate = isAllValidated 
-    ? today.toLocaleDateString('es-ES', options)
+    ? '01 de octubre de 2026'
     : '';
 
   useEffect(() => {
