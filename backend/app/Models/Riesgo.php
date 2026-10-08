@@ -29,6 +29,11 @@ class Riesgo extends Model
         'last_observation',
     ];
 
+    public function area()
+    {
+        return $this->belongsTo(Area::class, 'area_id', 'area_id');
+    }
+
     public function controles()
     {
         return $this->hasMany(RiesgoControl::class, 'riesgo_id');
@@ -52,5 +57,10 @@ class Riesgo extends Model
     public function evaluaciones_trimestrales()
     {
         return $this->hasMany(RiesgoEvaluacionTrimestral::class, 'riesgo_id');
+    }
+
+    public function seguimiento_trimestral()
+    {
+        return $this->hasMany(SeguimientoTrimestral::class, 'riesgo_id');
     }
 }

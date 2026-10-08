@@ -161,6 +161,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('riesgos', RiesgoController::class);
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
     Route::apiResource('riesgos-institucionales', \App\Http\Controllers\Api\RiesgoInstitucionalController::class);
+    Route::post('seguimiento-trimestral', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'store']);
+    Route::put('seguimiento-trimestral/{id}/validar', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'validar']);
+
+    // Configuración Trimestres
+    Route::get('/configuracion-trimestres/{ur_id}/{ejercicio_id}', [\App\Http\Controllers\ConfiguracionTrimestreController::class, 'getByUR']);
+    Route::put('/configuracion-trimestres/{ur_id}/{ejercicio_id}', [\App\Http\Controllers\ConfiguracionTrimestreController::class, 'update']);
     Route::apiResource('indicadores', IndicadorController::class);
     Route::get('dimensiones', function () {
         return response()->json(DB::connection('poa_prod')->table('dimensiones')->get());

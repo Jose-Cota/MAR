@@ -8,9 +8,19 @@ use Illuminate\Http\Request;
 
 class RiesgoInstitucionalController extends Controller
 {
+    private function getInternalEjercicioId($val)
+    {
+        if ($val > 2000) {
+            $ej = \Illuminate\Support\Facades\DB::table('ejercicios')->where('ejercicio', $val)->first();
+            return $ej ? $ej->ejercicio_id : $val;
+        }
+        return $val;
+    }
+
     public function index(Request $request)
     {
-        $ejercicio_id = $request->query('ejercicio_id', 2026);
+        $val = $request->query('ejercicio_id', 2026);
+        $ejercicio_id = $this->getInternalEjercicioId($val);
         
         $riesgos = RiesgoInstitucional::with('fuentes')
             ->where('ejercicio_id', $ejercicio_id)
@@ -36,9 +46,11 @@ class RiesgoInstitucionalController extends Controller
         ]);
 
         // Determine next folio
-        $ejercicio_id = $request->input('ejercicio_id');
+        $input_ejercicio = $request->input('ejercicio_id');
+        $ejercicio_id = $this->getInternalEjercicioId($input_ejercicio);
+        
         $count = RiesgoInstitucional::where('ejercicio_id', $ejercicio_id)->count() + 1;
-        $folio = 'RI-' . $ejercicio_id . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+        $folio = 'RI-' . ($input_ejercicio > 2000 ? $input_ejercicio : 2026) . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
 
         $riesgoInstitucional = RiesgoInstitucional::create([
             'folio' => $folio,

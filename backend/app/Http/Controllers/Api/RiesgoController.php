@@ -13,7 +13,7 @@ class RiesgoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Riesgo::with(['controles', 'indicadores', 'seguimientos_mensuales', 'evaluaciones_trimestrales']);
+        $query = Riesgo::with(['controles', 'indicadores', 'seguimientos_mensuales', 'evaluaciones_trimestrales', 'seguimiento_trimestral']);
 
         if ($request->has('area_id')) {
             $query->where('area_id', $request->area_id);
@@ -49,7 +49,7 @@ class RiesgoController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'area_id' => 'required',
+            'area_id' => 'required|integer|exists:areas,area_id',
             'ejercicio_id' => 'required|integer',
             'objetivo' => 'nullable|string',
             'efectos_consecuencias' => 'nullable|string',
@@ -67,6 +67,11 @@ class RiesgoController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $respuestaEjercicioInvalido = $this->responderSiEjercicioNoExiste($request->ejercicio_id);
+        if ($respuestaEjercicioInvalido) {
+            return $respuestaEjercicioInvalido;
         }
 
         DB::beginTransaction();
@@ -124,6 +129,21 @@ class RiesgoController extends Controller
     public function update(Request $request, $id)
     {
         $riesgo = Riesgo::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'area_id' => 'sometimes|integer|exists:areas,area_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        if ($request->has('ejercicio_id')) {
+            $respuestaEjercicioInvalido = $this->responderSiEjercicioNoExiste($request->ejercicio_id);
+            if ($respuestaEjercicioInvalido) {
+                return $respuestaEjercicioInvalido;
+            }
+        }
 
         DB::beginTransaction();
         try {
@@ -203,7 +223,7 @@ class RiesgoController extends Controller
     public function batchValidate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'area_id' => 'required',
+            'area_id' => 'required|integer|exists:areas,area_id',
             'ejercicio_id' => 'required|integer',
             'risk_ids' => 'required|array'
         ]);
@@ -237,7 +257,7 @@ class RiesgoController extends Controller
     public function batchUnvalidate(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'area_id' => 'required',
+            'area_id' => 'required|integer|exists:areas,area_id',
             'ejercicio_id' => 'required|integer',
             'risk_ids' => 'required|array'
         ]);
@@ -617,6 +637,26 @@ class RiesgoController extends Controller
             }
         }
         return $val;
+    }
+
+    /**
+     * Devuelve una respuesta 422 si el ejercicio (año o id interno) no existe
+     * en la tabla ejercicios; null si es válido.
+     */
+    private function responderSiEjercicioNoExiste($valorEjercicio)
+    {
+        $ejercicioId = $this->internalEjercicioId($valorEjercicio);
+        $existe = is_numeric($ejercicioId)
+            && DB::table('ejercicios')->where('ejercicio_id', (int) $ejercicioId)->exists();
+
+        if ($existe) {
+            return null;
+        }
+
+        return response()->json(
+            ['errors' => ['ejercicio_id' => ['El ejercicio indicado no existe.']]],
+            422
+        );
     }
 
     /**

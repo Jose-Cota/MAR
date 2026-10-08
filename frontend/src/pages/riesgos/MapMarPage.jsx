@@ -9,6 +9,8 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ReportMap from '../reports/ReportMap';
 import ReportMAR from '../reports/ReportMAR';
+import ReportMapInstitucional from '../reports/ReportMapInstitucional';
+import ReportMARInstitucional from '../reports/ReportMARInstitucional';
 
 // ── Componente de modal reutilizable ────────────────────────────────────────
 function Dialog({ open, type = 'confirm', title, message, onConfirm, onCancel, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar' }) {
@@ -80,6 +82,9 @@ export default function MapMarPage() {
   const [loading, setLoading] = useState(true);
   const [showMapModal, setShowMapModal] = useState(false);
   const [showMarModal, setShowMarModal] = useState(false);
+  const [showMapInstModal, setShowMapInstModal] = useState(false);
+  const [showMarInstModal, setShowMarInstModal] = useState(false);
+  const [riesgosInst, setRiesgosInst] = useState([]);
 
   // Estado del dialog
   const [dialog, setDialog] = useState({ open: false, type: 'confirm', title: '', message: '', onConfirm: null });
@@ -116,11 +121,16 @@ export default function MapMarPage() {
   }, [areaId, ejercicio]);
 
   const fetchRiesgos = async () => {
-    if (!areaId) return;
     setLoading(true);
     try {
-      const res = await axios.get(`/riesgos?ejercicio_id=${ejercicio}&area_id=${areaId}`);
-      setRiesgos(res.data.data || res.data || []);
+      if (areaId) {
+        const res = await axios.get(`/riesgos?ejercicio_id=${ejercicio}&area_id=${areaId}`);
+        setRiesgos(res.data.data || res.data || []);
+      }
+      const resInst = await axios.get(`/riesgos-institucionales?ejercicio_id=${ejercicio}`);
+      setRiesgosInst(resInst.data.data || resInst.data || []);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -220,7 +230,7 @@ export default function MapMarPage() {
         cancelLabel={dialog.cancelLabel}
       />
 
-      <div className={showMapModal || showMarModal ? 'no-print' : ''}>
+      <div className={showMapModal || showMarModal || showMapInstModal || showMarInstModal ? 'no-print' : ''}>
         <div className="page-head">
           <div>
             <h1>MAPA y MAR</h1>
@@ -250,6 +260,15 @@ export default function MapMarPage() {
           </section>
 
           <section className="panel" style={{ padding: '24px' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz Institucional</h2>
+            <p style={{ color: '#5b6773', marginBottom: '20px' }}>Impresión del Mapa y Matriz de Administración de Riesgos a nivel Institucional.</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn primary" onClick={() => setShowMapInstModal(true)}>Mapa Institucional</button>
+              <button className="btn" onClick={() => setShowMarInstModal(true)}>MAR Institucional</button>
+            </div>
+          </section>
+
+          <section className="panel" style={{ padding: '24px' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Validación del área</h2>
 
             <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', backgroundColor: allValidated ? '#e6f4ea' : '#edf5fb', borderLeft: `4px solid ${allValidated ? '#34a853' : '#2d75b8'}` }}>
@@ -275,6 +294,14 @@ export default function MapMarPage() {
       
       {showMarModal && (
         <ReportMAR asModal={true} areaId={areaId} onCloseModal={() => setShowMarModal(false)} />
+      )}
+
+      {showMapInstModal && (
+        <ReportMapInstitucional asModal={true} onCloseModal={() => setShowMapInstModal(false)} />
+      )}
+      
+      {showMarInstModal && (
+        <ReportMARInstitucional asModal={true} onCloseModal={() => setShowMarInstModal(false)} />
       )}
     </>
   );

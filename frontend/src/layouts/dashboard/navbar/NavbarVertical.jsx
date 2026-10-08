@@ -35,26 +35,23 @@ export default function NavbarVertical() {
         <NavLink to="/controles" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <Iconify icon="ph:app-window" sx={{ width: 22, height: 22 }} /> <span>Controles e Indicadores</span>
         </NavLink>
+        {hasRole('Administrador') && (
+          <NavLink to="/consolidacion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Iconify icon="ph:diamond" sx={{ width: 22, height: 22 }} /> <span>Consolidación</span>
+          </NavLink>
+        )}
         <NavLink to="/mapmar" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <Iconify icon="ph:grid-four" sx={{ width: 22, height: 22 }} /> <span>MAPA y MAR</span>
         </NavLink>
         {isAdminOrSuperAdmin && (
           <>
-            <NavLink to="/indicadores" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Iconify icon="ph:chart-bar" sx={{ width: 22, height: 22 }} /> <span>Indicadores</span>
-            </NavLink>
+            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.15)', margin: '8px 4px' }} />
             <NavLink to="/seguimiento" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:arrow-up-right" sx={{ width: 22, height: 22 }} /> <span>Seguimiento</span>
             </NavLink>
-            <NavLink to="/reportes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Iconify icon="ph:list" sx={{ width: 22, height: 22 }} /> <span>Reportes</span>
-            </NavLink>
-            <NavLink to="/consolidacion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Iconify icon="ph:diamond" sx={{ width: 22, height: 22 }} /> <span>Consolidación</span>
-            </NavLink>
-            <NavLink to="/mapa-institucional" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Iconify icon="ph:map-trifold" sx={{ width: 22, height: 22 }} /> <span>Mapa Institucional</span>
-            </NavLink>
+            {/* <NavLink to="/reportes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:chart-bar" sx={{ width: 22, height: 22 }} /> <span>Reportes</span>
+            </NavLink> */}
           </>
         )}
 

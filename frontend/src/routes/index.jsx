@@ -35,6 +35,8 @@ import POAPage from '../pages/poa/POAPage';
 import ReportsPage from '../pages/reports/ReportsPage';
 import ReportMap from '../pages/reports/ReportMap';
 import ReportMAR from '../pages/reports/ReportMAR';
+import ReportMapInstitucional from '../pages/reports/ReportMapInstitucional';
+import ReportMARInstitucional from '../pages/reports/ReportMARInstitucional';
 import ReportAnnexA from '../pages/reports/ReportAnnexA';
 import ReportAnnexB from '../pages/reports/ReportAnnexB';
 import ReportAnnexC from '../pages/reports/ReportAnnexC';
@@ -104,6 +106,8 @@ export default function AppRoutes() {
         <Route path="reportes" element={<ReportsPage />} />
         <Route path="reportes/mapa/:areaId" element={<ReportMap />} />
         <Route path="reportes/mar/:areaId" element={<ReportMAR />} />
+        <Route path="reportes/mapa-institucional" element={<ReportMapInstitucional />} />
+        <Route path="reportes/mar-institucional" element={<ReportMARInstitucional />} />
         <Route path="reportes/anexo-a/:areaId" element={<ReportAnnexA />} />
         <Route path="reportes/anexo-b/:areaId" element={<ReportAnnexB />} />
         <Route path="reportes/anexo-c/:areaId" element={<ReportAnnexC />} />
