@@ -62,7 +62,7 @@ export default function NavbarVertical() {
             <NavLink to="/admin/usuarios" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:users" sx={{ width: 22, height: 22 }} /> <span>Usuarios y permisos</span>
             </NavLink>
-            <button 
+            {/* <button 
               onClick={async () => {
                 try {
                   const response = await axios.get('/export-db', { responseType: 'blob' });
@@ -87,13 +87,13 @@ export default function NavbarVertical() {
               className="nav-link"
             >
               <Iconify icon="ph:database-export" sx={{ width: 22, height: 22 }} /> <span>Importar BD</span>
-            </button>
+            </button> */}
           </>
         )}
       </nav>
       <div className="side-footer">
         MAR 2027<br />
-        <small>Versión 1.2 · 25 sep 2026 · 10:44 hrs</small>
+        <small>Versión 1.2 · 08 oct 2026 · 10:59 hrs</small>
       </div>
     </div>
   );
