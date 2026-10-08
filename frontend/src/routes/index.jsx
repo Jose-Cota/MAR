@@ -94,7 +94,7 @@ export default function AppRoutes() {
         <Route path="admin/catalogos/modos" element={<RoleGuard requiredPermission="Etapas"><ModosPage /></RoleGuard>} />
         <Route path="admin/usuarios" element={<UsuariosPage />} />
         <Route path="admin/roles" element={<RoleGuard requiredPermission="Roles y permisos"><RolesPage /></RoleGuard>} />
-        <Route path="admin/configuracion" element={<ConfiguracionPage />} />
+        <Route path="admin/configuracion" element={<RoleGuard requiredPermission="Administrador"><ConfiguracionPage /></RoleGuard>} />
 
         {/* MAR Routes */}
         <Route path="riesgos" element={<RiesgosPage />} />

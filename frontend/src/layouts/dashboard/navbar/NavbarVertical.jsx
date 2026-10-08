@@ -49,6 +49,9 @@ export default function NavbarVertical() {
             <NavLink to="/seguimiento" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:arrow-up-right" sx={{ width: 22, height: 22 }} /> <span>Seguimiento</span>
             </NavLink>
+            <NavLink to="/admin/configuracion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:gear" sx={{ width: 22, height: 22 }} /> <span>Configuración</span>
+            </NavLink>
             {/* <NavLink to="/reportes" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:chart-bar" sx={{ width: 22, height: 22 }} /> <span>Reportes</span>
             </NavLink> */}
@@ -61,9 +64,6 @@ export default function NavbarVertical() {
             <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.15)', margin: '8px 4px' }} />
             <NavLink to="/admin/usuarios" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:users" sx={{ width: 22, height: 22 }} /> <span>Usuarios y permisos</span>
-            </NavLink>
-            <NavLink to="/admin/configuracion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Iconify icon="ph:gear" sx={{ width: 22, height: 22 }} /> <span>Configuración</span>
             </NavLink>
             {/* <button 
               onClick={async () => {
@@ -95,8 +95,8 @@ export default function NavbarVertical() {
         )}
       </nav>
       <div className="side-footer">
-        MAR 2027<br />
-        <small>Versión 1.2 · 08 oct 2026 · 10:59 hrs</small>
+        Sistema de Administracion de Riesgos - TECDMX 2026<br />
+        <small>Versión 1.2 · 08 oct 2026 · 12:44 hrs</small>
       </div>
     </div>
   );
