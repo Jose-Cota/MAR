@@ -240,7 +240,7 @@ export default function MapMarPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
           <section className="panel" style={{ padding: '24px' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz de Administración de Riesgos</h2>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz de Administración de Riesgos de UR</h2>
             <label style={{ display: 'block', marginBottom: '20px' }}>
               <b style={{ display: 'block', marginBottom: '8px', color: '#5b6773', fontSize: '0.9rem' }}>Área / Unidad Responsable</b>
               <select className="input" value={areaId} onChange={e => setAreaId(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d8e0e8' }}>
@@ -260,15 +260,6 @@ export default function MapMarPage() {
           </section>
 
           <section className="panel" style={{ padding: '24px' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz Institucional</h2>
-            <p style={{ color: '#5b6773', marginBottom: '20px' }}>Impresión del Mapa y Matriz de Administración de Riesgos a nivel Institucional.</p>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button className="btn primary" onClick={() => setShowMapInstModal(true)}>Mapa Institucional</button>
-              <button className="btn" onClick={() => setShowMarInstModal(true)}>MAR Institucional</button>
-            </div>
-          </section>
-
-          <section className="panel" style={{ padding: '24px' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Validación del área</h2>
 
             <div style={{ marginBottom: '20px', padding: '15px', borderRadius: '8px', backgroundColor: allValidated ? '#e6f4ea' : '#edf5fb', borderLeft: `4px solid ${allValidated ? '#34a853' : '#2d75b8'}` }}>
@@ -284,6 +275,15 @@ export default function MapMarPage() {
               {isSuperAdmin && (
                 <button className="btn" onClick={handleBatchUnvalidate} style={{ backgroundColor: '#fde7e9', color: '#c62828', borderColor: '#f8bbd0' }}>Des-Validar</button>
               )}
+            </div>
+          </section>
+
+          <section className="panel" style={{ padding: '24px', gridColumn: '1 / -1' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>Mapa y Matriz Institucional</h2>
+            <p style={{ color: '#5b6773', marginBottom: '20px' }}>Impresión del Mapa y Matriz de Administración de Riesgos a nivel Institucional.</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn primary" onClick={() => setShowMapInstModal(true)}>Mapa Institucional</button>
+              <button className="btn" onClick={() => setShowMarInstModal(true)}>MAR Institucional</button>
             </div>
           </section>
         </div>

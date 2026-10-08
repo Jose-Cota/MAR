@@ -7,6 +7,7 @@ const useGlobalStore = create(
     (set) => ({
       ejercicio: 2026,
       etapasActivas: [],
+      settings: {},
       fetchEtapasActivas: async () => {
         try {
           const res = await axios.get('/etapas-activas');
@@ -14,6 +15,15 @@ const useGlobalStore = create(
         } catch (error) {
           console.error('Error fetching etapas activas', error);
           set({ etapasActivas: [] });
+        }
+      },
+      fetchSettings: async () => {
+        try {
+          const res = await axios.get('/settings');
+          set({ settings: res.data.data || {} });
+        } catch (error) {
+          console.error('Error fetching settings', error);
+          set({ settings: {} });
         }
       },
     }),

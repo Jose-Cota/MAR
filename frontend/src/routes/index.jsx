@@ -45,6 +45,7 @@ import IndicadoresPage from '../pages/indicadores/IndicadoresPage';
 import MARSeguimientoPage from '../pages/seguimiento/SeguimientoPage';
 import ConsolidacionPage from '../pages/admin/ConsolidacionPage';
 import MapaInstitucionalPage from '../pages/admin/MapaInstitucionalPage';
+import ConfiguracionPage from '../pages/admin/ConfiguracionPage';
 
 const MODULE_ROUTES = [
   { path: '/planeacion/metas', title: 'Metas e indicadores' },
@@ -93,6 +94,7 @@ export default function AppRoutes() {
         <Route path="admin/catalogos/modos" element={<RoleGuard requiredPermission="Etapas"><ModosPage /></RoleGuard>} />
         <Route path="admin/usuarios" element={<UsuariosPage />} />
         <Route path="admin/roles" element={<RoleGuard requiredPermission="Roles y permisos"><RolesPage /></RoleGuard>} />
+        <Route path="admin/configuracion" element={<ConfiguracionPage />} />
 
         {/* MAR Routes */}
         <Route path="riesgos" element={<RiesgosPage />} />

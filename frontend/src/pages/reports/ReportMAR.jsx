@@ -17,8 +17,12 @@ export default function ReportMAR({ areaId: propAreaId, asModal, onCloseModal })
   const [showModal, setShowModal] = useState(asModal || !!state?.openModal);
   const ejercicio = useGlobalStore((state) => state.ejercicio);
 
+  const settings = useGlobalStore((state) => state.settings);
+  const fetchSettings = useGlobalStore((state) => state.fetchSettings);
+
   useEffect(() => {
     fetchData();
+    fetchSettings();
   }, [areaId, ejercicio]);
 
   const fetchData = async () => {
@@ -35,11 +39,20 @@ export default function ReportMAR({ areaId: propAreaId, asModal, onCloseModal })
     }
   };
 
+  const getPrintDate = () => {
+    if (settings?.print_date_type === 'ninguna') return '';
+    if (settings?.print_date_type === 'fija' && settings?.print_fixed_date) {
+      const d = new Date(settings.print_fixed_date + 'T12:00:00Z');
+      return d.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+    }
+    return new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
   const isAllValidated = riesgos.length > 0 && riesgos.every(r => r.status === 'Validado');
   const isCaptura = riesgos.some(r => !r.status || r.status.toLowerCase().includes('captura'));
   
   const lastValidationDate = isAllValidated 
-    ? '01 de octubre de 2026'
+    ? getPrintDate()
     : '';
 
   useEffect(() => {

@@ -62,6 +62,9 @@ export default function NavbarVertical() {
             <NavLink to="/admin/usuarios" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:users" sx={{ width: 22, height: 22 }} /> <span>Usuarios y permisos</span>
             </NavLink>
+            <NavLink to="/admin/configuracion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:gear" sx={{ width: 22, height: 22 }} /> <span>Configuración</span>
+            </NavLink>
             {/* <button 
               onClick={async () => {
                 try {

@@ -161,6 +161,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('riesgos', RiesgoController::class);
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
     Route::apiResource('riesgos-institucionales', \App\Http\Controllers\Api\RiesgoInstitucionalController::class);
+    Route::get('/settings', [\App\Http\Controllers\Api\SettingController::class, 'index']);
+    Route::post('/settings', [\App\Http\Controllers\Api\SettingController::class, 'store']);
     Route::post('seguimiento-trimestral', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'store']);
     Route::put('seguimiento-trimestral/{id}/validar', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'validar']);
 
