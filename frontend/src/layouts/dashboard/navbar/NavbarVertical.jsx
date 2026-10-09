@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import Iconify from '../../../components/Iconify';
 import useAuth from '../../../hooks/useAuth';
-import axios from '../../../utils/axios';
 
 /**
  * Roles del sistema MAR:
@@ -35,10 +34,15 @@ export default function NavbarVertical() {
         <NavLink to="/controles" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <Iconify icon="ph:app-window" sx={{ width: 22, height: 22 }} /> <span>Controles e Indicadores</span>
         </NavLink>
-        {hasRole('Administrador') && (
-          <NavLink to="/consolidacion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            <Iconify icon="ph:diamond" sx={{ width: 22, height: 22 }} /> <span>Consolidación</span>
-          </NavLink>
+        {isAdminOrSuperAdmin && (
+          <>
+            <NavLink to="/consolidacion" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:diamond" sx={{ width: 22, height: 22 }} /> <span>Consolidación</span>
+            </NavLink>
+            <NavLink to="/riesgos-institucionales" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:shield-check" sx={{ width: 22, height: 22 }} /> <span>Riesgos institucionales</span>
+            </NavLink>
+          </>
         )}
         <NavLink to="/mapmar" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <Iconify icon="ph:grid-four" sx={{ width: 22, height: 22 }} /> <span>MAPA y MAR</span>
@@ -96,7 +100,7 @@ export default function NavbarVertical() {
       </nav>
       <div className="side-footer">
         Sistema de Administracion de Riesgos - TECDMX 2026<br />
-        <small>Versión 1.2 · 08 oct 2026 · 12:44 hrs</small>
+        <small>Versión 1.2 · 08 oct 2026 · 18:44 hrs</small>
       </div>
     </div>
   );

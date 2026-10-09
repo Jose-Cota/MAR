@@ -100,4 +100,33 @@ class RiesgoInstitucionalController extends Controller
             'success' => true
         ]);
     }
+
+    public function assignFuente(Request $request)
+    {
+        $request->validate([
+            'riesgo_id' => 'required|integer|exists:riesgos,id',
+            'riesgo_institucional_id' => 'nullable'
+        ]);
+
+        $riesgoId = $request->input('riesgo_id');
+        $riId = $request->input('riesgo_institucional_id');
+
+        \Illuminate\Support\Facades\DB::table('riesgo_institucional_fuente')
+            ->where('riesgo_id', $riesgoId)
+            ->delete();
+
+        if ($riId) {
+            \Illuminate\Support\Facades\DB::table('riesgo_institucional_fuente')->insert([
+                'riesgo_institucional_id' => $riId,
+                'riesgo_id' => $riesgoId,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vinculación de riesgo institucional actualizada'
+        ]);
+    }
 }

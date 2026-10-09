@@ -44,6 +44,7 @@ import ControlesPage from '../pages/controles/ControlesPage';
 import IndicadoresPage from '../pages/indicadores/IndicadoresPage';
 import MARSeguimientoPage from '../pages/seguimiento/SeguimientoPage';
 import ConsolidacionPage from '../pages/admin/ConsolidacionPage';
+import RiesgosInstitucionalesPage from '../pages/admin/RiesgosInstitucionalesPage';
 import MapaInstitucionalPage from '../pages/admin/MapaInstitucionalPage';
 import ConfiguracionPage from '../pages/admin/ConfiguracionPage';
 
@@ -117,6 +118,7 @@ export default function AppRoutes() {
         <Route path="indicadores" element={<IndicadoresPage />} />
         <Route path="seguimiento" element={<MARSeguimientoPage />} />
         <Route path="consolidacion" element={<ConsolidacionPage />} />
+        <Route path="riesgos-institucionales" element={<RiesgosInstitucionalesPage />} />
         <Route path="mapa-institucional" element={<MapaInstitucionalPage />} />
 
         {MODULE_ROUTES.map((route) => (

@@ -63,4 +63,9 @@ class Riesgo extends Model
     {
         return $this->hasMany(SeguimientoTrimestral::class, 'riesgo_id');
     }
+
+    public function riesgosInstitucionales()
+    {
+        return $this->belongsToMany(RiesgoInstitucional::class, 'riesgo_institucional_fuente', 'riesgo_id', 'riesgo_institucional_id')->withTimestamps();
+    }
 }

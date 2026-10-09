@@ -59,14 +59,17 @@ export default function ConfiguracionPage() {
   const [settings, setSettings] = useState({
     print_date_type: 'actual', // actual, fija, ninguna
     print_fixed_date: '',
-    mail_host: '',
-    mail_port: '',
-    mail_username: '',
-    mail_password: '',
-    mail_encryption: '',
-    mail_from_address: '',
-    mail_from_name: ''
+    mail_host: 'smtp.office365.com',
+    mail_port: '587',
+    mail_username: 'recursos.financieros@tecdmx.org.mx',
+    mail_password: 'F1n@nC13r0S',
+    mail_encryption: 'tls',
+    mail_from_address: 'recursos.financieros@tecdmx.org.mx',
+    mail_from_name: 'Sistema MAR TECDMX'
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [testingMail, setTestingMail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dialog, setDialog] = useState({ open: false, type: 'success', title: '', message: '' });
 
@@ -81,7 +84,17 @@ export default function ConfiguracionPage() {
     try {
       const res = await axios.get('/settings');
       if (res.data.data) {
-        setSettings(prev => ({ ...prev, ...res.data.data }));
+        setSettings(prev => ({
+          ...prev,
+          ...res.data.data,
+          mail_host: res.data.data.mail_host || prev.mail_host,
+          mail_port: res.data.data.mail_port || prev.mail_port,
+          mail_username: res.data.data.mail_username || prev.mail_username,
+          mail_password: res.data.data.mail_password || prev.mail_password,
+          mail_encryption: res.data.data.mail_encryption || prev.mail_encryption,
+          mail_from_address: res.data.data.mail_from_address || prev.mail_from_address,
+          mail_from_name: res.data.data.mail_from_name || prev.mail_from_name
+        }));
       }
     } catch (e) {
       console.error(e);
@@ -92,6 +105,23 @@ export default function ConfiguracionPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSettings(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleTestMail = async () => {
+    if (!testEmail) {
+      showDialog({ type: 'warning', title: 'Campo requerido', message: 'Por favor ingresa un correo para realizar la prueba.', onConfirm: closeDialog });
+      return;
+    }
+    setTestingMail(true);
+    try {
+      const res = await axios.post('/configuracion/mailing/test', { email: testEmail });
+      showDialog({ type: 'success', title: 'Éxito', message: res.data.message || 'Correo de prueba enviado correctamente.', onConfirm: closeDialog });
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Error al enviar correo de prueba.';
+      showDialog({ type: 'error', title: 'Error', message: msg, onConfirm: closeDialog });
+    } finally {
+      setTestingMail(false);
+    }
   };
 
   const handleSave = async () => {
@@ -220,7 +250,7 @@ export default function ConfiguracionPage() {
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
               Servidor SMTP (Host):
-              <input type="text" className="input" name="mail_host" value={settings.mail_host || ''} onChange={handleChange} placeholder="ej. smtp.gmail.com" />
+              <input type="text" className="input" name="mail_host" value={settings.mail_host || ''} onChange={handleChange} placeholder="ej. smtp.office365.com" />
             </label>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
@@ -230,17 +260,34 @@ export default function ConfiguracionPage() {
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
               Usuario:
-              <input type="text" className="input" name="mail_username" value={settings.mail_username || ''} onChange={handleChange} />
+              <input type="text" className="input" name="mail_username" value={settings.mail_username || ''} onChange={handleChange} placeholder="ej. recursos.financieros@tecdmx.org.mx" />
             </label>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
               Contraseña:
-              <input type="password" className="input" name="mail_password" value={settings.mail_password || ''} onChange={handleChange} />
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  className="input" 
+                  name="mail_password" 
+                  value={settings.mail_password || ''} 
+                  onChange={handleChange} 
+                  style={{ flex: 1 }} 
+                />
+                <button 
+                  type="button" 
+                  className="btn" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ padding: '8px 14px', fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  {showPassword ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
             </label>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
               Cifrado (Encryption):
-              <select className="input" name="mail_encryption" value={settings.mail_encryption || ''} onChange={handleChange}>
+              <select className="input" name="mail_encryption" value={settings.mail_encryption || 'tls'} onChange={handleChange}>
                 <option value="">Ninguno</option>
                 <option value="tls">TLS</option>
                 <option value="ssl">SSL</option>
@@ -249,13 +296,39 @@ export default function ConfiguracionPage() {
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
               Dirección de remitente (From Address):
-              <input type="email" className="input" name="mail_from_address" value={settings.mail_from_address || ''} onChange={handleChange} placeholder="ej. no-reply@tecdmx.org.mx" />
+              <input type="email" className="input" name="mail_from_address" value={settings.mail_from_address || ''} onChange={handleChange} placeholder="ej. recursos.financieros@tecdmx.org.mx" />
             </label>
             
             <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: 'bold' }}>
               Nombre de remitente (From Name):
               <input type="text" className="input" name="mail_from_name" value={settings.mail_from_name || ''} onChange={handleChange} placeholder="ej. Sistema MAR TECDMX" />
             </label>
+
+            <div style={{ marginTop: '15px', padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#1e293b' }}>Probar Conexión SMTP</h4>
+              <p style={{ margin: '0 0 12px 0', fontSize: '0.85rem', color: '#64748b' }}>
+                Envía un correo de prueba para verificar que la configuración sea funcional.
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="email"
+                  className="input"
+                  placeholder="ej. destinatario@tecdmx.org.mx"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={handleTestMail}
+                  disabled={testingMail}
+                  style={{ whiteSpace: 'nowrap', cursor: 'pointer' }}
+                >
+                  {testingMail ? 'Enviando...' : 'Enviar Prueba'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
