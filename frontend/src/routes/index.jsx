@@ -90,12 +90,12 @@ export default function AppRoutes() {
         <Route path="configuracion/elaboracion" element={<RoleGuard requiredPermission="Configuracion Elaboracion"><ElaboracionConfigPage /></RoleGuard>} />
         <Route path="configuracion/seguimiento" element={<RoleGuard requiredPermission="Configuracion Seguimiento"><SeguimientoConfigPage /></RoleGuard>} />
         <Route path="configuracion/anteproyecto" element={<RoleGuard requiredPermission="Configuracion Anteproyecto"><AnteproyectoConfigPage /></RoleGuard>} />
-        <Route path="configuracion/mailing" element={<RoleGuard requiredPermission="Administrador"><MailingConfigPage /></RoleGuard>} />
+        <Route path="configuracion/mailing" element={<RoleGuard allowedRoles={['Administrador', 'Super Administrador']}><MailingConfigPage /></RoleGuard>} />
 
         <Route path="admin/catalogos/modos" element={<RoleGuard requiredPermission="Etapas"><ModosPage /></RoleGuard>} />
         <Route path="admin/usuarios" element={<UsuariosPage />} />
         <Route path="admin/roles" element={<RoleGuard requiredPermission="Roles y permisos"><RolesPage /></RoleGuard>} />
-        <Route path="admin/configuracion" element={<RoleGuard requiredPermission="Administrador"><ConfiguracionPage /></RoleGuard>} />
+        <Route path="admin/configuracion" element={<RoleGuard allowedRoles={['Administrador', 'Super Administrador']}><ConfiguracionPage /></RoleGuard>} />
 
         {/* MAR Routes */}
         <Route path="riesgos" element={<RiesgosPage />} />
