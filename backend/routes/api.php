@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/settings', [\App\Http\Controllers\Api\SettingController::class, 'store']);
     Route::post('seguimiento-trimestral', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'store']);
     Route::put('seguimiento-trimestral/{id}/validar', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'validar']);
+    Route::put('seguimiento-trimestral/{id}/unvalidate', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'unvalidate']);
 
     // Configuración Trimestres
     Route::get('/configuracion-trimestres/{ur_id}/{ejercicio_id}', [\App\Http\Controllers\ConfiguracionTrimestreController::class, 'getByUR']);

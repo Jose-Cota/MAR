@@ -23,6 +23,7 @@ export default function RiesgosInstitucionalesPage() {
   const [confirmDialog, setConfirmDialog] = useState({ open: false, type: '', action: null, title: '', message: '' });
   const [newIR, setNewIR] = useState({ objective: '', risk: '', factores: '', control: '', indicador: '', probability: 0, impact: 0 });
   const [suggested, setSuggested] = useState({ probability: 0, impact: 0, quadrant: '' });
+  const [fuentesModalData, setFuentesModalData] = useState(null);
 
   const ejercicio = useGlobalStore((s) => s.ejercicio);
 
@@ -229,10 +230,33 @@ export default function RiesgosInstitucionalesPage() {
                       <td><b>{r.folio}</b></td>
                       <td>{r.riesgo}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                          {(r.fuentes || []).map(f => (
-                            <span key={f.id} className="chip">{f.local_id || f.id}</span>
-                          ))}
+                        <div style={{ fontSize: '0.85rem', color: '#0f172a', lineHeight: '1.4' }}>
+                          {Object.entries(
+                            (r.fuentes || []).reduce((acc, f) => {
+                              if (!acc[f.area_id]) acc[f.area_id] = [];
+                              acc[f.area_id].push(f);
+                              return acc;
+                            }, {})
+                          ).map(([aId, fs], idx, arr) => {
+                            const idsStr = fs.map(f => f.local_id ? (String(f.local_id).startsWith('R') ? f.local_id : `R${f.local_id}`) : `R${f.id}`);
+                            let formattedIds = idsStr[0] || '';
+                            if (idsStr.length > 1) {
+                               const last = idsStr.pop();
+                               formattedIds = idsStr.join(', ') + ' y ' + last;
+                            }
+                            return (
+                              <span key={aId}>
+                                <a 
+                                  href="#!" 
+                                  onClick={(e) => { e.preventDefault(); setFuentesModalData({ areaName: areaName(aId), fuentes: fs, riFolio: r.folio }); }} 
+                                  style={{ textDecoration: 'none', color: 'inherit' }}
+                                >
+                                  <strong>{areaName(aId)}:</strong> {formattedIds}
+                                </a>
+                                {idx < arr.length - 1 && <span style={{ margin: '0 6px', color: '#cbd5e1' }}>|</span>}
+                              </span>
+                            );
+                          })}
                         </div>
                       </td>
                       <td>{r.probabilidad} / {r.impacto}</td>
@@ -402,7 +426,7 @@ export default function RiesgosInstitucionalesPage() {
                   <button type="button" onClick={handleCancelClick} style={{ padding: '12px 24px', borderRadius: '10px', background: '#f8fafc', color: '#475569', fontWeight: '600', border: '1px solid #cbd5e1', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem' }} onMouseOver={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.borderColor = '#94a3b8'; }} onMouseOut={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#cbd5e1'; }}>
                     Cancelar
                   </button>
-                  <button type="submit" disabled={selectedIds.length === 0} style={{ padding: '12px 32px', borderRadius: '10px', background: selectedIds.length === 0 ? '#94a3b8' : '#2563eb', color: '#ffffff', fontWeight: '600', border: 'none', cursor: selectedIds.length === 0 ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: selectedIds.length === 0 ? 'none' : '0 4px 6px -1px rgba(37, 99, 235, 0.4)', fontSize: '0.95rem' }} onMouseOver={e => { if (selectedIds.length > 0) e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; }}>
+                  <button type="submit" disabled={!newIR.risk || !newIR.risk.trim()} style={{ padding: '12px 32px', borderRadius: '10px', background: (!newIR.risk || !newIR.risk.trim()) ? '#94a3b8' : '#2563eb', color: '#ffffff', fontWeight: '600', border: 'none', cursor: (!newIR.risk || !newIR.risk.trim()) ? 'not-allowed' : 'pointer', transition: 'all 0.2s', boxShadow: (!newIR.risk || !newIR.risk.trim()) ? 'none' : '0 4px 6px -1px rgba(37, 99, 235, 0.4)', fontSize: '0.95rem' }} onMouseOver={e => { if (newIR.risk && newIR.risk.trim()) e.currentTarget.style.transform = 'translateY(-1px)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; }}>
                     Guardar Cambios
                   </button>
                 </div>
@@ -445,6 +469,56 @@ export default function RiesgosInstitucionalesPage() {
               </button>
               <button onClick={confirmDialog.action} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: confirmDialog.type === 'delete' ? '#ef4444' : confirmDialog.type === 'cancel' ? '#f59e0b' : '#10b981', color: '#ffffff', fontWeight: '600', border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: confirmDialog.type === 'delete' ? '0 10px 15px -3px rgba(239, 68, 68, 0.4)' : confirmDialog.type === 'cancel' ? '0 10px 15px -3px rgba(245, 158, 11, 0.4)' : '0 10px 15px -3px rgba(16, 185, 129, 0.4)', fontSize: '1rem' }} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; }}>
                 {confirmDialog.type === 'delete' ? 'Sí, eliminar' : confirmDialog.type === 'cancel' ? 'Sí, salir' : 'Sí, validar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {fuentesModalData && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100000,
+          background: 'rgba(15, 23, 42, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', padding: '20px'
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '20px', maxWidth: '600px', width: '100%', maxHeight: '80vh',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+            animation: 'modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(to right, #f8fafc, #f1f5f9)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a', fontWeight: '700' }}>
+                Riesgos de {fuentesModalData.areaName}
+              </h3>
+              <button onClick={() => setFuentesModalData(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: '#64748b', lineHeight: 1 }}>&times;</button>
+            </div>
+            
+            <div style={{ padding: '24px', overflowY: 'auto' }}>
+              <div style={{ marginBottom: '16px', fontSize: '0.9rem', color: '#64748b' }}>
+                Riesgos fuente asociados al riesgo institucional <strong>{fuentesModalData.riFolio}</strong>.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {fuentesModalData.fuentes.map(r => {
+                  const idStr = r.local_id ? (String(r.local_id).startsWith('R') ? r.local_id : `R${r.local_id}`) : `R${r.id}`;
+                  return (
+                    <div key={r.id} style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <strong style={{ fontSize: '1rem', color: '#1e293b' }}>{idStr}</strong>
+                        <span style={{ fontSize: '0.8rem', padding: '2px 8px', background: '#e0e7ff', color: '#3730a3', borderRadius: '12px', fontWeight: '600' }}>
+                          P:{r.probabilidad} / I:{r.impacto}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.95rem', color: '#334155', lineHeight: '1.5' }}>
+                        {r.riesgo}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div style={{ padding: '16px 24px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', background: '#f8fafc' }}>
+              <button onClick={() => setFuentesModalData(null)} style={{ padding: '10px 20px', borderRadius: '8px', background: '#2563eb', color: '#ffffff', fontWeight: '600', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>
+                Cerrar
               </button>
             </div>
           </div>

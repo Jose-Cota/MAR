@@ -37,4 +37,12 @@ class SeguimientoTrimestralController extends Controller
         $seg->save();
         return response()->json($seg);
     }
+
+    public function unvalidate(Request $request, $id)
+    {
+        $seg = SeguimientoTrimestral::findOrFail($id);
+        $seg->estatus = 'Captura';
+        $seg->save();
+        return response()->json($seg);
+    }
 }

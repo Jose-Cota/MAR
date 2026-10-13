@@ -127,37 +127,35 @@ export default function SeguimientoTrimestralModal({ isOpen, onClose, onSave, ac
           </div>
 
           <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-            {[1, 2, 3].map((num, i) => (
-              <div key={num} style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)', transition: 'transform 0.2s ease', cursor: 'default' }} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                <div style={{ textAlign: 'center', fontWeight: '700', marginBottom: '12px', color: '#334155', fontSize: '1.05rem', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9', paddingBottom: '8px' }}>
-                  {meses[i]}
-                </div>
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>Numerador (N)</label>
-                  <input
-                    type="number"
-                    className="premium-input"
-                    name={`m${num}_n`}
-                    value={formData[`m${num}_n`]}
-                    onChange={handleChange}
-                    readOnly={isReadOnly}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>Denominador (D)</label>
-                  <input
-                    type="number"
-                    className="premium-input"
-                    name={`m${num}_d`}
-                    value={formData[`m${num}_d`]}
-                    onChange={handleChange}
-                    readOnly={isReadOnly}
-                    placeholder="0"
-                  />
-                </div>
+            <div style={{ flex: 1, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)', transition: 'transform 0.2s ease', cursor: 'default' }}>
+              <div style={{ textAlign: 'center', fontWeight: '700', marginBottom: '12px', color: '#334155', fontSize: '1.05rem', letterSpacing: '0.05em', textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9', paddingBottom: '8px' }}>
+                Trimestre {activeQuarter}
               </div>
-            ))}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>Numerador (N)</label>
+                <input
+                  type="number"
+                  className="premium-input"
+                  name="m1_n"
+                  value={formData.m1_n}
+                  onChange={handleChange}
+                  readOnly={isReadOnly}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>Denominador (D)</label>
+                <input
+                  type="number"
+                  className="premium-input"
+                  name="m1_d"
+                  value={formData.m1_d}
+                  onChange={handleChange}
+                  readOnly={isReadOnly}
+                  placeholder="0"
+                />
+              </div>
+            </div>
           </div>
 
           <div>

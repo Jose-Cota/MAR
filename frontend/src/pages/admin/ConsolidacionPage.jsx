@@ -352,7 +352,7 @@ export default function ConsolidacionPage() {
                         {getAreaName(r.area_id)}
                       </td>
                       <td style={{ padding: '12px 14px', color: '#1e293b', fontWeight: '600' }}>
-                        {r.local_id ? `R${r.local_id}` : `R${r.id}`}
+                        {r.local_id ? (String(r.local_id).startsWith('R') ? r.local_id : `R${r.local_id}`) : `R${r.id}`}
                       </td>
                       <td style={{ padding: '12px 14px', color: '#1e293b', lineHeight: '1.45' }}>
                         {r.riesgo}
@@ -393,7 +393,7 @@ export default function ConsolidacionPage() {
                           <option value="">-- Sin asignar --</option>
                           {riesgosInstitucionales.map(ri => (
                             <option key={ri.id} value={ri.id}>
-                              {ri.folio || `RI-${ri.id}`} {ri.riesgo}
+                              {ri.folio || `RI-${ri.id}`}
                             </option>
                           ))}
                         </select>

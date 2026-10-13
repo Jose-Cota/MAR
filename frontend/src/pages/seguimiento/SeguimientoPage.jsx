@@ -5,6 +5,7 @@ import useAuth from '../../hooks/useAuth';
 import SeguimientoTrimestralModal from './SeguimientoTrimestralModal';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import UndoIcon from '@mui/icons-material/Undo';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ConfigurarTrimestresModal from './ConfigurarTrimestresModal';
 import ConfirmValidateDialog from '../../components/ui/ConfirmValidateDialog';
@@ -37,6 +38,7 @@ export default function SeguimientoPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [validateConfirmData, setValidateConfirmData] = useState(null);
+  const [unvalidateConfirmData, setUnvalidateConfirmData] = useState(null);
   const [alertData, setAlertData] = useState({ open: false, title: '', message: '', type: 'warning' });
   const [activeRiesgo, setActiveRiesgo] = useState(null);
   const [activeQuarter, setActiveQuarter] = useState(null);
@@ -179,14 +181,9 @@ export default function SeguimientoPage() {
     }
 
     const missingFields = [];
-    const meses = MESES.slice((q - 1) * 3, q * 3);
     
-    if (evalData.m1_n === null || evalData.m1_n === '') missingFields.push(`Numerador de ${meses[0]}`);
-    if (evalData.m1_d === null || evalData.m1_d === '') missingFields.push(`Denominador de ${meses[0]}`);
-    if (evalData.m2_n === null || evalData.m2_n === '') missingFields.push(`Numerador de ${meses[1]}`);
-    if (evalData.m2_d === null || evalData.m2_d === '') missingFields.push(`Denominador de ${meses[1]}`);
-    if (evalData.m3_n === null || evalData.m3_n === '') missingFields.push(`Numerador de ${meses[2]}`);
-    if (evalData.m3_d === null || evalData.m3_d === '') missingFields.push(`Denominador de ${meses[2]}`);
+    if (evalData.m1_n === null || evalData.m1_n === '') missingFields.push(`Numerador (Trimestre ${q})`);
+    if (evalData.m1_d === null || evalData.m1_d === '') missingFields.push(`Denominador (Trimestre ${q})`);
     
     if (missingFields.length > 0) {
       setAlertData({ 
@@ -214,6 +211,27 @@ export default function SeguimientoPage() {
     } finally {
       setLoading(false);
       setValidateConfirmData(null);
+    }
+  };
+
+  const handleUnvalidarTrimestre = (r, q, evalData) => {
+    if (!evalData || !evalData.id) return;
+    setUnvalidateConfirmData({ r, q, stId: evalData.id });
+  };
+
+  const confirmUnvalidar = async () => {
+    if (!unvalidateConfirmData) return;
+    const { r, q, stId } = unvalidateConfirmData;
+    setLoading(true);
+    try {
+      const res = await axios.put(`/seguimiento-trimestral/${stId}/unvalidate`);
+      setEvaluaciones(prev => ({ ...prev, [`${r.id}_${q}`]: res.data }));
+    } catch (e) {
+      console.error(e);
+      setAlertData({ open: true, title: 'Error', message: 'Error al regresar el trimestre a captura.', type: 'error' });
+    } finally {
+      setLoading(false);
+      setUnvalidateConfirmData(null);
     }
   };
 
@@ -338,20 +356,28 @@ export default function SeguimientoPage() {
                           <CheckCircleOutlineIcon fontSize="small" style={{ fontSize: '1.1rem' }} />
                         </button>
                       )}
+                      {isValidado && (hasRole('Administrador') || hasRole('Super Administrador')) && (
+                        <button
+                          title="Des-validar (Regresar a captura)"
+                          onClick={() => handleUnvalidarTrimestre(r, trimestre, evalData)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f97316', padding: 0, margin: 0, display: 'flex', marginLeft: '4px' }}
+                        >
+                          <UndoIcon fontSize="small" style={{ fontSize: '1.1rem' }} />
+                        </button>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      {mesesSubset.map((mes, index) => {
-                        const num = index + 1;
-                        let nVal = evalData ? evalData[`m${num}_n`] : '';
-                        let dVal = evalData ? evalData[`m${num}_d`] : '';
+                      {(() => {
+                        let nVal = evalData ? evalData.m1_n : '';
+                        let dVal = evalData ? evalData.m1_d : '';
                         let rVal = '';
-                        if (nVal !== null && dVal !== null && Number(dVal) > 0) {
+                        if (nVal !== null && nVal !== '' && dVal !== null && dVal !== '' && Number(dVal) > 0) {
                            rVal = ((Number(nVal) / Number(dVal)) * 100).toFixed(1) + '%';
                         }
 
                         return (
-                          <div key={mes} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <div style={{ fontWeight: '600', textAlign: 'center', color: '#475569', fontSize: '0.8rem', textTransform: 'uppercase' }}>{mes}</div>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ fontWeight: '600', textAlign: 'center', color: '#475569', fontSize: '0.8rem', textTransform: 'uppercase' }}>Valor Trimestral</div>
                             <input
                               className="input"
                               type="text"
@@ -375,7 +401,7 @@ export default function SeguimientoPage() {
                             </output>
                           </div>
                         );
-                      })}
+                      })()}
                     </div>
                   </div>
                 );
@@ -409,6 +435,14 @@ export default function SeguimientoPage() {
         onConfirm={confirmValidar}
         title="Validar Trimestre"
         message={`¿Estás seguro de que deseas validar los datos capturados para este trimestre? Una vez validado, ya no podrá ser editado por el capturador.`}
+      />
+
+      <ConfirmValidateDialog
+        open={Boolean(unvalidateConfirmData)}
+        onClose={() => setUnvalidateConfirmData(null)}
+        onConfirm={confirmUnvalidar}
+        title="Des-validar Trimestre"
+        message={`¿Estás seguro de que deseas regresar este trimestre a estatus de Captura? Esto permitirá que el capturador modifique los datos nuevamente.`}
       />
 
       <AlertDialog 
