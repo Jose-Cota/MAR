@@ -33,7 +33,8 @@ Route::get('/health', function () {
     ]);
 });
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::get('/settings', [\App\Http\Controllers\Api\SettingController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -162,7 +163,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
     Route::post('riesgos-institucionales/assign-fuente', [\App\Http\Controllers\Api\RiesgoInstitucionalController::class, 'assignFuente']);
     Route::apiResource('riesgos-institucionales', \App\Http\Controllers\Api\RiesgoInstitucionalController::class);
-    Route::get('/settings', [\App\Http\Controllers\Api\SettingController::class, 'index']);
     Route::post('/settings', [\App\Http\Controllers\Api\SettingController::class, 'store']);
     Route::post('seguimiento-trimestral', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'store']);
     Route::put('seguimiento-trimestral/{id}/validar', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'validar']);

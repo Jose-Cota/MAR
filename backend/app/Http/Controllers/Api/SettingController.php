@@ -9,26 +9,33 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $settings = Setting::pluck('value', 'key')->toArray();
 
-        $mailingConfig = MailingConfig::first();
+        $user = $request->user('sanctum');
+        $isAdmin = $user && ($user->hasRole('Administrador') || $user->hasRole('Super Administrador'));
 
-        $defaultMailing = [
-            'mail_host' => $mailingConfig?->host ?? config('mail.mailers.smtp.host', env('MAIL_HOST', 'smtp.office365.com')),
-            'mail_port' => (string)($mailingConfig?->port ?? config('mail.mailers.smtp.port', env('MAIL_PORT', 587))),
-            'mail_username' => $mailingConfig?->username ?? config('mail.mailers.smtp.username', env('MAIL_USERNAME', 'recursos.financieros@tecdmx.org.mx')),
-            'mail_password' => $mailingConfig?->password ?? config('mail.mailers.smtp.password', env('MAIL_PASSWORD', 'F1n@nC13r0S')),
-            'mail_encryption' => $mailingConfig?->encryption ?? config('mail.mailers.smtp.encryption', env('MAIL_ENCRYPTION', 'tls')),
-            'mail_from_address' => $mailingConfig?->from_address ?? config('mail.from.address', env('MAIL_FROM_ADDRESS', 'recursos.financieros@tecdmx.org.mx')),
-            'mail_from_name' => $mailingConfig?->from_name ?? config('mail.from.name', env('MAIL_FROM_NAME', 'Sistema MAR TECDMX')),
-        ];
+        if ($isAdmin) {
+            $mailingConfig = MailingConfig::first();
 
-        foreach ($defaultMailing as $key => $defaultVal) {
-            if (empty($settings[$key])) {
-                $settings[$key] = $defaultVal;
+            $defaultMailing = [
+                'mail_host' => $mailingConfig?->host ?? config('mail.mailers.smtp.host', env('MAIL_HOST', 'smtp.office365.com')),
+                'mail_port' => (string)($mailingConfig?->port ?? config('mail.mailers.smtp.port', env('MAIL_PORT', 587))),
+                'mail_username' => $mailingConfig?->username ?? config('mail.mailers.smtp.username', env('MAIL_USERNAME', 'recursos.financieros@tecdmx.org.mx')),
+                'mail_password' => $mailingConfig?->password ?? config('mail.mailers.smtp.password', env('MAIL_PASSWORD', 'F1n@nC13r0S')),
+                'mail_encryption' => $mailingConfig?->encryption ?? config('mail.mailers.smtp.encryption', env('MAIL_ENCRYPTION', 'tls')),
+                'mail_from_address' => $mailingConfig?->from_address ?? config('mail.from.address', env('MAIL_FROM_ADDRESS', 'recursos.financieros@tecdmx.org.mx')),
+                'mail_from_name' => $mailingConfig?->from_name ?? config('mail.from.name', env('MAIL_FROM_NAME', 'Sistema MAR TECDMX')),
+            ];
+
+            foreach ($defaultMailing as $key => $defaultVal) {
+                if (empty($settings[$key])) {
+                    $settings[$key] = $defaultVal;
+                }
             }
+        } else {
+            unset($settings['mail_password'], $settings['mail_username'], $settings['mail_host'], $settings['mail_port']);
         }
 
         return response()->json([
