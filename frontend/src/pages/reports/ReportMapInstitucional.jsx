@@ -75,8 +75,7 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
       const local = r.folio || `RI-${r.id}`;
       return (
         <g className="risk-dot" key={r.id}>
-          <circle cx={x(i)} cy={y(p)} r="15" />
-          <text x={x(i)} y={y(p) + 5} textAnchor="middle" style={{fontSize: '11px'}}>{local.replace('RI-', 'R')}</text>
+          <circle cx={x(i)} cy={y(p)} r="10" />
           <title>{local} — {r.riesgo}</title>
         </g>
       );

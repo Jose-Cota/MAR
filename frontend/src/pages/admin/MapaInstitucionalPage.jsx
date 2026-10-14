@@ -91,14 +91,12 @@ export default function MapaInstitucionalPage() {
         {items.map((r) => {
           const p = Number(r.probabilidad) || 0;
           const imp = Number(r.impacto) || 0;
-          const label = isSource
-            ? String(r.local_id || r.id).replace(/^.*-R/, 'R')
-            : String(r.folio || r.id).replace(/^RI-\d{4}-?/, 'RI');
+          const label = isSource ? String(r.local_id || r.id).replace(/^.*-R/, 'R') : '';
           return (
             <g key={r.id} className="risk-dot inst-dot" tabIndex="0" role="button"
               onClick={() => { setSelectedRisk(r); setDrawerOpen(true); }}>
-              <circle cx={mapX(imp)} cy={mapY(p)} r="17" />
-              <text x={mapX(imp)} y={mapY(p) + 5} textAnchor="middle">{label}</text>
+              <circle cx={mapX(imp)} cy={mapY(p)} r={isSource ? 17 : 12} />
+              {isSource && <text x={mapX(imp)} y={mapY(p) + 5} textAnchor="middle">{label}</text>}
               <title>{r.folio || r.local_id || r.id} — {r.riesgo}</title>
             </g>
           );
