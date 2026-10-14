@@ -17,6 +17,8 @@ class RiesgoInstitucional extends Model
         'objetivo',
         'riesgo',
         'factores',
+        'control',
+        'indicador',
         'probabilidad_sugerida',
         'impacto_sugerido',
         'probabilidad',

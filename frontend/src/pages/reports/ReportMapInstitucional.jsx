@@ -5,6 +5,7 @@ import useGlobalStore from '../../stores/useGlobalStore';
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import logoTecdmx from '../../assets/logo_tecdmx.png';
 
 const quadrantFor = (p, i) => {
   p = Number(p); i = Number(i);
@@ -137,11 +138,12 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
         
         {!showModal && (
           <section className="report-sheet">
-            <div className="report-head">
-              <div>
-                <b>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
-                <span>INSTITUCIONAL</span>
-                <strong>MAPA DE RIESGOS {ejercicio}</strong>
+            <div className="report-head" style={{display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '5px solid var(--blue)', paddingBottom: '10px', marginBottom: '20px'}}>
+              <img src={logoTecdmx} alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
+              <div style={{flex: 1, textAlign: 'center'}}>
+                <b style={{display: 'block', fontSize: '1.2rem', marginBottom: '5px'}}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
+                <span style={{display: 'block', fontSize: '1.1rem', marginBottom: '5px', fontWeight: 'bold', color: '#444'}}>INSTITUCIONAL</span>
+                <strong style={{display: 'block', fontSize: '1.2rem'}}>MAPA DE RIESGOS {ejercicio}</strong>
               </div>
             </div>
             {renderSvg()}
@@ -190,11 +192,12 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
             </div>
             
             <section className="report-sheet print-area" style={{position: 'relative', border: '1px solid #ccc', padding: '40px', minHeight: '11in', backgroundColor: 'white', margin: '0 auto'}}>
-              <div className="report-head">
-                <div>
-                  <b>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
-                  <span>INSTITUCIONAL</span>
-                  <strong>MAPA DE RIESGOS {ejercicio}</strong>
+              <div className="report-head" style={{display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '5px solid var(--blue)', paddingBottom: '10px', marginBottom: '20px'}}>
+                <img src={logoTecdmx} alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
+                <div style={{flex: 1, textAlign: 'center'}}>
+                  <b style={{display: 'block', fontSize: '1.2rem', marginBottom: '5px'}}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
+                  <span style={{display: 'block', fontSize: '1.1rem', marginBottom: '5px', fontWeight: 'bold', color: '#444'}}>INSTITUCIONAL</span>
+                  <strong style={{display: 'block', fontSize: '1.2rem'}}>MAPA DE RIESGOS {ejercicio}</strong>
                 </div>
               </div>
 

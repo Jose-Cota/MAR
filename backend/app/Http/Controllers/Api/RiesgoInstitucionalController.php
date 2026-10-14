@@ -58,6 +58,8 @@ class RiesgoInstitucionalController extends Controller
             'objetivo' => $request->input('objetivo'),
             'riesgo' => $request->input('riesgo'),
             'factores' => $request->input('factores', ''),
+            'control' => $request->input('control', ''),
+            'indicador' => $request->input('indicador', ''),
             'probabilidad_sugerida' => $request->input('probabilidad_sugerida', null),
             'impacto_sugerido' => $request->input('impacto_sugerido', null),
             'probabilidad' => $request->input('probabilidad'),
@@ -67,6 +69,48 @@ class RiesgoInstitucionalController extends Controller
         ]);
 
         $riesgoInstitucional->fuentes()->attach($request->input('sourceRiskIds'));
+
+        $riesgoInstitucional->load('fuentes');
+
+        return response()->json([
+            'success' => true,
+            'data' => $riesgoInstitucional
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $riesgoInstitucional = RiesgoInstitucional::findOrFail($id);
+
+        $request->validate([
+            'objetivo' => 'nullable|string',
+            'riesgo' => 'required|string',
+            'factores' => 'nullable|string',
+            'control' => 'nullable|string',
+            'indicador' => 'nullable|string',
+            'probabilidad' => 'nullable|integer|min:1|max:10',
+            'impacto' => 'nullable|integer|min:1|max:10',
+            'justificacion_valoracion' => 'nullable|string',
+            'sourceRiskIds' => 'nullable|array',
+            'sourceRiskIds.*' => 'integer|exists:riesgos,id'
+        ]);
+
+        $riesgoInstitucional->update([
+            'objetivo' => $request->has('objetivo') ? $request->input('objetivo') : $riesgoInstitucional->objetivo,
+            'riesgo' => $request->has('riesgo') ? $request->input('riesgo') : $riesgoInstitucional->riesgo,
+            'factores' => $request->has('factores') ? $request->input('factores') : $riesgoInstitucional->factores,
+            'control' => $request->has('control') ? $request->input('control') : $riesgoInstitucional->control,
+            'indicador' => $request->has('indicador') ? $request->input('indicador') : $riesgoInstitucional->indicador,
+            'probabilidad_sugerida' => $request->has('probabilidad_sugerida') ? $request->input('probabilidad_sugerida') : $riesgoInstitucional->probabilidad_sugerida,
+            'impacto_sugerido' => $request->has('impacto_sugerido') ? $request->input('impacto_sugerido') : $riesgoInstitucional->impacto_sugerido,
+            'probabilidad' => $request->has('probabilidad') ? $request->input('probabilidad') : $riesgoInstitucional->probabilidad,
+            'impacto' => $request->has('impacto') ? $request->input('impacto') : $riesgoInstitucional->impacto,
+            'justificacion_valoracion' => $request->has('justificacion_valoracion') ? $request->input('justificacion_valoracion') : $riesgoInstitucional->justificacion_valoracion,
+        ]);
+
+        if ($request->has('sourceRiskIds')) {
+            $riesgoInstitucional->fuentes()->sync($request->input('sourceRiskIds'));
+        }
 
         $riesgoInstitucional->load('fuentes');
 

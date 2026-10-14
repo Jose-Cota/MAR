@@ -5,6 +5,7 @@ import useGlobalStore from '../../stores/useGlobalStore';
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import logoTecdmx from '../../assets/logo_tecdmx.png';
 
 export default function ReportMARInstitucional({ asModal, onCloseModal }) {
   const navigate = useNavigate();
@@ -50,21 +51,21 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
     <tbody>
       {riesgos.map(r => (
         <tr key={r.id}>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>{r.folio || r.id}</td>
+          <td style={{borderBottom: '1px solid #eee', padding: '8px', whiteSpace: 'nowrap', fontWeight: 'bold'}}>{r.folio || r.id}</td>
           <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>{r.objetivo || '—'}</td>
           <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>{r.riesgo}</td>
           <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
             {r.factores || '—'}
           </td>
           <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
-            {(r.fuentes || []).map(f => (
+            {r.control || (r.fuentes || []).map(f => (
               f.controles && f.controles.length > 0 
                 ? f.controles.map(c => c.texto || c.control || c.descripcion).filter(Boolean).join('; ')
                 : ''
             )).filter(Boolean).join(' | ') || '—'}
           </td>
           <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
-            {(r.fuentes || []).map(f => (
+            {r.indicador || (r.fuentes || []).map(f => (
               f.indicadores && f.indicadores.length > 0
                 ? f.indicadores.map(i => {
                     let formulaText = i.formula;
@@ -127,11 +128,12 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
         
         {!showModal && (
           <section className="report-sheet landscape">
-            <div className="report-head">
-              <div>
-                <b>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
-                <span>INSTITUCIONAL</span>
-                <strong>MATRIZ DE ADMINISTRACIÓN DE RIESGOS {ejercicio}</strong>
+            <div className="report-head" style={{display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '5px solid var(--blue)', paddingBottom: '10px', marginBottom: '20px'}}>
+              <img src={logoTecdmx} alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
+              <div style={{flex: 1, textAlign: 'center'}}>
+                <b style={{display: 'block', fontSize: '1.2rem', marginBottom: '5px'}}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
+                <span style={{display: 'block', fontSize: '1.1rem', marginBottom: '5px', fontWeight: 'bold', color: '#444'}}>INSTITUCIONAL</span>
+                <strong style={{display: 'block', fontSize: '1.2rem'}}>MATRIZ DE ADMINISTRACIÓN DE RIESGOS {ejercicio}</strong>
               </div>
             </div>
             
@@ -139,12 +141,12 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
               <table className="mar-table">
                 <thead>
                   <tr>
-                    <th style={{width: '6%'}}>No.</th>
+                    <th style={{width: '10%', whiteSpace: 'nowrap'}}>No.</th>
                     <th style={{width: '18%'}}>Objetivo Institucional</th>
-                    <th style={{width: '26%'}}>Riesgo Institucional</th>
-                    <th style={{width: '18%'}}>Factores de Riesgo (Fuentes)</th>
-                    <th style={{width: '16%'}}>Controles (Fuentes)</th>
-                    <th style={{width: '16%'}}>Indicadores (Fuentes)</th>
+                    <th style={{width: '24%'}}>Riesgo Institucional</th>
+                    <th style={{width: '16%'}}>Factores de Riesgo</th>
+                    <th style={{width: '16%'}}>Controles</th>
+                    <th style={{width: '16%'}}>Indicadores</th>
                   </tr>
                 </thead>
                 {renderTableBody()}
@@ -174,7 +176,7 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
             
             <section className="report-sheet landscape print-area" style={{position: 'relative', border: '1px solid #ccc', padding: '40px', minHeight: '8.5in', backgroundColor: 'white', margin: '0 auto'}}>
               <div className="report-head" style={{display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '5px solid var(--blue)', paddingBottom: '10px', marginBottom: '20px'}}>
-                <img src="/logo_tecdmx.png" alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
+                <img src={logoTecdmx} alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
                 <div style={{flex: 1, textAlign: 'center'}}>
                   <b style={{display: 'block', fontSize: '1.2rem', marginBottom: '5px'}}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
                   <span style={{display: 'block', fontSize: '1.1rem', marginBottom: '5px', fontWeight: 'bold', color: '#444'}}>INSTITUCIONAL</span>
@@ -186,12 +188,12 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
                 <table className="mar-table">
                   <thead>
                     <tr>
-                      <th style={{width: '6%'}}>No.</th>
+                      <th style={{width: '10%', whiteSpace: 'nowrap'}}>No.</th>
                       <th style={{width: '18%'}}>Objetivo Institucional</th>
-                      <th style={{width: '26%'}}>Riesgo Institucional</th>
-                      <th style={{width: '18%'}}>Factores de Riesgo (Fuentes)</th>
-                      <th style={{width: '16%'}}>Controles (Fuentes)</th>
-                      <th style={{width: '16%'}}>Indicadores (Fuentes)</th>
+                      <th style={{width: '24%'}}>Riesgo Institucional</th>
+                      <th style={{width: '16%'}}>Factores de Riesgo</th>
+                      <th style={{width: '16%'}}>Controles</th>
+                      <th style={{width: '16%'}}>Indicadores</th>
                     </tr>
                   </thead>
                   {renderTableBody()}

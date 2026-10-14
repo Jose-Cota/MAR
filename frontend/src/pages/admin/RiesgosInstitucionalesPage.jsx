@@ -137,7 +137,7 @@ export default function RiesgosInstitucionalesPage() {
         probabilidad: newIR.probability,
         impacto: newIR.impact,
         sourceRiskIds: selectedIds,
-        factores: riesgosBase.filter(r => selectedIds.includes(r.id)).map(x => x.factores).filter(Boolean).join('; ')
+        factores: newIR.factores || riesgosBase.filter(r => selectedIds.includes(r.id)).map(x => x.factores).filter(Boolean).join('; ')
       };
 
       if (editId) {
