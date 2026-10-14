@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { Snackbar, Alert } from '@mui/material';
 import Iconify from '../../../components/Iconify';
 import useAuth from '../../../hooks/useAuth';
+import axios from '../../../utils/axios';
 
 /**
  * Roles del sistema MAR:
@@ -11,9 +14,47 @@ import useAuth from '../../../hooks/useAuth';
  */
 export default function NavbarVertical() {
   const { hasRole } = useAuth();
+  const [isExporting, setIsExporting] = useState(false);
+  const [feedback, setFeedback] = useState({ open: false, message: '', severity: 'info' });
 
   const isSuperAdmin = hasRole('Super Administrador') || hasRole('superadmin') || hasRole('Superadmin');
   const isAdminOrSuperAdmin = isSuperAdmin || hasRole('Administrador') || hasRole('admin') || hasRole('Admin');
+
+  const handleExportDb = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    setFeedback({
+      open: true,
+      message: 'Generando respaldo completo de la base de datos (estructura y datos)...',
+      severity: 'info',
+    });
+    try {
+      const response = await axios.get('/export-db', { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Respaldo_MAR_TECDMX_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      setFeedback({
+        open: true,
+        message: 'Base de datos exportada exitosamente a JSON.',
+        severity: 'success',
+      });
+    } catch {
+      setFeedback({
+        open: true,
+        message: 'Hubo un error al exportar la base de datos.',
+        severity: 'error',
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="sidebar">
@@ -69,38 +110,49 @@ export default function NavbarVertical() {
             <NavLink to="/admin/usuarios" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:users" sx={{ width: 22, height: 22 }} /> <span>Usuarios y permisos</span>
             </NavLink>
-            {/* <button 
-              onClick={async () => {
-                try {
-                  const response = await axios.get('/export-db', { responseType: 'blob' });
-                  const blob = new Blob([response.data], { type: 'application/json' });
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `Respaldo_MAR_TECDMX_${new Date().toISOString().split('T')[0]}.json`;
-                  document.body.appendChild(a);
-                  a.click();
-                  a.remove();
-                  window.URL.revokeObjectURL(url);
-                } catch (error) {
-                  console.error('Error:', error);
-                  alert('Hubo un error al exportar la base de datos.');
-                }
-              }}
+            <button 
+              type="button"
+              onClick={handleExportDb}
+              disabled={isExporting}
               style={{
-                background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
-                fontFamily: 'inherit', fontSize: 'inherit', color: 'inherit'
+                background: 'none',
+                border: 'none',
+                cursor: isExporting ? 'wait' : 'pointer',
+                textAlign: 'left',
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+                color: 'inherit',
+                width: '100%',
+                opacity: isExporting ? 0.7 : 1,
               }}
               className="nav-link"
+              title="Exportar base de datos completa a JSON"
             >
-              <Iconify icon="ph:database-export" sx={{ width: 22, height: 22 }} /> <span>Importar BD</span>
-            </button> */}
+              <Iconify icon={isExporting ? 'eos-icons:loading' : 'ph:database'} sx={{ width: 22, height: 22 }} />
+              <span>{isExporting ? 'Exportando BD...' : 'Exportar BD'}</span>
+            </button>
           </>
         )}
       </nav>
+
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={5000}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+          severity={feedback.severity}
+          variant="filled"
+          sx={{ width: '100%', boxShadow: 3 }}
+        >
+          {feedback.message}
+        </Alert>
+      </Snackbar>
       <div className="side-footer">
         Sistema de Administracion de Riesgos - TECDMX 2026<br />
-        <small>Versión 1.2 · 14 oct 2026 · 10:42 hrs</small>
+        <small>Versión 1.2 · 14 oct 2026 · 12:45 hrs</small>
       </div>
     </div>
   );

@@ -47,46 +47,103 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
     };
   }, []);
 
-  const renderTableBody = () => (
-    <tbody>
-      {riesgos.map(r => (
-        <tr key={r.id}>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px', whiteSpace: 'nowrap', fontWeight: 'bold'}}>{r.folio || r.id}</td>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>{r.objetivo || '—'}</td>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>{r.riesgo}</td>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
-            {r.factores || '—'}
-          </td>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
-            {r.control || (r.fuentes || []).map(f => (
-              f.controles && f.controles.length > 0 
-                ? f.controles.map(c => c.texto || c.control || c.descripcion).filter(Boolean).join('; ')
-                : ''
-            )).filter(Boolean).join(' | ') || '—'}
-          </td>
-          <td style={{borderBottom: '1px solid #eee', padding: '8px'}}>
-            {r.indicador || (r.fuentes || []).map(f => (
-              f.indicadores && f.indicadores.length > 0
-                ? f.indicadores.map(i => {
-                    let formulaText = i.formula;
-                    if (!formulaText || formulaText === 'Resultado = (N / D) × 100') {
-                      formulaText = (i.numerador && i.denominador) 
-                        ? `Resultado = (${i.numerador} / ${i.denominador}) × 100` 
-                        : i.nombre || '';
-                    }
-                    return formulaText;
-                  }).filter(Boolean).join('; ')
-                : ''
-            )).filter(Boolean).join(' | ') || '—'}
-          </td>
-        </tr>
-      ))}
-      {riesgos.length === 0 && (
-        <tr>
-          <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No hay riesgos institucionales validados en este ejercicio.</td>
-        </tr>
-      )}
-    </tbody>
+  const renderTable = () => (
+    <section 
+      className="report-sheet landscape print-area"
+      style={{
+        position: 'relative',
+        border: '1px solid #ccc',
+        padding: '30px 1cm',
+        backgroundColor: 'white',
+        margin: '0 auto',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div className="table-responsive" style={{ overflow: 'visible' }}>
+        <table className="mar-table" style={{ width: '100%', borderCollapse: 'collapse', display: 'table' }}>
+          <thead>
+            {/* Encabezado del reporte: se repite automáticamente en cada hoja */}
+            <tr>
+              <th colSpan="6" style={{ border: 'none', background: '#ffffff', padding: '0 0 14px 0', fontWeight: 'normal' }}>
+                <div className="report-head" style={{ display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '4px solid var(--blue)', paddingBottom: '10px', marginBottom: '8px' }}>
+                  <img src={logoTecdmx} alt="TECDMX" style={{ width: '140px', height: 'auto', objectFit: 'contain' }} />
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <b style={{ display: 'block', fontSize: '1.15rem', marginBottom: '3px', color: '#092e55' }}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
+                    <span style={{ display: 'block', fontSize: '1rem', marginBottom: '3px', fontWeight: 'bold', color: '#1f4e78' }}>INSTITUCIONAL</span>
+                    <strong style={{ display: 'block', fontSize: '1.15rem', color: '#17324d' }}>MATRIZ DE ADMINISTRACIÓN DE RIESGOS {ejercicio}</strong>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'right', minWidth: '130px' }}>
+                    {getPrintDate() && (
+                      <>
+                        Fecha de emisión:<br />
+                        <strong style={{ color: '#17324d' }}>{getPrintDate()}</strong>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </th>
+            </tr>
+            {/* Encabezado de columnas: se repite automáticamente en cada hoja */}
+            <tr style={{ background: '#0b3a63' }}>
+              <th style={{ width: '8%', whiteSpace: 'nowrap', textAlign: 'center', verticalAlign: 'middle', color: '#ffffff', fontWeight: 'bold' }}>No.</th>
+              <th style={{ width: '18%', textAlign: 'center', verticalAlign: 'middle', color: '#ffffff', fontWeight: 'bold' }}>Objetivo Institucional</th>
+              <th style={{ width: '26%', textAlign: 'center', verticalAlign: 'middle', color: '#ffffff', fontWeight: 'bold' }}>Riesgo Institucional</th>
+              <th style={{ width: '16%', textAlign: 'center', verticalAlign: 'middle', color: '#ffffff', fontWeight: 'bold' }}>Factores de Riesgo</th>
+              <th style={{ width: '16%', textAlign: 'center', verticalAlign: 'middle', color: '#ffffff', fontWeight: 'bold' }}>Controles</th>
+              <th style={{ width: '16%', textAlign: 'center', verticalAlign: 'middle', color: '#ffffff', fontWeight: 'bold' }}>Indicadores</th>
+            </tr>
+          </thead>
+          <tbody>
+            {riesgos.map((r) => (
+              <tr key={r.id} style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <td style={{ borderBottom: '1px solid #eee', padding: '10px 8px', whiteSpace: 'nowrap', fontWeight: 'bold', verticalAlign: 'top' }}>{r.folio || r.id}</td>
+                <td style={{ borderBottom: '1px solid #eee', padding: '10px 8px', textAlign: 'justify', verticalAlign: 'top', lineHeight: '1.45' }}>{r.objetivo || '—'}</td>
+                <td style={{ borderBottom: '1px solid #eee', padding: '10px 8px', textAlign: 'justify', verticalAlign: 'top', lineHeight: '1.45' }}>{r.riesgo}</td>
+                <td style={{ borderBottom: '1px solid #eee', padding: '10px 8px', textAlign: 'justify', verticalAlign: 'top', lineHeight: '1.45' }}>
+                  {r.factores || '—'}
+                </td>
+                <td style={{ borderBottom: '1px solid #eee', padding: '10px 8px', textAlign: 'justify', verticalAlign: 'top', lineHeight: '1.45' }}>
+                  {r.control || (r.fuentes || []).map(f => (
+                    f.controles && f.controles.length > 0 
+                      ? f.controles.map(c => c.texto || c.control || c.descripcion).filter(Boolean).join('; ')
+                      : ''
+                  )).filter(Boolean).join(' | ') || '—'}
+                </td>
+                <td style={{ borderBottom: '1px solid #eee', padding: '10px 8px', textAlign: 'justify', verticalAlign: 'top', lineHeight: '1.45' }}>
+                  {r.indicador || (r.fuentes || []).map(f => (
+                    f.indicadores && f.indicadores.length > 0
+                      ? f.indicadores.map(i => {
+                          let formulaText = i.formula;
+                          if (!formulaText || formulaText === 'Resultado = (N / D) × 100') {
+                            formulaText = (i.numerador && i.denominador) 
+                              ? `Resultado = (${i.numerador} / ${i.denominador}) × 100` 
+                              : i.nombre || '';
+                          }
+                          return formulaText;
+                        }).filter(Boolean).join('; ')
+                      : ''
+                  )).filter(Boolean).join(' | ') || '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Firmas al final del reporte */}
+      <div style={{ marginTop: '45px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center', pageBreakInside: 'avoid' }}>
+          <div>
+            <div style={{ borderBottom: '1px solid black', width: '250px', height: '35px', margin: '0 auto 10px' }}></div>
+            <b>Secretario Técnico del CARCI</b>
+          </div>
+          <div>
+            <div style={{ borderBottom: '1px solid black', width: '250px', height: '35px', margin: '0 auto 10px' }}></div>
+            <b>Presidente del CARCI</b>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 
   return (
@@ -94,19 +151,32 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
       <style>
         {`
           @media print {
-            @page { size: letter landscape; margin: 5mm; }
+            @page { size: letter landscape; margin: 1cm; }
             .modal-overlay { position: static !important; padding: 0 !important; background: transparent !important; }
-            .modal-content { padding: 0 !important; border: none !important; max-width: 100% !important; }
-            .print-area { padding: 0 !important; border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; min-height: auto !important; margin: 0 !important; }
+            .modal-content { padding: 0 !important; border: none !important; max-width: 100% !important; box-shadow: none !important; }
+            .print-area { padding: 0 !important; border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; }
+            .mar-table { width: 100% !important; border-collapse: collapse !important; display: table !important; }
+            .mar-table thead { display: table-header-group !important; }
+            .mar-table thead tr:last-child th {
+              background-color: #0b3a63 !important;
+              color: #ffffff !important;
+              font-weight: bold !important;
+              text-align: center !important;
+              vertical-align: middle !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .mar-table tbody { display: table-row-group !important; }
+            .mar-table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+            .mar-table td, .mar-table th { page-break-inside: avoid !important; break-inside: avoid !important; }
             body { overflow: visible !important; }
             .main-content { display: none !important; }
-            .mar-table { font-size: 10px !important; }
+            .mar-table { font-size: 11px !important; }
           }
           @media screen {
             .print-area {
               width: 100%;
               margin: 0 auto;
-              box-shadow: 0 0 10px rgba(0,0,0,0.15);
             }
           }
         `}
@@ -114,46 +184,29 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
 
       {!asModal && (
         <div className={`main-content ${showModal ? 'no-print' : ''}`}>
-        <div className="page-head no-print">
-          <div>
-            <h1>MAR Institucional imprimible</h1>
-            <p>Institucional · {ejercicio}</p>
-          </div>
-          <div>
-            <button className="btn" onClick={() => navigate('/mapmar')}>Volver</button>
-            {' '}
-            <button className="btn primary" onClick={() => setShowModal(true)}>Imprimir / PDF</button>
-          </div>
-        </div>
-        
-        {!showModal && (
-          <section className="report-sheet landscape">
-            <div className="report-head" style={{display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '5px solid var(--blue)', paddingBottom: '10px', marginBottom: '20px'}}>
-              <img src={logoTecdmx} alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
-              <div style={{flex: 1, textAlign: 'center'}}>
-                <b style={{display: 'block', fontSize: '1.2rem', marginBottom: '5px'}}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
-                <span style={{display: 'block', fontSize: '1.1rem', marginBottom: '5px', fontWeight: 'bold', color: '#444'}}>INSTITUCIONAL</span>
-                <strong style={{display: 'block', fontSize: '1.2rem'}}>MATRIZ DE ADMINISTRACIÓN DE RIESGOS {ejercicio}</strong>
-              </div>
+          <div className="page-head no-print">
+            <div>
+              <h1>MAR Institucional imprimible</h1>
+              <p>Institucional · {ejercicio}</p>
             </div>
-            
-            <div className="table-responsive">
-              <table className="mar-table">
-                <thead>
-                  <tr>
-                    <th style={{width: '10%', whiteSpace: 'nowrap'}}>No.</th>
-                    <th style={{width: '18%'}}>Objetivo Institucional</th>
-                    <th style={{width: '24%'}}>Riesgo Institucional</th>
-                    <th style={{width: '16%'}}>Factores de Riesgo</th>
-                    <th style={{width: '16%'}}>Controles</th>
-                    <th style={{width: '16%'}}>Indicadores</th>
-                  </tr>
-                </thead>
-                {renderTableBody()}
-              </table>
+            <div>
+              <button className="btn" onClick={() => navigate('/mapmar')}>Volver</button>
+              {' '}
+              <button className="btn primary" onClick={() => setShowModal(true)}>Imprimir / PDF</button>
             </div>
-          </section>
-        )}
+          </div>
+          
+          {!showModal && (
+            <div>
+              {riesgos.length > 0 ? (
+                renderTable()
+              ) : (
+                <section className="report-sheet landscape" style={{textAlign: 'center', padding: '40px'}}>
+                  No hay riesgos institucionales validados en este ejercicio.
+                </section>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -174,48 +227,15 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
               </div>
             </div>
             
-            <section className="report-sheet landscape print-area" style={{position: 'relative', border: '1px solid #ccc', padding: '40px', minHeight: '8.5in', backgroundColor: 'white', margin: '0 auto'}}>
-              <div className="report-head" style={{display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '5px solid var(--blue)', paddingBottom: '10px', marginBottom: '20px'}}>
-                <img src={logoTecdmx} alt="TECDMX" style={{width: '160px', height: 'auto', objectFit: 'contain'}} />
-                <div style={{flex: 1, textAlign: 'center'}}>
-                  <b style={{display: 'block', fontSize: '1.2rem', marginBottom: '5px'}}>TRIBUNAL ELECTORAL DE LA CIUDAD DE MÉXICO</b>
-                  <span style={{display: 'block', fontSize: '1.1rem', marginBottom: '5px', fontWeight: 'bold', color: '#444'}}>INSTITUCIONAL</span>
-                  <strong style={{display: 'block', fontSize: '1.2rem'}}>MATRIZ DE ADMINISTRACIÓN DE RIESGOS {ejercicio}</strong>
-                </div>
-              </div>
-              
-              <div className="table-responsive">
-                <table className="mar-table">
-                  <thead>
-                    <tr>
-                      <th style={{width: '10%', whiteSpace: 'nowrap'}}>No.</th>
-                      <th style={{width: '18%'}}>Objetivo Institucional</th>
-                      <th style={{width: '24%'}}>Riesgo Institucional</th>
-                      <th style={{width: '16%'}}>Factores de Riesgo</th>
-                      <th style={{width: '16%'}}>Controles</th>
-                      <th style={{width: '16%'}}>Indicadores</th>
-                    </tr>
-                  </thead>
-                  {renderTableBody()}
-                </table>
-              </div>
-
-              <div style={{marginTop: '80px', display: 'flex', justifyContent: 'space-around', textAlign: 'center', pageBreakInside: 'avoid', position: 'relative', zIndex: 20}}>
-                <div>
-                  <div style={{borderBottom: '1px solid black', width: '250px', height: '40px', margin: '0 auto 10px'}}></div>
-                  <b>Magistrado Presidente</b>
-                </div>
-                <div>
-                  <div style={{borderBottom: '1px solid black', width: '250px', height: '40px', margin: '0 auto 10px'}}></div>
-                  <b>Contralor Interno</b>
-                </div>
-              </div>
-              
-              <p style={{textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c'}}>
-                {getPrintDate() && `Fecha de emisión: ${getPrintDate()}`}
-              </p>
-
-            </section>
+            <div className="print-area">
+              {riesgos.length > 0 ? (
+                renderTable()
+              ) : (
+                <section className="report-sheet landscape" style={{textAlign: 'center', padding: '40px'}}>
+                  No hay riesgos institucionales validados en este ejercicio.
+                </section>
+              )}
+            </div>
           </div>
         </div>
       )}

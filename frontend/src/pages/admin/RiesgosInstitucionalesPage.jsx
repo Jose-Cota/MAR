@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from '../../utils/axios';
 import useGlobalStore from '../../stores/useGlobalStore';
+import Iconify from '../../components/Iconify';
+import logoTecdmx from '../../assets/logo_tecdmx.png';
 
 const cuadrante = (p, i) => {
   p = Number(p); i = Number(i);
@@ -24,6 +26,7 @@ export default function RiesgosInstitucionalesPage() {
   const [newIR, setNewIR] = useState({ objective: '', risk: '', factores: '', control: '', indicador: '', probability: 0, impact: 0 });
   const [suggested, setSuggested] = useState({ probability: 0, impact: 0, quadrant: '' });
   const [fuentesModalData, setFuentesModalData] = useState(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
   const ejercicio = useGlobalStore((s) => s.ejercicio);
 
@@ -207,7 +210,32 @@ export default function RiesgosInstitucionalesPage() {
       </div>
 
       <section className="panel" style={{ padding: '24px' }}>
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#17324d' }}>MAR Institucional</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#17324d' }}>MAR Institucional</h2>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => setPreviewModalOpen(true)}
+            title="Vista preliminar para impresión"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '6px',
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              color: '#1e293b',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              transition: 'all 0.2s',
+            }}
+          >
+            <Iconify icon="ph:printer" sx={{ width: 18, height: 18 }} />
+            <span>Imprimir</span>
+          </button>
+        </div>
         <div style={{ overflowX: 'auto' }}>
           <table>
             <thead>
@@ -228,9 +256,9 @@ export default function RiesgosInstitucionalesPage() {
                   return (
                     <tr key={r.id}>
                       <td><b>{r.folio}</b></td>
-                      <td>{r.riesgo}</td>
-                      <td>
-                        <div style={{ fontSize: '0.85rem', color: '#0f172a', lineHeight: '1.4' }}>
+                      <td style={{ textAlign: 'justify', lineHeight: '1.45' }}>{r.riesgo}</td>
+                      <td style={{ textAlign: 'justify' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#0f172a', lineHeight: '1.4', textAlign: 'justify' }}>
                           {Object.entries(
                             (r.fuentes || []).reduce((acc, f) => {
                               if (!acc[f.area_id]) acc[f.area_id] = [];
@@ -520,6 +548,352 @@ export default function RiesgosInstitucionalesPage() {
               <button onClick={() => setFuentesModalData(null)} style={{ padding: '10px 20px', borderRadius: '8px', background: '#2563eb', color: '#ffffff', fontWeight: '600', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>
                 Cerrar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Vista Preliminar (sin columna Acciones) */}
+      {previewModalOpen && (
+        <div
+          className="modal-overlay preview-modal-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            overflowY: 'auto',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPreviewModalOpen(false);
+          }}
+        >
+          <div
+            className="preview-modal-box"
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '1100px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header del modal */}
+            <div
+              className="no-print"
+              style={{
+                padding: '16px 24px',
+                borderBottom: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: '#f8fafc',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Iconify icon="ph:eye" sx={{ width: 22, height: 22, color: '#1e293b' }} />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 600, color: '#0f172a' }}>
+                  Vista preliminar
+                </h3>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                  }}
+                  title="Imprimir"
+                >
+                  <Iconify icon="ph:printer" sx={{ width: 18, height: 18 }} />
+                  <span>Imprimir</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewModalOpen(false)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    color: '#64748b',
+                    cursor: 'pointer',
+                  }}
+                  title="Cerrar"
+                >
+                  <Iconify icon="ph:x" sx={{ width: 20, height: 20 }} />
+                </button>
+              </div>
+            </div>
+
+            {/* Hoja imprimible */}
+            <div
+              id="vista-preliminar-mar-print"
+              style={{
+                padding: '30px 1cm',
+                overflowY: 'auto',
+                flex: 1,
+                background: '#ffffff',
+              }}
+            >
+              <style>{`
+                @media print {
+                  /* 1. Ocultar todos los elementos de la interfaz excepto la vista preliminar */
+                  .topbar, .sidebar, .page-head, .notice, section.panel, .drawer, .side-footer, nav, aside, header, .no-print {
+                    display: none !important;
+                  }
+
+                  /* 2. Resetear body y html para paginación normal sin scroll ni overflow */
+                  html, body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: #ffffff !important;
+                    height: auto !important;
+                    min-height: auto !important;
+                    overflow: visible !important;
+                  }
+
+                  /* 3. Modal overlay a flujo estático en impresión */
+                  .preview-modal-overlay {
+                    position: static !important;
+                    display: block !important;
+                    background: transparent !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    overflow: visible !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    inset: auto !important;
+                    z-index: auto !important;
+                    backdrop-filter: none !important;
+                  }
+
+                  /* 4. Caja del modal sin sombras, bordes ni límites de altura */
+                  .preview-modal-box {
+                    position: static !important;
+                    display: block !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    max-width: 100% !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    max-height: none !important;
+                    overflow: visible !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    background: #ffffff !important;
+                  }
+
+                  /* 5. Contenedor de impresión */
+                  #vista-preliminar-mar-print {
+                    position: static !important;
+                    display: block !important;
+                    width: 100% !important;
+                    height: auto !important;
+                    max-height: none !important;
+                    overflow: visible !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    background: #ffffff !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                  }
+
+                  /* 6. Tabla continua con encabezados repetidos en cada página */
+                  .print-table {
+                    width: 100% !important;
+                    border-collapse: collapse !important;
+                    display: table !important;
+                  }
+
+                  .print-table thead {
+                    display: table-header-group !important;
+                  }
+
+                  .print-table tbody {
+                    display: table-row-group !important;
+                  }
+
+                  /* 7. Evitar que un renglón se corte: se pasa completo a la siguiente página */
+                  .print-table tr {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                    page-break-after: auto !important;
+                    break-after: auto !important;
+                  }
+
+                  .print-table td, .print-table th {
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                  }
+
+                  .no-print {
+                    display: none !important;
+                  }
+
+                  @page {
+                    size: landscape;
+                    margin: 1cm;
+                  }
+
+                  .print-table thead tr:last-child th {
+                    background-color: #0b3a63 !important;
+                    color: #ffffff !important;
+                    font-weight: bold !important;
+                    text-align: center !important;
+                    vertical-align: middle !important;
+                  }
+                }
+              `}</style>
+
+              {/* Tabla continua: encabezado del reporte y de la tabla en thead (se repite en cada página) */}
+              <div style={{ overflowX: 'auto' }}>
+                <table className="print-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                  <thead>
+                    {/* Fila 1: Encabezado del reporte (se repite en todas las hojas automáticamente) */}
+                    <tr>
+                      <th
+                        colSpan="5"
+                        style={{
+                          padding: '0 0 14px 0',
+                          border: 'none',
+                          background: '#ffffff',
+                          fontWeight: 'normal',
+                        }}
+                      >
+                        <div
+                          className="report-header-print"
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderBottom: '3px solid #0b3a63',
+                            paddingBottom: '12px',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                            <img src={logoTecdmx} alt="TECDMX" style={{ width: '135px', height: 'auto', objectFit: 'contain' }} />
+                            <div>
+                              <h2 style={{ margin: '0 0 3px 0', fontSize: '1.05rem', color: '#0b3a63', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Tribunal Electoral de la Ciudad de México
+                              </h2>
+                              <h3 style={{ margin: '0 0 3px 0', fontSize: '1rem', color: '#1e293b', fontWeight: 700 }}>
+                                MAR Institucional — Ejercicio {ejercicio}
+                              </h3>
+                              <p style={{ margin: 0, fontSize: '0.825rem', color: '#64748b' }}>
+                                Trazabilidad de MAR Institucional con Riesgos fuente por UR
+                              </p>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'right', minWidth: '130px' }}>
+                            Fecha de emisión:<br />
+                            <strong style={{ color: '#1e293b' }}>{new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+                          </div>
+                        </div>
+                      </th>
+                    </tr>
+
+                    {/* Fila 2: Encabezado de la tabla (se repite en todas las hojas automáticamente) */}
+                    <tr style={{ background: '#0b3a63', borderBottom: '2px solid #092e55' }}>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '10%', color: '#ffffff', fontWeight: 'bold' }}>ID</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '42%', color: '#ffffff', fontWeight: 'bold' }}>Riesgo institucional</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '30%', color: '#ffffff', fontWeight: 'bold' }}>Fuentes</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '10%', color: '#ffffff', fontWeight: 'bold' }}>P/I institucional</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '8%', color: '#ffffff', fontWeight: 'bold' }}>Cuadrante</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {riesgosInstitucionales.length > 0 ? (
+                      riesgosInstitucionales.map((r) => (
+                        <tr
+                          key={r.id}
+                          style={{
+                            borderBottom: '1px solid #e2e8f0',
+                            pageBreakInside: 'avoid',
+                            breakInside: 'avoid',
+                          }}
+                        >
+                          <td style={{ padding: '12px', fontWeight: 'bold', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                            {r.folio}
+                          </td>
+                          <td style={{ padding: '12px', verticalAlign: 'top', textAlign: 'justify', lineHeight: '1.5' }}>
+                            {r.riesgo}
+                          </td>
+                          <td style={{ padding: '12px', verticalAlign: 'top', fontSize: '0.85rem', textAlign: 'justify', lineHeight: '1.5' }}>
+                            {Object.entries(
+                              (r.fuentes || []).reduce((acc, f) => {
+                                if (!acc[f.area_id]) acc[f.area_id] = [];
+                                acc[f.area_id].push(f);
+                                return acc;
+                              }, {})
+                            ).map(([aId, fs], idx, arr) => {
+                              const idsStr = fs.map((f) =>
+                                f.local_id
+                                  ? String(f.local_id).startsWith('R')
+                                    ? f.local_id
+                                    : `R${f.local_id}`
+                                  : `R${f.id}`
+                              );
+                              let formattedIds = idsStr[0] || '';
+                              if (idsStr.length > 1) {
+                                const last = idsStr.pop();
+                                formattedIds = idsStr.join(', ') + ' y ' + last;
+                              }
+                              return (
+                                <span key={aId}>
+                                  <strong>{areaName(aId)}:</strong> {formattedIds}
+                                  {idx < arr.length - 1 && <span style={{ margin: '0 6px', color: '#cbd5e1' }}>|</span>}
+                                </span>
+                              );
+                            })}
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                            {r.probabilidad} / {r.impacto}
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top' }}>
+                            <span className={`badge ${cuadrante(r.probabilidad, r.impacto).toLowerCase()}`}>
+                              {cuadrante(r.probabilidad, r.impacto)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                          Aún no se han creado riesgos institucionales.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
