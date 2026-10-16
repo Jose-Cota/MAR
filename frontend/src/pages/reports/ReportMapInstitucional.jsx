@@ -101,6 +101,19 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
     <>
       <style>
         {`
+          .mar-table {
+            font-size: 10px !important;
+          }
+          .mar-table th {
+            padding: 4px 6px !important;
+            vertical-align: middle !important;
+            line-height: 1.2 !important;
+          }
+          .mar-table td {
+            padding: 2.5px 6px !important;
+            vertical-align: middle !important;
+            line-height: 1.25 !important;
+          }
           @media print {
             @page { size: letter portrait; margin: 5mm; }
             .modal-overlay { position: static !important; padding: 0 !important; background: transparent !important; }
@@ -108,7 +121,7 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
             .print-area { padding: 0 !important; border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; min-height: auto !important; margin: 0 !important; }
             body { overflow: visible !important; }
             .main-content { display: none !important; }
-            .mar-table { font-size: 10px !important; }
+            .mar-table { font-size: 9.5px !important; }
           }
           @media screen {
             .print-area {
@@ -149,21 +162,21 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
             <table className="mar-table">
               <thead>
                 <tr>
-                  <th>No.</th>
+                  <th style={{ width: '130px', textAlign: 'center', whiteSpace: 'nowrap' }}>No.</th>
                   <th>Riesgo Institucional</th>
-                  <th>Probabilidad</th>
-                  <th>Impacto</th>
-                  <th>Cuadrante</th>
+                  <th style={{ width: '110px', textAlign: 'center' }}>Probabilidad</th>
+                  <th style={{ width: '100px', textAlign: 'center' }}>Impacto</th>
+                  <th style={{ width: '100px', textAlign: 'center' }}>Cuadrante</th>
                 </tr>
               </thead>
               <tbody>
                 {riesgos.map(r => (
                   <tr key={r.id}>
-                    <td>{r.folio || r.id}</td>
-                    <td>{r.riesgo}</td>
-                    <td>{r.probabilidad || 0}</td>
-                    <td>{r.impacto || 0}</td>
-                    <td>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
+                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
+                    <td style={{ textAlign: 'justify' }}>{r.riesgo}</td>
+                    <td style={{ textAlign: 'center' }}>{r.probabilidad || 0}</td>
+                    <td style={{ textAlign: 'center' }}>{r.impacto || 0}</td>
+                    <td style={{ textAlign: 'center' }}>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -205,21 +218,21 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
               <table className="mar-table">
                 <thead>
                   <tr>
-                    <th>No.</th>
+                    <th style={{ width: '130px', textAlign: 'center', whiteSpace: 'nowrap' }}>No.</th>
                     <th>Riesgo Institucional</th>
-                    <th>Probabilidad</th>
-                    <th>Impacto</th>
-                    <th>Cuadrante</th>
+                    <th style={{ width: '110px', textAlign: 'center' }}>Probabilidad</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>Impacto</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>Cuadrante</th>
                   </tr>
                 </thead>
                 <tbody>
                   {riesgos.map(r => (
                     <tr key={r.id}>
-                      <td>{r.folio || r.id}</td>
-                      <td>{r.riesgo}</td>
-                      <td>{r.probabilidad || 0}</td>
-                      <td>{r.impacto || 0}</td>
-                      <td>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
+                      <td style={{ textAlign: 'justify' }}>{r.riesgo}</td>
+                      <td style={{ textAlign: 'center' }}>{r.probabilidad || 0}</td>
+                      <td style={{ textAlign: 'center' }}>{r.impacto || 0}</td>
+                      <td style={{ textAlign: 'center' }}>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
                     </tr>
                   ))}
                   {riesgos.length === 0 && (

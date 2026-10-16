@@ -25,6 +25,23 @@ class RiesgoInstitucionalController extends Controller
         $riesgos = RiesgoInstitucional::with('fuentes')
             ->where('ejercicio_id', $ejercicio_id)
             ->get();
+
+        foreach ($riesgos as $ri) {
+            if ($ri->fuentes->count() > 0 && ($ri->probabilidad === null || $ri->impacto === null || $ri->probabilidad == 0 || $ri->impacto == 0)) {
+                $avgP = (int) round($ri->fuentes->avg('probabilidad'));
+                $avgI = (int) round($ri->fuentes->avg('impacto'));
+                $ri->update([
+                    'probabilidad_sugerida' => $avgP,
+                    'impacto_sugerido' => $avgI,
+                    'probabilidad' => $avgP,
+                    'impacto' => $avgI
+                ]);
+                $ri->probabilidad = $avgP;
+                $ri->impacto = $avgI;
+                $ri->probabilidad_sugerida = $avgP;
+                $ri->impacto_sugerido = $avgI;
+            }
+        }
             
         return response()->json([
             'success' => true,
@@ -38,10 +55,10 @@ class RiesgoInstitucionalController extends Controller
             'ejercicio_id' => 'required|integer',
             'objetivo' => 'nullable|string',
             'riesgo' => 'required|string',
-            'probabilidad' => 'required|integer|min:1|max:10',
-            'impacto' => 'required|integer|min:1|max:10',
+            'probabilidad' => 'nullable|integer|min:0|max:10',
+            'impacto' => 'nullable|integer|min:0|max:10',
             'justificacion_valoracion' => 'nullable|string',
-            'sourceRiskIds' => 'required|array',
+            'sourceRiskIds' => 'nullable|array',
             'sourceRiskIds.*' => 'integer|exists:riesgos,id'
         ]);
 
@@ -49,8 +66,13 @@ class RiesgoInstitucionalController extends Controller
         $input_ejercicio = $request->input('ejercicio_id');
         $ejercicio_id = $this->getInternalEjercicioId($input_ejercicio);
         
+        $yearPrefix = $input_ejercicio > 2000 ? $input_ejercicio : 2026;
         $count = RiesgoInstitucional::where('ejercicio_id', $ejercicio_id)->count() + 1;
-        $folio = 'RI-' . ($input_ejercicio > 2000 ? $input_ejercicio : 2026) . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+        $folio = 'RI-' . $yearPrefix . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+        while (RiesgoInstitucional::where('folio', $folio)->exists()) {
+            $count++;
+            $folio = 'RI-' . $yearPrefix . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
+        }
 
         $riesgoInstitucional = RiesgoInstitucional::create([
             'folio' => $folio,
@@ -62,13 +84,16 @@ class RiesgoInstitucionalController extends Controller
             'indicador' => $request->input('indicador', ''),
             'probabilidad_sugerida' => $request->input('probabilidad_sugerida', null),
             'impacto_sugerido' => $request->input('impacto_sugerido', null),
-            'probabilidad' => $request->input('probabilidad'),
-            'impacto' => $request->input('impacto'),
+            'probabilidad' => $request->input('probabilidad', null),
+            'impacto' => $request->input('impacto', null),
             'justificacion_valoracion' => $request->input('justificacion_valoracion', ''),
             'estatus' => 'Proyecto'
         ]);
 
-        $riesgoInstitucional->fuentes()->attach($request->input('sourceRiskIds'));
+        if ($request->has('sourceRiskIds') && is_array($request->input('sourceRiskIds')) && count($request->input('sourceRiskIds')) > 0) {
+            $riesgoInstitucional->fuentes()->attach($request->input('sourceRiskIds'));
+            $this->recalcularPromedios($riesgoInstitucional->id);
+        }
 
         $riesgoInstitucional->load('fuentes');
 
@@ -88,8 +113,8 @@ class RiesgoInstitucionalController extends Controller
             'factores' => 'nullable|string',
             'control' => 'nullable|string',
             'indicador' => 'nullable|string',
-            'probabilidad' => 'nullable|integer|min:1|max:10',
-            'impacto' => 'nullable|integer|min:1|max:10',
+            'probabilidad' => 'nullable|integer|min:0|max:10',
+            'impacto' => 'nullable|integer|min:0|max:10',
             'justificacion_valoracion' => 'nullable|string',
             'sourceRiskIds' => 'nullable|array',
             'sourceRiskIds.*' => 'integer|exists:riesgos,id'
@@ -110,6 +135,7 @@ class RiesgoInstitucionalController extends Controller
 
         if ($request->has('sourceRiskIds')) {
             $riesgoInstitucional->fuentes()->sync($request->input('sourceRiskIds'));
+            $this->recalcularPromedios($riesgoInstitucional->id);
         }
 
         $riesgoInstitucional->load('fuentes');
@@ -155,6 +181,10 @@ class RiesgoInstitucionalController extends Controller
         $riesgoId = $request->input('riesgo_id');
         $riId = $request->input('riesgo_institucional_id');
 
+        $prevRiId = \Illuminate\Support\Facades\DB::table('riesgo_institucional_fuente')
+            ->where('riesgo_id', $riesgoId)
+            ->value('riesgo_institucional_id');
+
         \Illuminate\Support\Facades\DB::table('riesgo_institucional_fuente')
             ->where('riesgo_id', $riesgoId)
             ->delete();
@@ -166,11 +196,41 @@ class RiesgoInstitucionalController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+            $this->recalcularPromedios($riId);
+        }
+
+        if ($prevRiId && $prevRiId != $riId) {
+            $this->recalcularPromedios($prevRiId);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Vinculación de riesgo institucional actualizada'
         ]);
+    }
+
+    public function recalcularPromedios($riId)
+    {
+        $ri = RiesgoInstitucional::with('fuentes')->find($riId);
+        if (!$ri) return null;
+
+        if ($ri->fuentes->count() > 0) {
+            $avgP = (int) round($ri->fuentes->avg('probabilidad'));
+            $avgI = (int) round($ri->fuentes->avg('impacto'));
+            $ri->update([
+                'probabilidad_sugerida' => $avgP,
+                'impacto_sugerido' => $avgI,
+                'probabilidad' => $avgP,
+                'impacto' => $avgI
+            ]);
+        } else {
+            $ri->update([
+                'probabilidad_sugerida' => null,
+                'impacto_sugerido' => null,
+                'probabilidad' => null,
+                'impacto' => null
+            ]);
+        }
+        return $ri;
     }
 }

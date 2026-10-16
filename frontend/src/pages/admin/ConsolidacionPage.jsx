@@ -126,6 +126,7 @@ export default function ConsolidacionPage() {
 
       setRiesgosBase(prev => prev.map(r => r.id === riesgoId ? { ...r, assigned_ri_id: riId ? Number(riId) : '' } : r));
       showNotification('success', 'Vinculación de RI actualizada.');
+      fetchData();
     } catch (e) {
       console.error(e);
       showNotification('error', 'Error al actualizar la vinculación del riesgo institucional.');

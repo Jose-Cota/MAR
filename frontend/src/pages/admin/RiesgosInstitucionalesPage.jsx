@@ -17,14 +17,11 @@ export default function RiesgosInstitucionalesPage() {
   const [riesgosInstitucionales, setRiesgosInstitucionales] = useState([]);
   const [areas, setAreas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [selectedUR, setSelectedUR] = useState('ALL');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [originalData, setOriginalData] = useState({ risk: '', selectedIds: [] });
+  const [originalData, setOriginalData] = useState({ risk: '', objective: '', factores: '', control: '', indicador: '' });
   const [confirmDialog, setConfirmDialog] = useState({ open: false, type: '', action: null, title: '', message: '' });
   const [newIR, setNewIR] = useState({ objective: '', risk: '', factores: '', control: '', indicador: '', probability: 0, impact: 0 });
-  const [suggested, setSuggested] = useState({ probability: 0, impact: 0, quadrant: '' });
   const [fuentesModalData, setFuentesModalData] = useState(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
@@ -58,12 +55,7 @@ export default function RiesgosInstitucionalesPage() {
     return a ? (a.nombre || a.denominacion) : id;
   };
 
-  const handleCheckbox = (id) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
   const handleOpenDrawer = (r = null) => {
-    setSuggested({ probability: 0, impact: 0, quadrant: '' });
     if (r && r.id) {
       setEditId(r.id);
       setNewIR({
@@ -75,9 +67,13 @@ export default function RiesgosInstitucionalesPage() {
         probability: r.probabilidad || 0,
         impact: r.impacto || 0
       });
-      const ids = (r.fuentes || []).map(f => f.id);
-      setSelectedIds(ids);
-      setOriginalData({ risk: r.riesgo || '', selectedIds: ids });
+      setOriginalData({
+        risk: r.riesgo || '',
+        objective: r.objetivo || '',
+        factores: r.factores || '',
+        control: r.control || '',
+        indicador: r.indicador || ''
+      });
     } else {
       setEditId(null);
       setNewIR({
@@ -89,58 +85,36 @@ export default function RiesgosInstitucionalesPage() {
         probability: 0,
         impact: 0
       });
-      setSelectedIds([]);
-      setOriginalData({ risk: '', selectedIds: [] });
+      setOriginalData({
+        risk: '',
+        objective: '',
+        factores: '',
+        control: '',
+        indicador: ''
+      });
     }
-    setSelectedUR('ALL');
     setDrawerOpen(true);
   };
 
-  useEffect(() => {
-    if (selectedIds.length > 0) {
-      const selected = riesgosBase.filter(r => selectedIds.includes(r.id));
-      const avgP = Math.round(selected.reduce((acc, r) => acc + (r.probabilidad || 0), 0) / selected.length);
-      const avgI = Math.round(selected.reduce((acc, r) => acc + (r.impacto || 0), 0) / selected.length);
-      setSuggested({
-        probability: avgP,
-        impact: avgI,
-        quadrant: cuadrante(avgP, avgI)
-      });
-      setNewIR(prev => ({ ...prev, probability: avgP, impact: avgI }));
-    } else {
-      setSuggested({ probability: 0, impact: 0, quadrant: '' });
-      setNewIR(prev => ({ ...prev, probability: 0, impact: 0 }));
-    }
-  }, [selectedIds, riesgosBase]);
-
-  const riesgosPorArea = areas.map(a => {
-    const aId = String(a.unidad_responsable_gasto_id || a.id_unidad || a.id);
-    return {
-      area: a,
-      riesgos: riesgosBase.filter(r => String(r.area_id) === aId && originalData.selectedIds.includes(r.id))
-    };
-  });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (selectedIds.length === 0) {
-      alert('Debe seleccionar al menos un Riesgo de Unidad Responsable.');
+    if (!newIR.risk || !newIR.risk.trim()) {
+      alert('Por favor ingrese la redacción del riesgo institucional.');
       return;
     }
 
     try {
       const payload = {
         ejercicio_id: ejercicio,
-        objetivo: newIR.objective,
-        riesgo: newIR.risk,
-        control: newIR.control,
-        indicador: newIR.indicador,
-        probabilidad_sugerida: suggested.probability,
-        impacto_sugerido: suggested.impact,
-        probabilidad: newIR.probability,
-        impacto: newIR.impact,
-        sourceRiskIds: selectedIds,
-        factores: newIR.factores || riesgosBase.filter(r => selectedIds.includes(r.id)).map(x => x.factores).filter(Boolean).join('; ')
+        objetivo: newIR.objective || '',
+        riesgo: newIR.risk.trim(),
+        control: newIR.control || '',
+        indicador: newIR.indicador || '',
+        factores: newIR.factores || '',
+        probabilidad: newIR.probability || null,
+        impacto: newIR.impact || null,
+        probabilidad_sugerida: newIR.probability || null,
+        impacto_sugerido: newIR.impact || null
       };
 
       if (editId) {
@@ -150,12 +124,12 @@ export default function RiesgosInstitucionalesPage() {
       }
 
       setDrawerOpen(false);
-      setSelectedIds([]);
       setEditId(null);
       fetchData();
     } catch (err) {
-      console.error(err);
-      alert('Error guardando el riesgo institucional');
+      console.error('Error guardando el riesgo institucional:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Error guardando el riesgo institucional';
+      alert(errMsg);
     }
   };
 
@@ -178,7 +152,13 @@ export default function RiesgosInstitucionalesPage() {
   };
 
   const handleCancelClick = () => {
-    const isChanged = newIR.risk !== originalData.risk || JSON.stringify([...selectedIds].sort()) !== JSON.stringify([...originalData.selectedIds].sort());
+    const isChanged =
+      newIR.risk !== originalData.risk ||
+      newIR.objective !== originalData.objective ||
+      newIR.factores !== originalData.factores ||
+      newIR.control !== originalData.control ||
+      newIR.indicador !== originalData.indicador;
+
     if (isChanged) {
       setConfirmDialog({
         open: true,
@@ -203,6 +183,21 @@ export default function RiesgosInstitucionalesPage() {
           <p>Proyecto de MAR Institucional y seguimiento de riesgos consolidados.</p>
         </div>
         <div className="head-actions">
+          <button
+            type="button"
+            className="btn primary"
+            onClick={() => handleOpenDrawer()}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            <Iconify icon="mdi:plus" sx={{ width: 18, height: 18 }} />
+            <span>Agregar riesgo</span>
+          </button>
         </div>
       </div>
       <div className="notice" style={{ backgroundColor: '#eef4f8', padding: '16px', borderRadius: '8px', marginBottom: '24px', color: '#142b45', borderLeft: '4px solid #0b3a63' }}>
@@ -356,7 +351,9 @@ export default function RiesgosInstitucionalesPage() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </div>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a', fontWeight: '800' }}>Editar Riesgo Institucional</h2>
+                  <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#0f172a', fontWeight: '800' }}>
+                    {editId ? 'Editar Riesgo Institucional' : 'Agregar Riesgo Institucional'}
+                  </h2>
                   <p style={{ margin: '0', fontSize: '0.8rem', color: '#64748b' }}>Consolide los riesgos de las Unidades Responsables</p>
                 </div>
               </div>
@@ -367,86 +364,94 @@ export default function RiesgosInstitucionalesPage() {
             <div className="custom-scroll" style={{ overflowY: 'auto', padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                  {/* Campos añadidos */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', flex: 1 }}>
+                  {/* Campos principales */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '2px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>Riesgo Institucional</label>
-                      <textarea value={newIR.risk} onChange={e => setNewIR(p => ({ ...p, risk: e.target.value }))} rows="1" style={{ width: '100%', padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}></textarea>
+                      <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>
+                        Riesgo Institucional <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <textarea
+                        value={newIR.risk}
+                        onChange={e => setNewIR(p => ({ ...p, risk: e.target.value }))}
+                        rows="3"
+                        placeholder="Descripción del riesgo institucional..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}
+                      />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '2px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>Objetivo</label>
-                      <textarea value={newIR.objective} onChange={e => setNewIR(p => ({ ...p, objective: e.target.value }))} rows="1" style={{ width: '100%', padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}></textarea>
+                      <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>
+                        Objetivo
+                      </label>
+                      <textarea
+                        value={newIR.objective}
+                        onChange={e => setNewIR(p => ({ ...p, objective: e.target.value }))}
+                        rows="2"
+                        placeholder="Objetivo institucional asociado..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}
+                      />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '2px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>Factores de riesgo</label>
-                      <textarea value={newIR.factores || ''} onChange={e => setNewIR(p => ({ ...p, factores: e.target.value }))} rows="1" style={{ width: '100%', padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}></textarea>
+                      <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>
+                        Factores de riesgo
+                      </label>
+                      <textarea
+                        value={newIR.factores || ''}
+                        onChange={e => setNewIR(p => ({ ...p, factores: e.target.value }))}
+                        rows="2"
+                        placeholder="Factores de riesgo internos o externos..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}
+                      />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '2px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>Control</label>
-                      <textarea value={newIR.control || ''} onChange={e => setNewIR(p => ({ ...p, control: e.target.value }))} rows="1" style={{ width: '100%', padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}></textarea>
+                      <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>
+                        Control
+                      </label>
+                      <textarea
+                        value={newIR.control || ''}
+                        onChange={e => setNewIR(p => ({ ...p, control: e.target.value }))}
+                        rows="2"
+                        placeholder="Medidas o controles institucionales..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}
+                      />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '2px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>Indicador</label>
-                      <textarea value={newIR.indicador || ''} onChange={e => setNewIR(p => ({ ...p, indicador: e.target.value }))} rows="1" style={{ width: '100%', padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}></textarea>
+                      <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#475569', fontSize: '0.85rem' }}>
+                        Indicador
+                      </label>
+                      <textarea
+                        value={newIR.indicador || ''}
+                        onChange={e => setNewIR(p => ({ ...p, indicador: e.target.value }))}
+                        rows="2"
+                        placeholder="Indicador o fórmula de medición..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }}
+                      />
                     </div>
                   </div>
 
-                  {/* Resumen Promedios Compacto */}
-                  <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f0fdf4', padding: '6px 12px', borderRadius: '8px', border: '1px solid #bbf7d0', alignItems: 'center' }}>
-                    <div style={{ flex: 1, borderRight: '1px dashed #86efac', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ color: '#166534', fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase' }}>Prob.</span>
-                      <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#14532d' }}>{newIR.probability || 0}</span>
-                    </div>
-                    <div style={{ flex: 1, borderRight: '1px dashed #86efac', paddingLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ color: '#166534', fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase' }}>Impacto</span>
-                      <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#14532d' }}>{newIR.impact || 0}</span>
-                    </div>
-                    <div style={{ flex: 1.2, paddingLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ color: '#166534', fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase' }}>Cuadrante</span>
-                      {suggested.quadrant ? (
-                        <span style={{ padding: '2px 8px', borderRadius: '12px', fontWeight: '800', fontSize: '0.85rem',
-                          backgroundColor: suggested.quadrant === 'QI' ? '#fee2e2' : suggested.quadrant === 'QII' ? '#fef08a' : suggested.quadrant === 'QIII' ? '#dcfce7' : '#e0e7ff',
-                          color: suggested.quadrant === 'QI' ? '#b91c1c' : suggested.quadrant === 'QII' ? '#a16207' : suggested.quadrant === 'QIII' ? '#15803d' : '#4338ca'
+                  {/* Resumen Valoración (si cuenta con evaluación previa) */}
+                  {(newIR.probability > 0 || newIR.impact > 0) && (
+                    <div style={{ display: 'flex', gap: '8px', backgroundColor: '#f0fdf4', padding: '8px 12px', borderRadius: '8px', border: '1px solid #bbf7d0', alignItems: 'center' }}>
+                      <div style={{ flex: 1, borderRight: '1px dashed #86efac', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#166534', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>Probabilidad</span>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#14532d' }}>{newIR.probability}</span>
+                      </div>
+                      <div style={{ flex: 1, borderRight: '1px dashed #86efac', paddingLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#166534', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>Impacto</span>
+                        <span style={{ fontSize: '1.1rem', fontWeight: '800', color: '#14532d' }}>{newIR.impact}</span>
+                      </div>
+                      <div style={{ flex: 1.2, paddingLeft: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ color: '#166534', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>Cuadrante</span>
+                        <span style={{
+                          padding: '2px 8px', borderRadius: '12px', fontWeight: '800', fontSize: '0.85rem',
+                          backgroundColor: cuadrante(newIR.probability, newIR.impact) === 'QI' ? '#fee2e2' : cuadrante(newIR.probability, newIR.impact) === 'QII' ? '#fef08a' : cuadrante(newIR.probability, newIR.impact) === 'QIII' ? '#dcfce7' : '#e0e7ff',
+                          color: cuadrante(newIR.probability, newIR.impact) === 'QI' ? '#b91c1c' : cuadrante(newIR.probability, newIR.impact) === 'QII' ? '#a16207' : cuadrante(newIR.probability, newIR.impact) === 'QIII' ? '#15803d' : '#4338ca'
                         }}>
-                          {suggested.quadrant}
+                          {cuadrante(newIR.probability, newIR.impact)}
                         </span>
-                      ) : <span style={{ color: '#94a3b8', fontSize: '1rem', fontWeight: '800' }}>-</span>}
+                      </div>
                     </div>
-                  </div>
-
-                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div className="custom-scroll" style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', flex: 1, minHeight: '150px', paddingRight: '8px' }}>
-                      {riesgosPorArea.filter(g => g.riesgos.length > 0).map(g => (
-                        <div key={g.area.id || g.area.id_unidad} style={{ marginBottom: '16px' }}>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#334155', paddingBottom: '6px', borderBottom: '1px dashed #cbd5e1', marginBottom: '10px' }}>
-                            {g.area.nombre || g.area.denominacion}
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {g.riesgos.map(r => (
-                              <label key={r.id} className="rur-label" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', fontSize: '0.9rem', color: '#475569', margin: 0, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '10px 12px', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-                                <input 
-                                  type="checkbox" 
-                                  checked={selectedIds.includes(r.id)} 
-                                  onChange={() => handleCheckbox(r.id)} 
-                                  style={{ marginTop: '3px', accentColor: '#2563eb', width: '18px', height: '18px', cursor: 'pointer', flexShrink: 0 }}
-                                />
-                                <span style={{ lineHeight: '1.4' }}><b style={{ color: '#1e293b' }}>{r.local_id || r.id}</b>: {r.riesgo} <span style={{ color: '#94a3b8', display: 'inline-block', marginLeft: '6px', fontSize: '0.8rem' }}>(P:{r.probabilidad} I:{r.impacto})</span></span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      {riesgosPorArea.filter(g => g.riesgos.length > 0).length === 0 && (
-                        <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '24px', fontSize: '0.95rem' }}>No hay riesgos ligados a este riesgo institucional.</div>
-                      )}
-                    </div>
-                    
-                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0', fontSize: '0.9rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: selectedIds.length > 0 ? '#10b981' : '#cbd5e1' }}></div>
-                      <b>{selectedIds.length}</b> riesgo(s) seleccionado(s) en total.
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Footer del Drawer */}
