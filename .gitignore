@@ -1,0 +1,9 @@
+# OS and IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary local backups
+respaldo_MAR_20Oct2026_antesPonderacion.*
+*.zip

@@ -83,6 +83,9 @@ export default function NavbarVertical() {
             <NavLink to="/riesgos-institucionales" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Iconify icon="ph:shield-check" sx={{ width: 22, height: 22 }} /> <span>Riesgos institucionales</span>
             </NavLink>
+            <NavLink to="/factor-peso" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Iconify icon="ph:scales" sx={{ width: 22, height: 22 }} /> <span>Factor de Peso</span>
+            </NavLink>
           </>
         )}
         <NavLink to="/mapmar" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -152,7 +155,7 @@ export default function NavbarVertical() {
       </Snackbar>
       <div className="side-footer">
         Sistema de Administracion de Riesgos - TECDMX 2026<br />
-        <small>Versión 1.2 · 16 oct 2026 · 12:11 hrs</small>
+        <small>Versión 1.2 · 20 oct 2026 · 13:07 hrs</small>
       </div>
     </div>
   );

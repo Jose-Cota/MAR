@@ -47,6 +47,7 @@ import ConsolidacionPage from '../pages/admin/ConsolidacionPage';
 import RiesgosInstitucionalesPage from '../pages/admin/RiesgosInstitucionalesPage';
 import MapaInstitucionalPage from '../pages/admin/MapaInstitucionalPage';
 import ConfiguracionPage from '../pages/admin/ConfiguracionPage';
+import FactorPesoPage from '../pages/admin/FactorPesoPage';
 
 const MODULE_ROUTES = [
   { path: '/planeacion/metas', title: 'Metas e indicadores' },
@@ -120,6 +121,7 @@ export default function AppRoutes() {
         <Route path="consolidacion" element={<ConsolidacionPage />} />
         <Route path="riesgos-institucionales" element={<RiesgosInstitucionalesPage />} />
         <Route path="mapa-institucional" element={<MapaInstitucionalPage />} />
+        <Route path="factor-peso" element={<RoleGuard allowedRoles={['Administrador', 'Super Administrador']}><FactorPesoPage /></RoleGuard>} />
 
         {MODULE_ROUTES.map((route) => (
           <Route key={route.path} path={route.path} element={<PlaceholderPage title={route.title} />} />

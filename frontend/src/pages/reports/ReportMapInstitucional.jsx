@@ -70,8 +70,8 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
     }
 
     const dots = riesgos.map(r => {
-      const p = r.probabilidad || 0;
-      const i = r.impacto || 0;
+      const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
+      const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
       const local = r.folio || `RI-${r.id}`;
       return (
         <g className="risk-dot" key={r.id}>
@@ -170,15 +170,19 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
                 </tr>
               </thead>
               <tbody>
-                {riesgos.map(r => (
-                  <tr key={r.id}>
-                    <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
-                    <td style={{ textAlign: 'justify' }}>{r.riesgo}</td>
-                    <td style={{ textAlign: 'center' }}>{r.probabilidad || 0}</td>
-                    <td style={{ textAlign: 'center' }}>{r.impacto || 0}</td>
-                    <td style={{ textAlign: 'center' }}>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
-                  </tr>
-                ))}
+                {riesgos.map(r => {
+                  const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
+                  const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+                  return (
+                    <tr key={r.id}>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
+                      <td style={{ textAlign: 'justify' }}>{r.riesgo}</td>
+                      <td style={{ textAlign: 'center' }}>{p}</td>
+                      <td style={{ textAlign: 'center' }}>{i}</td>
+                      <td style={{ textAlign: 'center' }}>{quadrantFor(p, i)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </section>
@@ -226,15 +230,19 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {riesgos.map(r => (
-                    <tr key={r.id}>
-                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
-                      <td style={{ textAlign: 'justify' }}>{r.riesgo}</td>
-                      <td style={{ textAlign: 'center' }}>{r.probabilidad || 0}</td>
-                      <td style={{ textAlign: 'center' }}>{r.impacto || 0}</td>
-                      <td style={{ textAlign: 'center' }}>{quadrantFor(r.probabilidad || 0, r.impacto || 0)}</td>
-                    </tr>
-                  ))}
+                  {riesgos.map(r => {
+                    const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
+                    const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+                    return (
+                      <tr key={r.id}>
+                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
+                        <td style={{ textAlign: 'justify' }}>{r.riesgo}</td>
+                        <td style={{ textAlign: 'center' }}>{p}</td>
+                        <td style={{ textAlign: 'center' }}>{i}</td>
+                        <td style={{ textAlign: 'center' }}>{quadrantFor(p, i)}</td>
+                      </tr>
+                    );
+                  })}
                   {riesgos.length === 0 && (
                     <tr>
                       <td colSpan="5" style={{textAlign: 'center'}}>No hay riesgos institucionales validados en este ejercicio.</td>

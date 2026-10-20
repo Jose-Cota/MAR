@@ -162,8 +162,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('riesgos/batch-unvalidate', [RiesgoController::class, 'batchUnvalidate']);
     Route::apiResource('riesgos', RiesgoController::class);
     Route::put('riesgos/{riesgo}/controles/{control}/validar', [RiesgoController::class, 'validarControl']);
+    Route::post('riesgos-institucionales/calcular-ponderaciones', [\App\Http\Controllers\Api\RiesgoInstitucionalController::class, 'calcularPonderaciones']);
+    Route::get('riesgos-institucionales/memoria-calculo', [\App\Http\Controllers\Api\RiesgoInstitucionalController::class, 'memoriaCalculo']);
     Route::post('riesgos-institucionales/assign-fuente', [\App\Http\Controllers\Api\RiesgoInstitucionalController::class, 'assignFuente']);
     Route::apiResource('riesgos-institucionales', \App\Http\Controllers\Api\RiesgoInstitucionalController::class);
+    Route::get('factor-peso', [\App\Http\Controllers\Api\FactorPesoController::class, 'index']);
+    Route::put('factor-peso/{id}', [\App\Http\Controllers\Api\FactorPesoController::class, 'update']);
+    Route::post('factor-peso/recalcular', [\App\Http\Controllers\Api\FactorPesoController::class, 'recalcularPuntajes']);
     Route::post('/settings', [\App\Http\Controllers\Api\SettingController::class, 'store']);
     Route::post('seguimiento-trimestral', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'store']);
     Route::put('seguimiento-trimestral/{id}/validar', [\App\Http\Controllers\SeguimientoTrimestralController::class, 'validar']);

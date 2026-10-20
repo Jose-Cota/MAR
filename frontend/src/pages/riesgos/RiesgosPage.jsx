@@ -66,6 +66,7 @@ export default function RiesgosPage() {
   const [fichaAnchor, setFichaAnchor] = useState(null);
   const [fichaRisk, setFichaRisk] = useState(null);
   const [expandedURs, setExpandedURs] = useState({});
+  const [factoresMap, setFactoresMap] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -87,6 +88,27 @@ export default function RiesgosPage() {
   const navigate = useNavigate();
   const ejercicio = useGlobalStore((s) => s.ejercicio);
   const { user } = useAuth();
+
+  useEffect(() => {
+    axios.get(`/factor-peso?ejercicio=${ejercicio}`).then(res => {
+      const list = res.data.data || [];
+      const map = {};
+      list.forEach(f => {
+        map[String(f.ur_id)] = Number(f.factor_peso);
+      });
+      setFactoresMap(map);
+    }).catch(err => console.error(err));
+  }, [ejercicio]);
+
+  const getPeso = (r) => {
+    if (r.factor_peso != null) return Number(r.factor_peso);
+    if (factoresMap[String(r.area_id)] != null) return factoresMap[String(r.area_id)];
+    if (r.probabilidad && r.impacto && r.puntaje) {
+      const denom = Number(r.probabilidad) * Number(r.impacto);
+      if (denom > 0) return Math.round(Number(r.puntaje) / denom);
+    }
+    return 1;
+  };
 
   useEffect(() => {
     axios.get('/unidades-responsables').then(res => {
@@ -443,14 +465,17 @@ export default function RiesgosPage() {
                   <table className="data-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop: '16px' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#1F4E79', color: '#fff' }}>
-                        <th style={{ color: '#fff', width: '6%', textAlign: 'center' }}>ID</th>
-                        <th style={{ color: '#fff', width: '30%' }}>Objetivo</th>
-                        <th style={{ color: '#fff', width: '28%' }}>Riesgo</th>
-                        <th style={{ color: '#fff', width: '4%', textAlign: 'center' }}>P</th>
-                        <th style={{ color: '#fff', width: '4%', textAlign: 'center' }}>I</th>
-                        <th style={{ color: '#fff', width: '8%', textAlign: 'center' }}>Cuadrante</th>
-                        <th style={{ color: '#fff', width: '8%', textAlign: 'center' }}>Estatus</th>
-                        <th style={{ color: '#fff', width: '12%', textAlign: 'center' }}>Acciones</th>
+                        <th style={{ color: '#fff', width: '5%', textAlign: 'center', verticalAlign: 'middle' }}>ID</th>
+                        <th style={{ color: '#fff', width: '23%', verticalAlign: 'middle' }}>Objetivo</th>
+                        <th style={{ color: '#fff', width: '23%', verticalAlign: 'middle' }}>Riesgo</th>
+                        <th style={{ color: '#fff', width: '4%', textAlign: 'center', verticalAlign: 'middle' }}>P</th>
+                        <th style={{ color: '#fff', width: '4%', textAlign: 'center', verticalAlign: 'middle' }}>I</th>
+                        <th style={{ color: '#fff', width: '5%', textAlign: 'center', verticalAlign: 'middle' }}>Peso</th>
+                        <th style={{ color: '#fff', width: '6%', textAlign: 'center', verticalAlign: 'middle' }}>Puntaje</th>
+                        <th style={{ color: '#fff', width: '8%', textAlign: 'center', verticalAlign: 'middle' }}>Ponderación</th>
+                        <th style={{ color: '#fff', width: '7%', textAlign: 'center', verticalAlign: 'middle' }}>Cuadrante</th>
+                        <th style={{ color: '#fff', width: '7%', textAlign: 'center', verticalAlign: 'middle' }}>Estatus</th>
+                        <th style={{ color: '#fff', width: '8%', textAlign: 'center', verticalAlign: 'middle' }}>Acciones</th>
                       </tr>
                     </thead>
                   <tbody>
@@ -461,13 +486,28 @@ export default function RiesgosPage() {
                           onClick={(e) => openFicha(e, r)}
                           style={{ transition: 'background-color 0.2s', cursor: 'pointer', ':hover': { backgroundColor: '#f1f5f9' } }}
                         >
-                          <td><b>{r.local_id}</b></td>
-                          <td style={{ maxWidth: '300px' }}>{r.objetivo || '—'}</td>
-                          <td style={{ maxWidth: '300px' }}>{r.riesgo}</td>
-                          <td>{r.probabilidad}</td>
-                          <td>{r.impacto}</td>
-                          <td>{cuadrante(r.probabilidad, r.impacto)}</td>
-                          <td>{r.status}</td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}><b>{r.local_id}</b></td>
+                          <td style={{ maxWidth: '300px', verticalAlign: 'middle' }}>{r.objetivo || '—'}</td>
+                          <td style={{ maxWidth: '300px', verticalAlign: 'middle' }}>{r.riesgo}</td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{r.probabilidad}</td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{r.impacto}</td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                            <span className="chip" style={{ 
+                              backgroundColor: getPeso(r) === 2 ? '#e1effa' : '#f0f3f6', 
+                              color: getPeso(r) === 2 ? '#104f85' : '#475569',
+                              fontWeight: 700 
+                            }}>
+                              {getPeso(r)}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 700, color: '#1f4e78' }}>
+                            {r.puntaje != null ? Number(r.puntaje) : '—'}
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 700, color: '#2d7d46' }}>
+                            {r.ponderacion != null ? `${Number(r.ponderacion)}%` : '—'}
+                          </td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{cuadrante(r.probabilidad, r.impacto)}</td>
+                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{r.status}</td>
                           <td style={{ width: '120px', verticalAlign: 'middle', textAlign: 'center' }}>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
                               <Tooltip title="Editar">
@@ -487,7 +527,7 @@ export default function RiesgosPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="8" style={{ textAlign: 'center', color: '#6f8294', padding: '20px' }}>
+                        <td colSpan="11" style={{ textAlign: 'center', verticalAlign: 'middle', color: '#6f8294', padding: '20px' }}>
                           Sin riesgos encontrados en esta unidad.
                         </td>
                       </tr>

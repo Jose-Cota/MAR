@@ -23,11 +23,44 @@ class Riesgo extends Model
         'factores_externos',
         'probabilidad',
         'impacto',
+        'puntaje',
+        'ponderacion',
         'probabilidad_inicial',
         'impacto_inicial',
         'status',
         'last_observation',
     ];
+
+    protected static function booted()
+    {
+        static::saving(function ($riesgo) {
+            if ($riesgo->probabilidad !== null && $riesgo->impacto !== null) {
+                $year = ($riesgo->ejercicio_id == 19 || $riesgo->ejercicio_id == 2027) ? 2027 : 2026;
+                $peso = \Illuminate\Support\Facades\DB::table('factor_peso')
+                    ->where('ejercicio', $year)
+                    ->where('ur_id', $riesgo->area_id)
+                    ->value('factor_peso') ?? 1;
+                $riesgo->puntaje = round((float)$riesgo->probabilidad * (float)$riesgo->impacto * (float)$peso, 2);
+            }
+        });
+
+        static::saved(function ($riesgo) {
+            self::recalcularPonderacionesUR($riesgo->area_id, $riesgo->ejercicio_id);
+            foreach ($riesgo->riesgosInstitucionales as $ri) {
+                RiesgoInstitucional::recalcularPonderaciones($ri->id);
+            }
+        });
+    }
+
+    public static function recalcularPonderacionesUR($areaId, $ejercicioId)
+    {
+        $riesgos = self::where('area_id', $areaId)->where('ejercicio_id', $ejercicioId)->get();
+        $totalPuntaje = $riesgos->sum('puntaje');
+        foreach ($riesgos as $r) {
+            $ponderacion = ($totalPuntaje > 0) ? round(($r->puntaje / $totalPuntaje) * 100, 2) : 0;
+            self::where('id', $r->id)->update(['ponderacion' => $ponderacion]);
+        }
+    }
 
     public function area()
     {

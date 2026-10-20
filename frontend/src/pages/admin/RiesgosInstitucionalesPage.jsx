@@ -24,8 +24,29 @@ export default function RiesgosInstitucionalesPage() {
   const [newIR, setNewIR] = useState({ objective: '', risk: '', factores: '', control: '', indicador: '', probability: 0, impact: 0 });
   const [fuentesModalData, setFuentesModalData] = useState(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [calculatingPonderaciones, setCalculatingPonderaciones] = useState(false);
+  const [memoriaModalOpen, setMemoriaModalOpen] = useState(false);
+  const [memoriaData, setMemoriaData] = useState([]);
+  const [selectedRiTab, setSelectedRiTab] = useState('ALL');
 
   const ejercicio = useGlobalStore((s) => s.ejercicio);
+
+  const handleCalcularPonderaciones = async () => {
+    setCalculatingPonderaciones(true);
+    try {
+      const res = await axios.post(`/riesgos-institucionales/calcular-ponderaciones?ejercicio_id=${ejercicio}`);
+      if (res.data?.success) {
+        setMemoriaData(res.data.data || []);
+        setMemoriaModalOpen(true);
+        fetchData();
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al calcular las ponderaciones institucionales');
+    } finally {
+      setCalculatingPonderaciones(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -185,6 +206,30 @@ export default function RiesgosInstitucionalesPage() {
         <div className="head-actions">
           <button
             type="button"
+            className="btn"
+            onClick={handleCalcularPonderaciones}
+            disabled={calculatingPonderaciones}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: calculatingPonderaciones ? 'not-allowed' : 'pointer',
+              fontWeight: 600,
+              backgroundColor: '#f0fdf4',
+              border: '1px solid #16a34a',
+              color: '#15803d',
+              padding: '9px 16px',
+              borderRadius: '7px',
+              transition: 'all 0.2s',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            }}
+          >
+            <Iconify icon={calculatingPonderaciones ? "line-md:loading-loop" : "solar:calculator-bold-duotone"} sx={{ width: 20, height: 20 }} />
+            <span>{calculatingPonderaciones ? 'Calculando ponderaciones...' : 'Calcular ponderacion institucional'}</span>
+          </button>
+
+          <button
+            type="button"
             className="btn primary"
             onClick={() => handleOpenDrawer()}
             style={{
@@ -235,24 +280,25 @@ export default function RiesgosInstitucionalesPage() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Riesgo institucional</th>
-                <th>Fuentes</th>
-                <th>P/I institucional</th>
-                <th>Cuadrante</th>
-                <th>Acciones</th>
+                <th style={{ width: '6%', textAlign: 'center', verticalAlign: 'middle' }}>ID</th>
+                <th style={{ width: '32%', verticalAlign: 'middle' }}>Riesgo institucional</th>
+                <th style={{ width: '24%', verticalAlign: 'middle' }}>Fuentes</th>
+                <th style={{ width: '11%', textAlign: 'center', verticalAlign: 'middle' }}>Ponderación de Probabilidad</th>
+                <th style={{ width: '11%', textAlign: 'center', verticalAlign: 'middle' }}>Ponderación de Impacto</th>
+                <th style={{ width: '8%', textAlign: 'center', verticalAlign: 'middle' }}>Cuadrante</th>
+                <th style={{ width: '8%', textAlign: 'center', verticalAlign: 'middle' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="6" className="muted" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
+                <tr><td colSpan="7" className="muted" style={{ textAlign: 'center', padding: '20px' }}>Cargando...</td></tr>
               ) : riesgosInstitucionales.length > 0 ? (
                 riesgosInstitucionales.map(r => {
                   return (
                     <tr key={r.id}>
-                      <td><b>{r.folio}</b></td>
-                      <td style={{ textAlign: 'justify', lineHeight: '1.45' }}>{r.riesgo}</td>
-                      <td style={{ textAlign: 'justify' }}>
+                      <td style={{ textAlign: 'center', verticalAlign: 'middle' }}><b>{r.folio}</b></td>
+                      <td style={{ textAlign: 'justify', lineHeight: '1.45', verticalAlign: 'middle' }}>{r.riesgo}</td>
+                      <td style={{ textAlign: 'justify', verticalAlign: 'middle' }}>
                         <div style={{ fontSize: '0.85rem', color: '#0f172a', lineHeight: '1.4', textAlign: 'justify' }}>
                           {Object.entries(
                             (r.fuentes || []).reduce((acc, f) => {
@@ -282,14 +328,19 @@ export default function RiesgosInstitucionalesPage() {
                           })}
                         </div>
                       </td>
-                      <td>{r.probabilidad} / {r.impacto}</td>
-                      <td>
+                      <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 600, color: '#1f4e78' }}>
+                        {r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : '—'}
+                      </td>
+                      <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 600, color: '#1f4e78' }}>
+                        {r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : '—'}
+                      </td>
+                      <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                         <span className={`badge ${cuadrante(r.probabilidad, r.impacto).toLowerCase()}`}>
                           {cuadrante(r.probabilidad, r.impacto)}
                         </span>
                       </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
                           <button className="icon-btn" title="Editar" onClick={() => handleOpenDrawer(r)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                           </button>
@@ -309,7 +360,7 @@ export default function RiesgosInstitucionalesPage() {
                   )
                 })
               ) : (
-                <tr><td colSpan="6" className="muted" style={{ textAlign: 'center', padding: '20px' }}>Aún no se han creado riesgos institucionales.</td></tr>
+                <tr><td colSpan="7" className="muted" style={{ textAlign: 'center', padding: '20px' }}>Aún no se han creado riesgos institucionales.</td></tr>
               )}
             </tbody>
           </table>
@@ -784,7 +835,7 @@ export default function RiesgosInstitucionalesPage() {
                     {/* Fila 1: Encabezado del reporte (se repite en todas las hojas automáticamente) */}
                     <tr>
                       <th
-                        colSpan="5"
+                        colSpan="6"
                         style={{
                           padding: '0 0 14px 0',
                           border: 'none',
@@ -826,10 +877,11 @@ export default function RiesgosInstitucionalesPage() {
 
                     {/* Fila 2: Encabezado de la tabla (se repite en todas las hojas automáticamente) */}
                     <tr style={{ background: '#0b3a63', borderBottom: '2px solid #092e55' }}>
-                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '10%', color: '#ffffff', fontWeight: 'bold' }}>ID</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '42%', color: '#ffffff', fontWeight: 'bold' }}>Riesgo institucional</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '30%', color: '#ffffff', fontWeight: 'bold' }}>Fuentes</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '10%', color: '#ffffff', fontWeight: 'bold' }}>P/I institucional</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '8%', color: '#ffffff', fontWeight: 'bold' }}>ID</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '38%', color: '#ffffff', fontWeight: 'bold' }}>Riesgo institucional</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '26%', color: '#ffffff', fontWeight: 'bold' }}>Fuentes</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '10%', color: '#ffffff', fontWeight: 'bold' }}>Pond. Probabilidad</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '10%', color: '#ffffff', fontWeight: 'bold' }}>Pond. Impacto</th>
                       <th style={{ padding: '10px 12px', textAlign: 'center', verticalAlign: 'middle', width: '8%', color: '#ffffff', fontWeight: 'bold' }}>Cuadrante</th>
                     </tr>
                   </thead>
@@ -861,7 +913,7 @@ export default function RiesgosInstitucionalesPage() {
                             ).map(([aId, fs], idx, arr) => {
                               const idsStr = fs.map((f) =>
                                 f.local_id
-                                  ? String(f.local_id).startsWith('R')
+                                    ? String(f.local_id).startsWith('R')
                                     ? f.local_id
                                     : `R${f.local_id}`
                                   : `R${f.id}`
@@ -879,8 +931,11 @@ export default function RiesgosInstitucionalesPage() {
                               );
                             })}
                           </td>
-                          <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
-                            {r.probabilidad} / {r.impacto}
+                          <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top', fontWeight: 600, color: '#1f4e78' }}>
+                            {r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : '—'}
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top', fontWeight: 600, color: '#1f4e78' }}>
+                            {r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : '—'}
                           </td>
                           <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top' }}>
                             <span className={`badge ${cuadrante(r.probabilidad, r.impacto).toLowerCase()}`}>
@@ -891,7 +946,7 @@ export default function RiesgosInstitucionalesPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                           Aún no se han creado riesgos institucionales.
                         </td>
                       </tr>
@@ -899,6 +954,250 @@ export default function RiesgosInstitucionalesPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Memoria de Cálculo */}
+      {memoriaModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100000,
+          background: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)', padding: '20px'
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '16px', maxWidth: '1240px', width: '96%',
+            height: '90vh', maxHeight: '90vh',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', overflow: 'hidden', display: 'flex', flexDirection: 'column'
+          }}>
+            <style>{`
+              .custom-scroll-modal::-webkit-scrollbar { width: 8px; height: 8px; }
+              .custom-scroll-modal::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+              .custom-scroll-modal::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+              .custom-scroll-modal::-webkit-scrollbar-thumb:hover { background: #64748b; }
+            `}</style>
+            {/* Header del Modal */}
+            <div style={{
+              padding: '18px 24px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(to right, #092e55, #1f4e78)',
+              color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,255,255,0.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Iconify icon="solar:calculator-bold-duotone" sx={{ width: 24, height: 24, color: '#ffffff' }} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#ffffff' }}>
+                    Memoria de Cálculo de Ponderaciones por Riesgo Institucional
+                  </h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '0.85rem', color: '#dbeafe' }}>
+                    Ejercicio {ejercicio} — Desglose de ponderación de probabilidad e impacto por cada Riesgo de Unidad Responsable (RUR)
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMemoriaModalOpen(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                  color: '#ffffff', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.5rem', lineHeight: 1, transition: 'background 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Selector de Pestañas / Filtro por RI */}
+            <div style={{
+              padding: '10px 24px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
+              display: 'flex', gap: '8px', overflowX: 'auto', alignItems: 'center', flexShrink: 0
+            }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748b', marginRight: '6px' }}>Filtrar RI:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedRiTab('ALL')}
+                style={{
+                  padding: '5px 12px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
+                  background: selectedRiTab === 'ALL' ? '#1F4E79' : '#e2e8f0',
+                  color: selectedRiTab === 'ALL' ? '#ffffff' : '#475569',
+                  transition: 'all 0.2s', whiteSpace: 'nowrap'
+                }}
+              >
+                Ver Todos ({memoriaData.length})
+              </button>
+              {memoriaData.map(ri => (
+                <button
+                  key={ri.ri_id}
+                  type="button"
+                  onClick={() => setSelectedRiTab(ri.folio)}
+                  style={{
+                    padding: '5px 12px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
+                    background: selectedRiTab === ri.folio ? '#1F4E79' : '#e2e8f0',
+                    color: selectedRiTab === ri.folio ? '#ffffff' : '#475569',
+                    transition: 'all 0.2s', whiteSpace: 'nowrap'
+                  }}
+                >
+                  {ri.folio} ({ri.total_fuentes})
+                </button>
+              ))}
+            </div>
+
+            {/* Contenido / Tablas de Memoria de Cálculo con Scroll Vertical Activo */}
+            <div className="custom-scroll-modal" style={{
+              padding: '24px', overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0,
+              display: 'flex', flexDirection: 'column', gap: '28px'
+            }}>
+              {memoriaData
+                .filter(ri => selectedRiTab === 'ALL' || selectedRiTab === ri.folio)
+                .map(ri => (
+                  <div key={ri.ri_id} style={{
+                    flexShrink: 0,
+                    border: '1px solid #cbd5e1', borderRadius: '12px', background: '#ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', overflow: 'hidden'
+                  }}>
+                    {/* Header de la tarjeta del RI */}
+                    <div style={{
+                      padding: '16px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1, minWidth: '300px' }}>
+                        <span style={{
+                          backgroundColor: '#1F4E79', color: '#ffffff', padding: '6px 12px', borderRadius: '8px',
+                          fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.5px', whiteSpace: 'nowrap', flexShrink: 0
+                        }}>
+                          {ri.folio}
+                        </span>
+                        <div style={{ flex: 1 }}>
+                          <strong style={{ fontSize: '0.98rem', color: '#0f172a', display: 'block', lineHeight: 1.45 }}>{ri.riesgo}</strong>
+                          {ri.objetivo && (
+                            <span style={{ fontSize: '0.82rem', color: '#64748b', display: 'block', marginTop: '4px' }}>Objetivo: {ri.objetivo}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* KPIs del RI */}
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 }}>
+                        <div style={{ background: '#f1f5f9', padding: '6px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center', minWidth: '85px' }}>
+                          <span style={{ fontSize: '0.70rem', color: '#64748b', display: 'block', fontWeight: 600, textTransform: 'uppercase' }}>Sumatoria</span>
+                          <strong style={{ fontSize: '1.05rem', color: '#0f172a' }}>{Number(ri.sumatoria_pra).toFixed(2)}</strong>
+                        </div>
+                        <div style={{ background: '#f0fdf4', padding: '6px 14px', borderRadius: '8px', border: '1px solid #bbf7d0', textAlign: 'center', minWidth: '95px' }}>
+                          <span style={{ fontSize: '0.70rem', color: '#166534', display: 'block', fontWeight: 600, textTransform: 'uppercase' }}>Pond. Probabilidad</span>
+                          <strong style={{ fontSize: '1.05rem', color: '#15803d' }}>{Number(ri.ponderacion_probabilidad).toFixed(4)}</strong>
+                        </div>
+                        <div style={{ background: '#eff6ff', padding: '6px 14px', borderRadius: '8px', border: '1px solid #bfdbfe', textAlign: 'center', minWidth: '95px' }}>
+                          <span style={{ fontSize: '0.70rem', color: '#1e40af', display: 'block', fontWeight: 600, textTransform: 'uppercase' }}>Pond. Impacto</span>
+                          <strong style={{ fontSize: '1.05rem', color: '#1d4ed8' }}>{Number(ri.ponderacion_impacto).toFixed(4)}</strong>
+                        </div>
+                        <div style={{ background: '#faf5ff', padding: '6px 14px', borderRadius: '8px', border: '1px solid #e9d5ff', textAlign: 'center', minWidth: '70px' }}>
+                          <span style={{ fontSize: '0.70rem', color: '#6b21a8', display: 'block', fontWeight: 600, textTransform: 'uppercase' }}>Fuentes</span>
+                          <strong style={{ fontSize: '1.05rem', color: '#7e22ce' }}>{ri.total_fuentes}</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tabla de Desglose de Fuentes con Scroll Horizontal si se requiere */}
+                    <div className="custom-scroll-modal" style={{ overflowX: 'auto', width: '100%' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', minWidth: '920px' }}>
+                        <thead>
+                          <tr style={{ background: '#1F4E79', color: '#ffffff' }}>
+                            <th style={{ width: '28%', textAlign: 'left', padding: '10px 14px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>Unidad Responsable (UR)</th>
+                            <th style={{ width: '7%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>ID RUR</th>
+                            <th style={{ width: '5%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>P</th>
+                            <th style={{ width: '5%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>I</th>
+                            <th style={{ width: '7%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>Peso UR</th>
+                            <th style={{ width: '10%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>Puntaje RUR</th>
+                            <th style={{ width: '14%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>Proporción (Puntaje / Sumatoria)</th>
+                            <th style={{ width: '12%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>Aporte P. Probabilidad</th>
+                            <th style={{ width: '12%', textAlign: 'center', padding: '10px 8px', color: '#ffffff', verticalAlign: 'middle', background: '#1F4E79' }}>Aporte P. Impacto</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ri.fuentes.map((f, idx) => (
+                            <tr key={idx} style={{ background: idx % 2 === 0 ? '#ffffff' : '#f8fafc', transition: 'background 0.15s' }}>
+                              <td style={{ padding: '8px 14px', verticalAlign: 'middle', color: '#1e293b' }}>
+                                {f.area_nombre}
+                              </td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 700 }}>
+                                {f.local_id || `R${f.rur_id}`}
+                              </td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{f.probabilidad}</td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{f.impacto}</td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                <span style={{
+                                  display: 'inline-block', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700,
+                                  background: f.peso_ur === 2 ? '#e0f2fe' : '#f1f5f9',
+                                  color: f.peso_ur === 2 ? '#0369a1' : '#475569'
+                                }}>
+                                  {f.peso_ur}
+                                </span>
+                              </td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 700, color: '#1F4E79' }}>
+                                {Number(f.puntaje).toFixed(2)}
+                              </td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#475569' }}>
+                                {Number(f.proporcion).toFixed(4)}
+                              </td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 700, color: '#166534' }}>
+                                {Number(f.aporte_probabilidad).toFixed(4)}
+                              </td>
+                              <td style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 700, color: '#1e40af' }}>
+                                {Number(f.aporte_impacto).toFixed(4)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr style={{ background: '#f1f5f9', borderTop: '2px solid #cbd5e1', fontWeight: 800 }}>
+                            <td colSpan="5" style={{ padding: '10px 14px', textAlign: 'right', verticalAlign: 'middle', color: '#0f172a', background: '#f1f5f9' }}>
+                              TOTALES:
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#1F4E79', fontSize: '0.95rem', background: '#f1f5f9' }}>
+                              {Number(ri.sumatoria_pra).toFixed(2)}
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#0f172a', fontSize: '0.95rem', background: '#f1f5f9' }}>
+                              1.0000
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#166534', fontSize: '0.95rem', background: '#f1f5f9' }}>
+                              {Number(ri.ponderacion_probabilidad).toFixed(4)}
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'middle', color: '#1e40af', fontSize: '0.95rem', background: '#f1f5f9' }}>
+                              {Number(ri.ponderacion_impacto).toFixed(4)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Footer del Modal */}
+            <div style={{
+              padding: '16px 24px', borderTop: '1px solid #e2e8f0', background: '#f8fafc',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0
+            }}>
+              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                Fórmula: Aporte = (Puntaje RUR / Sumatoria) × Valoración (P o I)
+              </span>
+              <button
+                type="button"
+                onClick={() => setMemoriaModalOpen(false)}
+                style={{
+                  padding: '10px 24px', borderRadius: '8px', background: '#1F4E79', color: '#ffffff',
+                  fontWeight: 600, border: 'none', cursor: 'pointer', fontSize: '0.9rem', transition: 'background 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = '#163c5f'}
+                onMouseOut={e => e.currentTarget.style.background = '#1F4E79'}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

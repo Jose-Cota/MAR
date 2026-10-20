@@ -130,6 +130,9 @@ class RiesgoInstitucionalController extends Controller
             'impacto_sugerido' => $request->has('impacto_sugerido') ? $request->input('impacto_sugerido') : $riesgoInstitucional->impacto_sugerido,
             'probabilidad' => $request->has('probabilidad') ? $request->input('probabilidad') : $riesgoInstitucional->probabilidad,
             'impacto' => $request->has('impacto') ? $request->input('impacto') : $riesgoInstitucional->impacto,
+            'ponderacion' => $request->has('ponderacion') ? $request->input('ponderacion') : $riesgoInstitucional->ponderacion,
+            'ponderacion_probabilidad' => $request->has('ponderacion_probabilidad') ? $request->input('ponderacion_probabilidad') : $riesgoInstitucional->ponderacion_probabilidad,
+            'ponderacion_impacto' => $request->has('ponderacion_impacto') ? $request->input('ponderacion_impacto') : $riesgoInstitucional->ponderacion_impacto,
             'justificacion_valoracion' => $request->has('justificacion_valoracion') ? $request->input('justificacion_valoracion') : $riesgoInstitucional->justificacion_valoracion,
         ]);
 
@@ -231,6 +234,100 @@ class RiesgoInstitucionalController extends Controller
                 'impacto' => null
             ]);
         }
-        return $ri;
+        RiesgoInstitucional::recalcularPonderaciones($riId);
+        return $ri->fresh();
+    }
+
+    public function calcularPonderaciones(Request $request)
+    {
+        $val = $request->input('ejercicio_id', $request->query('ejercicio_id', 2026));
+        $ejercicio_id = $this->getInternalEjercicioId($val);
+        $year = ($ejercicio_id == 19 || $ejercicio_id == 2027) ? 2027 : 2026;
+
+        RiesgoInstitucional::recalcularPonderaciones();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ponderaciones institucionales actualizadas exitosamente.',
+            'data' => $this->generarMemoriaCalculo($ejercicio_id, $year)
+        ]);
+    }
+
+    public function memoriaCalculo(Request $request)
+    {
+        $val = $request->query('ejercicio_id', 2026);
+        $ejercicio_id = $this->getInternalEjercicioId($val);
+        $year = ($ejercicio_id == 19 || $ejercicio_id == 2027) ? 2027 : 2026;
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->generarMemoriaCalculo($ejercicio_id, $year)
+        ]);
+    }
+
+    private function generarMemoriaCalculo($ejercicio_id, $year)
+    {
+        $factores = \Illuminate\Support\Facades\DB::table('factor_peso')
+            ->where('ejercicio', $year)
+            ->pluck('factor_peso', 'ur_id')
+            ->toArray();
+
+        $areas = \App\Models\Area::pluck('nombre', 'area_id')->toArray();
+
+        $ris = RiesgoInstitucional::with(['fuentes' => function ($q) {
+            $q->orderBy('area_id')->orderBy('local_id');
+        }])
+        ->where('ejercicio_id', $ejercicio_id)
+        ->orderBy('folio')
+        ->get();
+
+        $memoria = [];
+
+        foreach ($ris as $ri) {
+            $sumatoria = (float) $ri->fuentes->sum('puntaje');
+            $fuentesDetalle = [];
+
+            $totProb = 0;
+            $totImp = 0;
+
+            foreach ($ri->fuentes as $f) {
+                $peso = (int) ($factores[$f->area_id] ?? 1);
+                $puntaje = (float) $f->puntaje;
+                $proporcion = $sumatoria > 0 ? round($puntaje / $sumatoria, 4) : 0;
+                $aporteProb = $sumatoria > 0 ? round(($puntaje / $sumatoria) * (float)$f->probabilidad, 4) : 0;
+                $aporteImp = $sumatoria > 0 ? round(($puntaje / $sumatoria) * (float)$f->impacto, 4) : 0;
+
+                $totProb += $aporteProb;
+                $totImp += $aporteImp;
+
+                $fuentesDetalle[] = [
+                    'rur_id' => $f->id,
+                    'local_id' => $f->local_id,
+                    'area_id' => $f->area_id,
+                    'area_nombre' => $areas[$f->area_id] ?? ("Área " . $f->area_id),
+                    'probabilidad' => (int) $f->probabilidad,
+                    'impacto' => (int) $f->impacto,
+                    'peso_ur' => $peso,
+                    'puntaje' => $puntaje,
+                    'proporcion' => $proporcion,
+                    'aporte_probabilidad' => $aporteProb,
+                    'aporte_impacto' => $aporteImp,
+                ];
+            }
+
+            $memoria[] = [
+                'ri_id' => $ri->id,
+                'folio' => $ri->folio,
+                'riesgo' => $ri->riesgo,
+                'objetivo' => $ri->objetivo,
+                'sumatoria_pra' => round($sumatoria, 2),
+                'ponderacion_probabilidad' => (float) $ri->ponderacion_probabilidad,
+                'ponderacion_impacto' => (float) $ri->ponderacion_impacto,
+                'total_fuentes' => count($fuentesDetalle),
+                'fuentes' => $fuentesDetalle,
+            ];
+        }
+
+        return $memoria;
     }
 }

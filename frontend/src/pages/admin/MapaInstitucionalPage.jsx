@@ -89,8 +89,8 @@ export default function MapaInstitucionalPage() {
         <line x1={mapX(5)} y1={TOP} x2={mapX(5)} y2={TOP + H_MAP} className="midline" />
         <line x1={LEFT} y1={mapY(5)} x2={LEFT + W_MAP} y2={mapY(5)} className="midline" />
         {items.map((r) => {
-          const p = Number(r.probabilidad) || 0;
-          const imp = Number(r.impacto) || 0;
+          const p = (!isSource && r.ponderacion_probabilidad != null) ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
+          const imp = (!isSource && r.ponderacion_impacto != null) ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
           const label = isSource ? String(r.local_id || r.id).replace(/^.*-R/, 'R') : '';
           return (
             <g key={r.id} className="risk-dot inst-dot" tabIndex="0" role="button"
@@ -143,23 +143,27 @@ export default function MapaInstitucionalPage() {
           <tbody>
             {riesgosInstitucionales.length === 0
               ? <tr><td colSpan="7" className="muted" style={{ textAlign: 'center' }}>Sin riesgos institucionales.</td></tr>
-              : riesgosInstitucionales.map(r => (
-                <tr key={r.id}>
-                  <td><b>{r.folio}</b></td>
-                  <td>{r.riesgo}</td>
-                  <td>
-                    {(r.fuentes || []).map(f => <span key={f.id} className="chip">{f.local_id || f.id}</span>)}
-                  </td>
-                  <td>{r.probabilidad}</td>
-                  <td>{r.impacto}</td>
-                  <td><span className={`badge ${cuadrante(r.probabilidad, r.impacto).toLowerCase()}`}>{cuadrante(r.probabilidad, r.impacto)}</span></td>
-                  <td>
-                    <button className="icon-btn" onClick={() => { setSelectedRisk(r); setDrawerOpen(true); }}>
-                      Ver detalle
-                    </button>
-                  </td>
-                </tr>
-              ))
+              : riesgosInstitucionales.map(r => {
+                const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
+                const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+                return (
+                  <tr key={r.id}>
+                    <td><b>{r.folio}</b></td>
+                    <td>{r.riesgo}</td>
+                    <td>
+                      {(r.fuentes || []).map(f => <span key={f.id} className="chip">{f.local_id || f.id}</span>)}
+                    </td>
+                    <td>{p}</td>
+                    <td>{i}</td>
+                    <td><span className={`badge ${cuadrante(p, i).toLowerCase()}`}>{cuadrante(p, i)}</span></td>
+                    <td>
+                      <button className="icon-btn" onClick={() => { setSelectedRisk(r); setDrawerOpen(true); }}>
+                        Ver detalle
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             }
           </tbody>
         </table>
@@ -317,8 +321,8 @@ export default function MapaInstitucionalPage() {
           </section>
 
           <section className="detail-grid">
-            <div><span>Probabilidad</span><b>{ir.probabilidad}</b></div>
-            <div><span>Impacto</span><b>{ir.impacto}</b></div>
+            <div><span>Probabilidad</span><b>{ir.ponderacion_probabilidad != null ? Math.round(Number(ir.ponderacion_probabilidad)) : (ir.probabilidad || 0)}</b></div>
+            <div><span>Impacto</span><b>{ir.ponderacion_impacto != null ? Math.round(Number(ir.ponderacion_impacto)) : (ir.impacto || 0)}</b></div>
             <div><span>Sugerencia técnica</span><b>{ir.probabilidad_sugerida}/{ir.impacto_sugerido}</b></div>
             <div><span>Estatus</span><b>{ir.estatus || 'Proyecto'}</b></div>
           </section>
