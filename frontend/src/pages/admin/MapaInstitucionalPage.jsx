@@ -89,8 +89,12 @@ export default function MapaInstitucionalPage() {
         <line x1={mapX(5)} y1={TOP} x2={mapX(5)} y2={TOP + H_MAP} className="midline" />
         <line x1={LEFT} y1={mapY(5)} x2={LEFT + W_MAP} y2={mapY(5)} className="midline" />
         {items.map((r) => {
-          const p = (!isSource && r.ponderacion_probabilidad != null) ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
-          const imp = (!isSource && r.ponderacion_impacto != null) ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+          const p = (!isSource)
+            ? (r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : 0)
+            : (Number(r.probabilidad) || 0);
+          const imp = (!isSource)
+            ? (r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : 0)
+            : (Number(r.impacto) || 0);
           const label = isSource ? String(r.local_id || r.id).replace(/^.*-R/, 'R') : '';
           return (
             <g key={r.id} className="risk-dot inst-dot" tabIndex="0" role="button"
@@ -134,8 +138,8 @@ export default function MapaInstitucionalPage() {
               <th>ID</th>
               <th>Riesgo Institucional</th>
               <th>Fuentes</th>
-              <th>P</th>
-              <th>I</th>
+              <th>Probabilidad</th>
+              <th>Impacto</th>
               <th>Cuadrante</th>
               <th></th>
             </tr>
@@ -144,8 +148,8 @@ export default function MapaInstitucionalPage() {
             {riesgosInstitucionales.length === 0
               ? <tr><td colSpan="7" className="muted" style={{ textAlign: 'center' }}>Sin riesgos institucionales.</td></tr>
               : riesgosInstitucionales.map(r => {
-                const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
-                const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+                const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : 0;
+                const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : 0;
                 return (
                   <tr key={r.id}>
                     <td><b>{r.folio}</b></td>
@@ -301,7 +305,9 @@ export default function MapaInstitucionalPage() {
     if (!selectedRisk || !drawerOpen) return null;
     const ir = selectedRisk;
     const src = ir.fuentes || [];
-    const quad = cuadrante(ir.probabilidad, ir.impacto);
+    const pVal = ir.ponderacion_probabilidad != null ? Math.round(Number(ir.ponderacion_probabilidad)) : 0;
+    const iVal = ir.ponderacion_impacto != null ? Math.round(Number(ir.ponderacion_impacto)) : 0;
+    const quad = cuadrante(pVal, iVal);
     const areaNames = [...new Set(src.map(f => areaName(f.area_id)))];
 
     return (
@@ -321,8 +327,8 @@ export default function MapaInstitucionalPage() {
           </section>
 
           <section className="detail-grid">
-            <div><span>Probabilidad</span><b>{ir.ponderacion_probabilidad != null ? Math.round(Number(ir.ponderacion_probabilidad)) : (ir.probabilidad || 0)}</b></div>
-            <div><span>Impacto</span><b>{ir.ponderacion_impacto != null ? Math.round(Number(ir.ponderacion_impacto)) : (ir.impacto || 0)}</b></div>
+            <div><span>Probabilidad</span><b>{pVal}</b></div>
+            <div><span>Impacto</span><b>{iVal}</b></div>
             <div><span>Sugerencia técnica</span><b>{ir.probabilidad_sugerida}/{ir.impacto_sugerido}</b></div>
             <div><span>Estatus</span><b>{ir.estatus || 'Proyecto'}</b></div>
           </section>

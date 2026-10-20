@@ -70,8 +70,8 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
     }
 
     const dots = riesgos.map(r => {
-      const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
-      const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+      const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : 0;
+      const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : 0;
       const local = r.folio || `RI-${r.id}`;
       return (
         <g className="risk-dot" key={r.id}>
@@ -171,8 +171,8 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
               </thead>
               <tbody>
                 {riesgos.map(r => {
-                  const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
-                  const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+                  const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : 0;
+                  const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : 0;
                   return (
                     <tr key={r.id}>
                       <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
@@ -185,6 +185,11 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
                 })}
               </tbody>
             </table>
+            {getPrintDate() && (
+              <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c' }}>
+                Fecha de validación: {getPrintDate()}
+              </p>
+            )}
           </section>
         )}
         </div>
@@ -231,8 +236,8 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
                 </thead>
                 <tbody>
                   {riesgos.map(r => {
-                    const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : (Number(r.probabilidad) || 0);
-                    const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : (Number(r.impacto) || 0);
+                    const p = r.ponderacion_probabilidad != null ? Math.round(Number(r.ponderacion_probabilidad)) : 0;
+                    const i = r.ponderacion_impacto != null ? Math.round(Number(r.ponderacion_impacto)) : 0;
                     return (
                       <tr key={r.id}>
                         <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}><b>{r.folio || r.id}</b></td>
@@ -250,9 +255,11 @@ export default function ReportMapInstitucional({ asModal, onCloseModal }) {
                   )}
                 </tbody>
               </table>
-              <p style={{textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c'}}>
-                {getPrintDate() && `Fecha de emisión: ${getPrintDate()}`}
-              </p>
+              {getPrintDate() && (
+                <p style={{textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c'}}>
+                  Fecha de validación: {getPrintDate()}
+                </p>
+              )}
 
             </section>
           </div>

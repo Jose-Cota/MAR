@@ -51,9 +51,7 @@ export default function ReportMAR({ areaId: propAreaId, asModal, onCloseModal })
   const isAllValidated = riesgos.length > 0 && riesgos.every(r => r.status === 'Validado');
   const isCaptura = riesgos.some(r => !r.status || r.status.toLowerCase().includes('captura'));
   
-  const lastValidationDate = isAllValidated 
-    ? getPrintDate()
-    : '';
+  const lastValidationDate = getPrintDate();
 
   useEffect(() => {
     const originalTitle = document.title;
@@ -244,7 +242,7 @@ export default function ReportMAR({ areaId: propAreaId, asModal, onCloseModal })
                   </div>
                 </div>
               )}
-              {isAllValidated && lastValidationDate && (
+              {lastValidationDate && (
                 <p style={{textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c'}}>
                   Fecha de validación: {lastValidationDate}
                 </p>

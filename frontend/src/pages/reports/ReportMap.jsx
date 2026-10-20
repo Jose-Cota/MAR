@@ -106,9 +106,7 @@ export default function ReportMap({ areaId: propAreaId, asModal, onCloseModal })
   };
 
   const isAllValidated = riesgos.length > 0 && riesgos.every(r => r.status === 'Validado');
-  const lastValidationDate = isAllValidated 
-    ? getPrintDate()
-    : '';
+  const lastValidationDate = getPrintDate();
 
   return (
     <>
@@ -264,7 +262,7 @@ export default function ReportMap({ areaId: propAreaId, asModal, onCloseModal })
                   </div>
                 </div>
               )}
-              {isAllValidated && lastValidationDate && (
+              {lastValidationDate && (
                 <p style={{textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c'}}>
                   Fecha de validación: {lastValidationDate}
                 </p>

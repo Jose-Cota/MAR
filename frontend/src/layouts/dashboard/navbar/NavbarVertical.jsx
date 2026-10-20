@@ -155,7 +155,7 @@ export default function NavbarVertical() {
       </Snackbar>
       <div className="side-footer">
         Sistema de Administracion de Riesgos - TECDMX 2026<br />
-        <small>Versión 1.2 · 20 oct 2026 · 13:44 hrs</small>
+        <small>Versión 1.2 · 20 oct 2026 · 14:14 hrs</small>
       </div>
     </div>
   );

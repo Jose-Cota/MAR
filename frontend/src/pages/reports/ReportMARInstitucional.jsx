@@ -142,6 +142,11 @@ export default function ReportMARInstitucional({ asModal, onCloseModal }) {
             <b>Presidente del CARCI</b>
           </div>
         </div>
+        {getPrintDate() && (
+          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#556b7c' }}>
+            Fecha de validación: {getPrintDate()}
+          </p>
+        )}
       </div>
     </section>
   );
